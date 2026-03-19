@@ -7,7 +7,7 @@
                 "@modelcontextprotocol/server-github"
             ],
             "env": {
-                "GITHUB_PERSONAL_ACCESS_TOKEN": "MI_TOKEN"
+                "GITHUB_PERSONAL_ACCESS_TOKEN": "MI_TOKEN_2026"
             }
         }
     }
