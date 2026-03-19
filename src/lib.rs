@@ -9,6 +9,7 @@ use yew::virtual_dom::VNode;
 use code_location::code_location;
 use web_sys::History;
 use wasm_bindgen::JsValue;
+use wasm_bindgen::prelude::*;
 use yew_router::{route::Route, service::RouteService, Switch};
 use yew::services::{ fetch::FetchTask, storage::{Area, StorageService}};
 // use yew::services::{ fetch::FetchTask, storage::{Area, StorageService}, timeout::TimeoutTask, TimeoutService};
@@ -1071,7 +1072,8 @@ impl Component for App {
     }
 }
 
-fn main() {
+#[wasm_bindgen]
+pub fn run_app() {
     // wasm_logger::init(wasm_logger::Config::new(log::Level::Info));
     info!("Starting Roboxmaker App");
     yew::start_app::<App>();
