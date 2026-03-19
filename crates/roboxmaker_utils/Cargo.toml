@@ -1,0 +1,30 @@
+[package]
+name = "roboxmaker_utils"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+roboxmaker_types = { path = "../roboxmaker_types" }
+roboxmaker_models = { path = "../roboxmaker_models" }
+
+
+log = "0.4"
+# yew-router = { version = "0.17", features = ["service", "web_sys"], default-features = false }
+yew-router = { version = "0.18" }
+
+uuid = { version = "1.6.1", features = ["serde", "v4", "v5", "wasm-bindgen"] }
+serde = { version = "1", features = ["derive"] }
+wasm-bindgen = {version = "0.2", features = ["serde-serialize"]}
+chrono = { version = "0.4", features = ["serde"] }
+gloo-storage = "0.3"
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+    "Event",
+    "HtmlInputElement",
+    "HtmlTextAreaElement",
+    "InputEvent"
+]

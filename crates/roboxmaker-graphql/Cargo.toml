@@ -1,0 +1,33 @@
+[package]
+name = "roboxmaker-graphql"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+graphql_client = "0.13"
+instant = { version = "0.1", features = [ "wasm-bindgen", "inaccurate" ] }
+gloo-storage = "0.3"
+log = "0.4"
+serde = {version = "1", features = ["derive"]}
+serde_derive = "1"
+serde_json = "1"
+uuid = {version = "1.6.1", features = ["serde", "v4", "v5", "wasm-bindgen"]}
+wasm-bindgen = {version = "0.2", features = ["serde-serialize"]}
+js-sys = "0.3"
+yew = "0.21"
+dotenv_codegen = "0.15.0"
+lazy_static = "1.4.0"
+code_location = {version = "1.1", features = ["serde"]}
+
+roboxmaker_main = { path = "../roboxmaker_main" }
+
+[dependencies.web-sys]
+version = "0.3.60"
+features = [
+    "CloseEvent",
+    "ErrorEvent",
+    "MessageEvent",
+    "WebSocket",
+]

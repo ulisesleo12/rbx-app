@@ -1,0 +1,37 @@
+mutation post_group_create($topic: String!, $content: String!, $group_id: uuid!, $inventory_group_id: uuid!, $post_id: uuid!, $timestamp: timestamp!) {
+  insert_post_content_one(object: {content: $content, post_profile: {data: {topic: $topic, post_group: {data: {group_id: $group_id, post: {data: {id: $post_id}}}}, timestamp: $timestamp}}}) {
+    post_id
+  }
+  insert_post_group_one(object: {group_id: $inventory_group_id, post_id: $post_id}) {
+    post_id
+  }
+}
+
+
+mutation post_class_and_group_create($topic: String!, $content: String!, $group_id: uuid!, $inventory_group_id: uuid!, $post_id: uuid!, $timestamp: timestamp!, $section_id: uuid!) {
+  insert_post_content_one(object: {content: $content, post_profile: {data: {topic: $topic, post_group: {data: {group_id: $group_id, post: {data: {id: $post_id}}}}, timestamp: $timestamp}}}) {
+    post_id
+  }
+  insert_post_group_one(object: {group_id: $inventory_group_id, post_id: $post_id}) {
+    post_id
+  }
+  insert_class_post_one(object: {post_id: $post_id, section_id: $section_id}) {
+    post_id
+    section_id
+  }
+}
+
+mutation post_group_delete($group_id: uuid!, $post_id: uuid!) {
+  delete_post_group(where: {group_id: {_eq: $group_id}, post_id: {_eq: $post_id}}) {
+    returning {
+      group_id
+      post_id
+    }
+  }
+}
+
+mutation delete_post($post_id: uuid!) {
+  delete_post_by_pk(id: $post_id) {
+    id
+  }
+}

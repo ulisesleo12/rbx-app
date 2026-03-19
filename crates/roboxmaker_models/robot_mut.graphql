@@ -1,0 +1,26 @@
+mutation robot_group_add($group_id: uuid!, $robot_id: uuid!, $robot_type: robox_robot_type_enum!) {
+  insert_robot_group_one(object: {group_id: $group_id, robot_id: $robot_id, robot_type: $robot_type}) {
+    group_id
+    robot_id
+    robot_type
+  }
+}
+
+mutation robot_group_delete($group_id: uuid!, $robot_id: uuid!) {
+  delete_robot_group(where: {group_id: {_eq: $group_id}, robot_id: {_eq: $robot_id}}) {
+    returning {
+      group_id
+      robot_id
+    }
+  }
+}
+
+mutation update_robot_type($group_id: uuid!, $robot_ids: [uuid!]!, $robot_type: robox_robot_type_enum!) {
+  update_robot_group(where: {group_id: {_eq: $group_id}, robot_id: {_in: $robot_ids}}, _set: {robot_type: $robot_type}) {
+    affected_rows
+    returning {
+      robot_type
+      robot_id
+    }
+  }
+}

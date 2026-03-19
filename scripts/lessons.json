@@ -1,0 +1,4870 @@
+{
+    "data": {
+      "class_group": [
+        {
+          "class_profile": {
+            "name": "Recursos Extra - Arduino"
+          },
+          "group_id": "118291fe-2ca7-4406-8bd1-703a9ff9fa11",
+          "school_group": {
+            "school_id": "bdb06dbb-04de-40a4-9a27-60586111f6c0"
+          },
+          "post_groups": [],
+          "lesson_groups": [
+            {
+              "lesson_id": "8d668666-9f8e-487c-9ff7-e5d5d6ea5531",
+              "lesson_profile": {
+                "title": "EB1_L01-Fotorresistencia"
+              }
+            },
+            {
+              "lesson_id": "93d3c567-25c8-44d2-b163-6f072db1b785",
+              "lesson_profile": {
+                "title": "EB1_L02-Control LED"
+              }
+            },
+            {
+              "lesson_id": "47f91c2b-9c40-447e-9c56-02a11139c6cf",
+              "lesson_profile": {
+                "title": "EB1_L03-Luces con NeoPixels"
+              }
+            },
+            {
+              "lesson_id": "f1a7f157-99ba-44e7-a3c6-9074feba9454",
+              "lesson_profile": {
+                "title": "EB1_L04-Control vehicular"
+              }
+            },
+            {
+              "lesson_id": "7fd69612-88f7-4712-a758-1383aa5cec94",
+              "lesson_profile": {
+                "title": "EB1_L05-Color musical"
+              }
+            },
+            {
+              "lesson_id": "049048f5-3cb5-44a6-8ffd-f878a107d9d7",
+              "lesson_profile": {
+                "title": "EB1_L06-Temporizador"
+              }
+            },
+            {
+              "lesson_id": "d57c52b6-4c57-493a-ab34-e0a4d1cd164c",
+              "lesson_profile": {
+                "title": "EB1_L07-Ohmímetro"
+              }
+            },
+            {
+              "lesson_id": "eef2d120-2366-4ac3-a972-5b12eeb08873",
+              "lesson_profile": {
+                "title": "EB1_L08-Sistema de enfriamiento"
+              }
+            },
+            {
+              "lesson_id": "ec46e47a-049c-4d6e-96f3-d10788a810d7",
+              "lesson_profile": {
+                "title": "EB1_L09-Luces de aceleración"
+              }
+            },
+            {
+              "lesson_id": "d8d5bbd8-9ff1-4a80-889d-6ce09779d566",
+              "lesson_profile": {
+                "title": "EB1_L10-Viaje seguro"
+              }
+            },
+            {
+              "lesson_id": "a168fc63-35a4-4740-8cf9-06246e7703d0",
+              "lesson_profile": {
+                "title": "EB2_L01-Relé electromagnético"
+              }
+            },
+            {
+              "lesson_id": "fdd5d53a-768c-4a42-812a-b8ff7f3a0846",
+              "lesson_profile": {
+                "title": "EB2_L02-Luces aceleradas"
+              }
+            },
+            {
+              "lesson_id": "55e51b77-26a7-41fa-9983-588f83cf7a8c",
+              "lesson_profile": {
+                "title": "EB2_L03-Bucles de luces"
+              }
+            },
+            {
+              "lesson_id": "a0fd135e-c4ba-4676-a4c2-cee6f4566269",
+              "lesson_profile": {
+                "title": "EB2_L04-Control de sonido"
+              }
+            },
+            {
+              "lesson_id": "2a67911c-34b0-47a3-8a97-a75e730fae02",
+              "lesson_profile": {
+                "title": "EB2_L05-Música y color"
+              }
+            },
+            {
+              "lesson_id": "8c9c794d-38d2-4003-9d48-888e16cb0d58",
+              "lesson_profile": {
+                "title": "EB2_L06-Programador de tareas"
+              }
+            },
+            {
+              "lesson_id": "05f63f77-ce4c-4008-8c5c-782ca67f119c",
+              "lesson_profile": {
+                "title": "EB2_L07-Calculadora binaria"
+              }
+            },
+            {
+              "lesson_id": "f6812f9f-2a2c-48e1-ad01-e2797b351df3",
+              "lesson_profile": {
+                "title": "EB2_L08-Luces inteligentes"
+              }
+            },
+            {
+              "lesson_id": "ad4a8feb-22e3-4bf7-8b6a-786f95490b43",
+              "lesson_profile": {
+                "title": "EB2_L09-Velocidad y aceleración"
+              }
+            },
+            {
+              "lesson_id": "3ce82438-77ea-4f46-b5d4-dd619d702819",
+              "lesson_profile": {
+                "title": "EB2_L10-Robot explorador"
+              }
+            },
+            {
+              "lesson_id": "91436973-1fe2-4432-9d93-2246b51f0b1d",
+              "lesson_profile": {
+                "title": "ES1_L01-¿Qué es Arduino?"
+              }
+            },
+            {
+              "lesson_id": "0e4f54da-50b7-46c0-8a44-2317d566e90d",
+              "lesson_profile": {
+                "title": "ES1_L02-Mi primer programa con Arduino"
+              }
+            },
+            {
+              "lesson_id": "b4a32202-8f39-4142-bace-90af91b630fe",
+              "lesson_profile": {
+                "title": "ES1_L03-Ciclos repetitivos de programación"
+              }
+            },
+            {
+              "lesson_id": "9bc6137d-eac2-41e9-aabb-dd3ea9bc4fa8",
+              "lesson_profile": {
+                "title": "ES1_L04-Programando un semáforo"
+              }
+            },
+            {
+              "lesson_id": "4e7dba34-1b91-4f01-a857-b22e0ca75f3c",
+              "lesson_profile": {
+                "title": "ES1_L05-Principio de las pantallas LED"
+              }
+            },
+            {
+              "lesson_id": "c33f99f0-1e84-4e8c-9d22-083d25edb970",
+              "lesson_profile": {
+                "title": "ES1_L06-Contador digital"
+              }
+            },
+            {
+              "lesson_id": "d8ad7518-1f6c-4bb8-99b5-5ebabb8e4849",
+              "lesson_profile": {
+                "title": "ES1_L07-Luxómetro"
+              }
+            },
+            {
+              "lesson_id": "0da5a8ba-1108-4731-aca6-b838dfa8b190",
+              "lesson_profile": {
+                "title": "ES1_L08-Termómetro digital"
+              }
+            },
+            {
+              "lesson_id": "1b7c04d8-a56f-43f5-9663-73ba89fa6dcb",
+              "lesson_profile": {
+                "title": "ES1_L09-Movimientos automatizados"
+              }
+            },
+            {
+              "lesson_id": "d1e8cc1c-99aa-4339-b22b-a91f4089a386",
+              "lesson_profile": {
+                "title": "ES1_L10-Robot musical"
+              }
+            },
+            {
+              "lesson_id": "a09c1311-74cf-4655-85e9-82c65cecaf12",
+              "lesson_profile": {
+                "title": "ES2_L01-Programando microcontroladores"
+              }
+            },
+            {
+              "lesson_id": "4d1da65b-b254-44e4-a86f-acb7e301ee8a",
+              "lesson_profile": {
+                "title": "ES2_L02-Comandos básicos Arduino"
+              }
+            },
+            {
+              "lesson_id": "2d4bdb16-cca5-405b-9dfb-0fa70d6d62a9",
+              "lesson_profile": {
+                "title": "ES2_L03-Retardo LED"
+              }
+            },
+            {
+              "lesson_id": "dd439a13-f166-4a0f-aee2-fdd50aaca88c",
+              "lesson_profile": {
+                "title": "ES2_L04-Cuidando el medio ambiente"
+              }
+            },
+            {
+              "lesson_id": "e0e17493-91b9-43f7-8600-f360e1f4ded0",
+              "lesson_profile": {
+                "title": "ES2_L05-Combinando luz LED RGB"
+              }
+            },
+            {
+              "lesson_id": "31e00027-dc58-48ca-9caf-c9725ab9dccf",
+              "lesson_profile": {
+                "title": "ES2_L06-Cronómetro digital"
+              }
+            },
+            {
+              "lesson_id": "6238282d-cfa4-47f2-b831-360943d05599",
+              "lesson_profile": {
+                "title": "ES2_L07-Voltímetro digital"
+              }
+            },
+            {
+              "lesson_id": "ff81d490-3391-4739-926e-694fb48bad62",
+              "lesson_profile": {
+                "title": "ES2_L08-Sonidos en mi habitación"
+              }
+            },
+            {
+              "lesson_id": "be436f0a-4f1f-4987-ac0d-3552f39a8dec",
+              "lesson_profile": {
+                "title": "ES2_L09-Control de velocidad"
+              }
+            },
+            {
+              "lesson_id": "5b472be5-f5df-4d27-ab70-708c441897a1",
+              "lesson_profile": {
+                "title": "ES2_L10-Robot policial"
+              }
+            },
+            {
+              "lesson_id": "479803ba-313e-4e11-99d7-9e1536eb4e62",
+              "lesson_profile": {
+                "title": "ES3_L01-Circuitos integrados"
+              }
+            },
+            {
+              "lesson_id": "8e4c9784-88ef-4436-b4b2-951797308c31",
+              "lesson_profile": {
+                "title": "ES3_L02-Programando Arduino"
+              }
+            },
+            {
+              "lesson_id": "83d9b2f1-f0b8-407d-916c-ebdd02632b1f",
+              "lesson_profile": {
+                "title": "ES3_L03-Bucles y efectos luminosos"
+              }
+            },
+            {
+              "lesson_id": "c1694ffb-6287-4120-abdc-a51549365ecb",
+              "lesson_profile": {
+                "title": "ES3_L04-Semáforo inteligente"
+              }
+            },
+            {
+              "lesson_id": "98acb9f0-43d8-46f8-bf3a-b0c94728ccf0",
+              "lesson_profile": {
+                "title": "ES3_L05-Proyecto arcoiris"
+              }
+            },
+            {
+              "lesson_id": "3fc6bafa-717e-4e6f-85d6-3284ed49623a",
+              "lesson_profile": {
+                "title": "ES3_L06-Reloj digital"
+              }
+            },
+            {
+              "lesson_id": "94f76f0f-820a-41a3-a4ff-74062f71f918",
+              "lesson_profile": {
+                "title": "ES3_L07-Amperímetro digital"
+              }
+            },
+            {
+              "lesson_id": "6425927d-d9f8-44fd-9bd6-f83d5edd2ff7",
+              "lesson_profile": {
+                "title": "ES3_L08-Sensor ultrasónico"
+              }
+            },
+            {
+              "lesson_id": "c71e9107-93e5-40c0-b6e1-bc2dad140faf",
+              "lesson_profile": {
+                "title": "ES3_L09-Aceleración programada"
+              }
+            },
+            {
+              "lesson_id": "b79633d6-4111-4470-9119-b7e500b6dad5",
+              "lesson_profile": {
+                "title": "ES3_L10-Robot mensajero"
+              }
+            }
+          ],
+          "robot_groups": []
+        },
+        {
+          "class_profile": {
+            "name": "Recursos Extra - Electrónica"
+          },
+          "group_id": "63042d0c-05a0-4779-86f2-035c6fd1934f",
+          "school_group": {
+            "school_id": "bdb06dbb-04de-40a4-9a27-60586111f6c0"
+          },
+          "post_groups": [],
+          "lesson_groups": [],
+          "robot_groups": []
+        },
+        {
+          "class_profile": {
+            "name": "Recursos Extra -  Modelado 3D"
+          },
+          "group_id": "e09bf093-b0e0-4ed6-b354-c33ba18a3d8d",
+          "school_group": {
+            "school_id": "bdb06dbb-04de-40a4-9a27-60586111f6c0"
+          },
+          "post_groups": [],
+          "lesson_groups": [
+            {
+              "lesson_id": "e6d8fa4c-6753-4eda-9512-70e0bc0b9444",
+              "lesson_profile": {
+                "title": "AS1_L32"
+              }
+            },
+            {
+              "lesson_id": "12651df5-e694-4eeb-ae81-7f4027dbd329",
+              "lesson_profile": {
+                "title": "AS1_L33"
+              }
+            },
+            {
+              "lesson_id": "97edd512-7bad-4fd7-87e9-b61edf22dc95",
+              "lesson_profile": {
+                "title": "AS1_L34"
+              }
+            }
+          ],
+          "robot_groups": []
+        },
+        {
+          "class_profile": {
+            "name": "Recursos Extra - Programación"
+          },
+          "group_id": "69fd5c2a-5bef-44f8-8c93-e38114e3f156",
+          "school_group": {
+            "school_id": "bdb06dbb-04de-40a4-9a27-60586111f6c0"
+          },
+          "post_groups": [
+            {
+              "post_id": "1033cb69-b3cd-4750-8d18-56f8f6b1fb60",
+              "post_profile": {
+                "topic": "Ayuda - Elementos mecánicos kínder"
+              }
+            },
+            {
+              "post_id": "4595449b-ab90-4d27-ac06-bc136b99893b",
+              "post_profile": {
+                "topic": "Ayuda - Función de ruedas y llantas"
+              }
+            },
+            {
+              "post_id": "355b041d-d477-4769-a894-db02411e4ead",
+              "post_profile": {
+                "topic": "Ayuda - Función de arandelas y esferas"
+              }
+            },
+            {
+              "post_id": "59bd833b-e1df-417e-bdae-9a2b4b00b4f3",
+              "post_profile": {
+                "topic": "Ayuda - Controles del menú de Roboxmaker"
+              }
+            },
+            {
+              "post_id": "2e3a391e-c3bd-4327-91a9-fb91ca4cc76f",
+              "post_profile": {
+                "topic": "Ayuda - Función de conector clip gris / conector clip 180°"
+              }
+            },
+            {
+              "post_id": "c543582a-6b8e-475d-8cb1-f3700294ad30",
+              "post_profile": {
+                "topic": "Ayuda - Función de conector clip azul / conector clip 360°"
+              }
+            },
+            {
+              "post_id": "8d94e8ac-f4e1-4d3d-855c-a62e22310324",
+              "post_profile": {
+                "topic": "Ayuda - Función de conector naranja / conector de 0° y 180°"
+              }
+            },
+            {
+              "post_id": "5e65ee49-1400-4cc2-9b33-a1798d0368dd",
+              "post_profile": {
+                "topic": "Ayuda - Función de conector gris / conector 45°"
+              }
+            },
+            {
+              "post_id": "6b5c7b95-e66c-4fbf-b80f-e127ec9f4901",
+              "post_profile": {
+                "topic": "Ayuda - Función de conector rojo / conector 90°"
+              }
+            },
+            {
+              "post_id": "1da74073-693e-428d-8bde-4e5396431930",
+              "post_profile": {
+                "topic": "Ayuda - Función de conector verde / conector 135°"
+              }
+            },
+            {
+              "post_id": "87b02722-eb13-421f-8260-d9f76e6c8a69",
+              "post_profile": {
+                "topic": "Ayuda - Función de conector amarillo / conector 180°"
+              }
+            },
+            {
+              "post_id": "c88d4caa-3c5c-450c-9621-87b8dc379efb",
+              "post_profile": {
+                "topic": "Ayuda - Función de conector blanco / conector 360°"
+              }
+            },
+            {
+              "post_id": "728098f7-5941-486c-851c-bbe049901eae",
+              "post_profile": {
+                "topic": "Ayuda - Conectores y ejes"
+              }
+            },
+            {
+              "post_id": "dc16b0b8-5f58-4fea-a2ea-5dfef295ff39",
+              "post_profile": {
+                "topic": "Ayuda - Elementos mecánicos"
+              }
+            }
+          ],
+          "lesson_groups": [
+            {
+              "lesson_id": "92cf9211-affc-4869-8267-cb493fb6a171",
+              "lesson_profile": {
+                "title": "Muestra PDF"
+              }
+            }
+          ],
+          "robot_groups": []
+        },
+        {
+          "class_profile": {
+            "name": "Kinder 4 - Profesor"
+          },
+          "group_id": "84c2d64a-1181-42b5-a7ae-5e0798eb522d",
+          "school_group": {
+            "school_id": "bdb06dbb-04de-40a4-9a27-60586111f6c0"
+          },
+          "post_groups": [
+            {
+              "post_id": "1033cb69-b3cd-4750-8d18-56f8f6b1fb60",
+              "post_profile": {
+                "topic": "Ayuda - Elementos mecánicos kínder"
+              }
+            }
+          ],
+          "lesson_groups": [
+            {
+              "lesson_id": "f7a6c4a3-3b42-47bb-b6f3-9a4552fa4aba",
+              "lesson_profile": {
+                "title": "K4-L01-Tengo un nuevo kit para jugar y aprender.pdf"
+              }
+            },
+            {
+              "lesson_id": "b22d57ad-29c6-4a61-bf23-694953d77e3a",
+              "lesson_profile": {
+                "title": "K4-L02-¡Vamos al parque!.pdf"
+              }
+            },
+            {
+              "lesson_id": "9ca8b0f8-acb7-4d00-81e3-5e2935c194d0",
+              "lesson_profile": {
+                "title": "K4-L03-Cuéntame un cuento.pdf"
+              }
+            },
+            {
+              "lesson_id": "2aac2612-12b8-418c-a204-5a3b41df95fa",
+              "lesson_profile": {
+                "title": "K4-L04-Juguemos a ser exploradores.pdf"
+              }
+            },
+            {
+              "lesson_id": "38235859-74d2-4b5b-bee9-86115569db3c",
+              "lesson_profile": {
+                "title": "K4-L05-Nazco, crezco y.pdf"
+              }
+            },
+            {
+              "lesson_id": "b97f1251-7c8c-468b-8fe7-f49f77b22283",
+              "lesson_profile": {
+                "title": "K4-L06-Rojo significa alto.pdf"
+              }
+            },
+            {
+              "lesson_id": "a7997617-fd6a-46c4-8c02-b1b896b3ea26",
+              "lesson_profile": {
+                "title": "K4-L07-Son carros que vuelan.pdf"
+              }
+            },
+            {
+              "lesson_id": "d5ef2d1b-3fad-43bb-9c8a-9b55e7e8fcec",
+              "lesson_profile": {
+                "title": "K4-L08-Gira y gira la rueda.pdf"
+              }
+            },
+            {
+              "lesson_id": "bd62eae4-84d8-4bd8-acf9-ce7b3b11ec5a",
+              "lesson_profile": {
+                "title": "K4-L09-Con agua y con jabón.pdf"
+              }
+            },
+            {
+              "lesson_id": "c5770adb-f0d2-42c7-8694-8fcdc40e05ac",
+              "lesson_profile": {
+                "title": "K4-L10-Abejitas al panal.pdf"
+              }
+            },
+            {
+              "lesson_id": "7586a86f-5ede-4df8-93e3-1f4afddd4dc3",
+              "lesson_profile": {
+                "title": "K4-L11-Vamos al súper.pdf"
+              }
+            },
+            {
+              "lesson_id": "74d4b95a-3bce-41fa-bb75-d452ea29bfee",
+              "lesson_profile": {
+                "title": "K4-L12-Manitas creativas.pdf"
+              }
+            },
+            {
+              "lesson_id": "c217dbfe-a0f5-437b-9f4a-3b87e2bd8db1",
+              "lesson_profile": {
+                "title": "K4-L13-Cantemos el himno nacional.pdf"
+              }
+            },
+            {
+              "lesson_id": "0c14eb8d-2efc-484c-95b6-00c0177c7a30",
+              "lesson_profile": {
+                "title": "K4-L14-Exploremos otro país.pdf"
+              }
+            },
+            {
+              "lesson_id": "6a6a2903-eb3f-4937-944d-d46c274b052f",
+              "lesson_profile": {
+                "title": "K4-L15-No todos tienen patitas.pdf"
+              }
+            },
+            {
+              "lesson_id": "150493c1-1718-4b33-91ba-bd9f59c4305e",
+              "lesson_profile": {
+                "title": "K4-L16-Conozcamos más animalitos.pdf"
+              }
+            },
+            {
+              "lesson_id": "ba2e94f9-f485-4102-b958-44f9bc3ed3a6",
+              "lesson_profile": {
+                "title": "K4-L17-Una excursión por mi colegio.pdf"
+              }
+            },
+            {
+              "lesson_id": "3a2e6513-5289-4c48-8e1d-6c60226f913c",
+              "lesson_profile": {
+                "title": "K4-L18-Cuéntame lo que pasó.pdf"
+              }
+            },
+            {
+              "lesson_id": "8cafc0d8-08dd-46d9-9c1a-dfdef133ed56",
+              "lesson_profile": {
+                "title": "K4-L19-Juguemos a ser adultos.pdf"
+              }
+            },
+            {
+              "lesson_id": "752d5c4d-65ef-498f-8ae9-db0a7c59b093",
+              "lesson_profile": {
+                "title": "K4-L20-Dime cuál es esta figura.pdf"
+              }
+            },
+            {
+              "lesson_id": "a8e3b667-8e8a-46f3-8108-785265635ff9",
+              "lesson_profile": {
+                "title": "K4-L21-Trencito chucu, chucu, chú....pdf"
+              }
+            },
+            {
+              "lesson_id": "7a719d83-67e3-473a-8c79-fe6275bb88b3",
+              "lesson_profile": {
+                "title": "K4-L22-Ese extraño no.pdf"
+              }
+            }
+          ],
+          "robot_groups": [
+            {
+              "robot_id": "c059d5f2-0627-4607-a637-bdab7e5d8f04",
+              "robot_profile": {
+                "name": "K4_L01"
+              }
+            },
+            {
+              "robot_id": "0c7a09df-48b0-4e4a-bd0a-f57542ba5095",
+              "robot_profile": {
+                "name": "K4_L02"
+              }
+            },
+            {
+              "robot_id": "6655257c-059c-49e7-92e1-b21ae2ea5cb3",
+              "robot_profile": {
+                "name": "K4_L03"
+              }
+            },
+            {
+              "robot_id": "e96234ef-63c7-4b7b-bd2b-490f613a0a2c",
+              "robot_profile": {
+                "name": "K4_L04"
+              }
+            },
+            {
+              "robot_id": "5791e291-1468-4bf4-bc20-b187472f3713",
+              "robot_profile": {
+                "name": "K4_L05"
+              }
+            },
+            {
+              "robot_id": "d77a011f-bf2f-4753-b39c-e45402e3d2a4",
+              "robot_profile": {
+                "name": "K4_L06"
+              }
+            },
+            {
+              "robot_id": "f92f713b-89ff-4608-8aee-e20cd1ecf551",
+              "robot_profile": {
+                "name": "K4_L07"
+              }
+            },
+            {
+              "robot_id": "e49acf01-5dbf-4a47-87bd-379168cbbe4a",
+              "robot_profile": {
+                "name": "K4_L08"
+              }
+            },
+            {
+              "robot_id": "616b2bb7-4c8f-4b20-a993-0321474bf79e",
+              "robot_profile": {
+                "name": "K4_L09"
+              }
+            },
+            {
+              "robot_id": "838d66c7-67c2-49e7-ba1d-1ec8ee782b2d",
+              "robot_profile": {
+                "name": "K4_L10"
+              }
+            },
+            {
+              "robot_id": "12a7525e-9159-44bb-a2fd-b56ef2b138db",
+              "robot_profile": {
+                "name": "K4_L11"
+              }
+            },
+            {
+              "robot_id": "593acf29-be73-4627-862c-1899d72ab1c8",
+              "robot_profile": {
+                "name": "K4_L12"
+              }
+            },
+            {
+              "robot_id": "7d6900f3-dd85-4496-9bc3-b2700ad00352",
+              "robot_profile": {
+                "name": "K4_L13"
+              }
+            },
+            {
+              "robot_id": "6c06973b-fa27-47aa-9ac4-504fb863e1e6",
+              "robot_profile": {
+                "name": "K4_L14"
+              }
+            },
+            {
+              "robot_id": "933d3709-104c-4445-aacc-b6ff4ddea7b9",
+              "robot_profile": {
+                "name": "K4_L15"
+              }
+            },
+            {
+              "robot_id": "0e85ef09-4f7f-43e8-9aff-27ed2453fd49",
+              "robot_profile": {
+                "name": "K4_L16"
+              }
+            },
+            {
+              "robot_id": "60378930-8d1a-4f5a-89f8-b507fbe923f6",
+              "robot_profile": {
+                "name": "K4_L17"
+              }
+            },
+            {
+              "robot_id": "c70321e8-5b0b-4c9f-81c8-82b44eaff1ef",
+              "robot_profile": {
+                "name": "K4_L18"
+              }
+            },
+            {
+              "robot_id": "95a2656f-fabe-4814-b49b-294806c7c83f",
+              "robot_profile": {
+                "name": "K4_L19"
+              }
+            },
+            {
+              "robot_id": "f1c3489f-83b6-45e5-8709-e76c2a528462",
+              "robot_profile": {
+                "name": "K4_L20"
+              }
+            },
+            {
+              "robot_id": "db0977ec-13d0-4151-b788-29ef921280b7",
+              "robot_profile": {
+                "name": "K4_L21"
+              }
+            },
+            {
+              "robot_id": "4e451371-667e-43df-81f8-ff76534d5d63",
+              "robot_profile": {
+                "name": "K4_L22"
+              }
+            },
+            {
+              "robot_id": "fecffbd5-f24f-474c-baf3-8c12e7c7a838",
+              "robot_profile": {
+                "name": "K4_L23"
+              }
+            }
+          ]
+        },
+        {
+          "class_profile": {
+            "name": "Kinder 5 - Profesor"
+          },
+          "group_id": "bdef631f-09ae-4c49-9475-ce6ceef63099",
+          "school_group": {
+            "school_id": "bdb06dbb-04de-40a4-9a27-60586111f6c0"
+          },
+          "post_groups": [
+            {
+              "post_id": "1033cb69-b3cd-4750-8d18-56f8f6b1fb60",
+              "post_profile": {
+                "topic": "Ayuda - Elementos mecánicos kínder"
+              }
+            }
+          ],
+          "lesson_groups": [
+            {
+              "lesson_id": "835bf77d-7ca4-4910-ab9a-2decc8f80b48",
+              "lesson_profile": {
+                "title": "K5-L01-¡Este es mi kit!.pdf"
+              }
+            },
+            {
+              "lesson_id": "6837e519-dbfa-46d9-bd32-9921bef369ff",
+              "lesson_profile": {
+                "title": "K5-L02-Juguemos a ser constructores.pdf"
+              }
+            },
+            {
+              "lesson_id": "087ad365-9ba6-4c0f-b2e8-d723432b0f7e",
+              "lesson_profile": {
+                "title": "K5-L03-Visitemos la ferretería.pdf"
+              }
+            },
+            {
+              "lesson_id": "1652859c-ee08-4f2b-8875-669415008a6e",
+              "lesson_profile": {
+                "title": "K5-L04-Así se ocupan las tijeras.pdf"
+              }
+            },
+            {
+              "lesson_id": "25b96620-b251-48de-a31c-70bc70ab7d6c",
+              "lesson_profile": {
+                "title": "K5-L05-Así viven las hormigas.pdf"
+              }
+            },
+            {
+              "lesson_id": "2fd34e85-e552-48ba-823a-c39dac215bb9",
+              "lesson_profile": {
+                "title": "K5-L06-Vamos al parque.pdf"
+              }
+            },
+            {
+              "lesson_id": "d18d337d-2f2b-46a0-8610-13376fc0930f",
+              "lesson_profile": {
+                "title": "K5-L07-Cuéntame lo sucedido.pdf"
+              }
+            },
+            {
+              "lesson_id": "116a9f6c-8ec5-4c6a-8c10-c2bc8b7621bd",
+              "lesson_profile": {
+                "title": "K5-L08-Qué hay en mi comunidad.pdf"
+              }
+            },
+            {
+              "lesson_id": "ca304019-87f3-494c-8e9d-8f276ba95b20",
+              "lesson_profile": {
+                "title": "K5-L09-Imitemos los sonidos.pdf"
+              }
+            },
+            {
+              "lesson_id": "c30ab733-3460-4604-be75-cb33c3e0b104",
+              "lesson_profile": {
+                "title": "K5-L10-Mi casa y lo que hay en ella.pdf"
+              }
+            },
+            {
+              "lesson_id": "ee7ee7fd-6948-4da1-bdbe-367de3ba7a04",
+              "lesson_profile": {
+                "title": "K5-L11-Había una vez.pdf"
+              }
+            },
+            {
+              "lesson_id": "7bd4d9ef-9708-4a90-baad-0a29d4e17ddb",
+              "lesson_profile": {
+                "title": "K5-L12-Juguemos a ser constructores.pdf"
+              }
+            },
+            {
+              "lesson_id": "efafda26-6dd6-4d2f-8d82-081b144f964c",
+              "lesson_profile": {
+                "title": "K5-L13-Cuido de las plantas.pdf"
+              }
+            },
+            {
+              "lesson_id": "b8214a91-29b3-4252-b599-159641d5866d",
+              "lesson_profile": {
+                "title": "K5-L14-Hace mucho frío.pdf"
+              }
+            },
+            {
+              "lesson_id": "f23a5254-ad41-497d-b89e-697a6cdb8625",
+              "lesson_profile": {
+                "title": "K5-L15-Este es mi hogar.pdf"
+              }
+            },
+            {
+              "lesson_id": "cbc6d41a-ee39-49c6-bcb4-5ca056ebf539",
+              "lesson_profile": {
+                "title": "K5-L16-Pido ayuda si estoy en problemas.pdf"
+              }
+            },
+            {
+              "lesson_id": "555007e1-af0c-456f-936f-af56afe57782",
+              "lesson_profile": {
+                "title": "K5-L17-La familia abeja.pdf"
+              }
+            },
+            {
+              "lesson_id": "d8b6e8d9-e2ef-40d2-8232-b0ee3a72c4c3",
+              "lesson_profile": {
+                "title": "K5-L18-Bajo el mar....pdf"
+              }
+            },
+            {
+              "lesson_id": "7d3ac985-36fa-4d2d-87e0-325ae79a8866",
+              "lesson_profile": {
+                "title": "K5-L19-Esto no me gusta.pdf"
+              }
+            },
+            {
+              "lesson_id": "85aa5c78-6324-4ece-86eb-39fe8c31bab3",
+              "lesson_profile": {
+                "title": "K5-L20-Este insecto no me gusta.pdf"
+              }
+            },
+            {
+              "lesson_id": "6eb42734-b505-4350-9401-e88b7ab4307e",
+              "lesson_profile": {
+                "title": "K5-L21-Conozcan mi mascota.pdf"
+              }
+            },
+            {
+              "lesson_id": "c7e09c66-2e88-49a0-9aad-9dab4e9b8c8f",
+              "lesson_profile": {
+                "title": "K5-L22-Se esconde y come queso.pdf"
+              }
+            }
+          ],
+          "robot_groups": [
+            {
+              "robot_id": "609c71cd-f409-499b-9af7-9f0f272e4d10",
+              "robot_profile": {
+                "name": "K5_L01_1"
+              }
+            },
+            {
+              "robot_id": "a18d5bc8-33ea-4da6-9178-3662c88d1f5d",
+              "robot_profile": {
+                "name": "K5_L01_2"
+              }
+            },
+            {
+              "robot_id": "e3372c1e-320b-4227-94fc-df558377cdb7",
+              "robot_profile": {
+                "name": "K5_L01_3"
+              }
+            },
+            {
+              "robot_id": "1d6653ad-fb6f-4579-9b37-115d7cb0445d",
+              "robot_profile": {
+                "name": "K5_L02"
+              }
+            },
+            {
+              "robot_id": "0d353265-e254-4ecc-9243-7988288ae3af",
+              "robot_profile": {
+                "name": "K5_L03"
+              }
+            },
+            {
+              "robot_id": "62dde958-e0c1-4741-8206-6d2e8c8105b2",
+              "robot_profile": {
+                "name": "K5_L04"
+              }
+            },
+            {
+              "robot_id": "9a10acb6-0acf-4430-9c72-a2766d34cc00",
+              "robot_profile": {
+                "name": "K5_L05"
+              }
+            },
+            {
+              "robot_id": "f27a995b-5d82-4d9d-bb51-68db4b71ccff",
+              "robot_profile": {
+                "name": "K5_L06"
+              }
+            },
+            {
+              "robot_id": "a99521bd-a03d-4308-85e3-6addf2ffd377",
+              "robot_profile": {
+                "name": "K5_L07"
+              }
+            },
+            {
+              "robot_id": "4471e1ae-56d3-4a56-93dd-9f940f1b366f",
+              "robot_profile": {
+                "name": "K5_L08"
+              }
+            },
+            {
+              "robot_id": "4cf3a9b3-05ad-4efa-98a1-61ad70ad7600",
+              "robot_profile": {
+                "name": "K5_L09"
+              }
+            },
+            {
+              "robot_id": "f35cb4ec-6ac8-418c-95c9-abbe0d25f445",
+              "robot_profile": {
+                "name": "K5_L10"
+              }
+            },
+            {
+              "robot_id": "7be0fb8e-d492-4d69-833c-ed386cfcd27e",
+              "robot_profile": {
+                "name": "K5_L11"
+              }
+            },
+            {
+              "robot_id": "3aa03146-2ccf-4c4c-be35-b7925807aa2f",
+              "robot_profile": {
+                "name": "K5_L12"
+              }
+            },
+            {
+              "robot_id": "a0d56e0c-5db2-418e-aa31-e0704f7897c9",
+              "robot_profile": {
+                "name": "K5_L13"
+              }
+            },
+            {
+              "robot_id": "78803913-adcc-4c65-a297-0b0979c066ed",
+              "robot_profile": {
+                "name": "K5_L14"
+              }
+            },
+            {
+              "robot_id": "d2a0dfb0-e012-4af7-b412-3e9f9f7971ea",
+              "robot_profile": {
+                "name": "K5_L15"
+              }
+            },
+            {
+              "robot_id": "cd50a9de-8717-4a4c-a4cc-5786c34591d9",
+              "robot_profile": {
+                "name": "K5_L16"
+              }
+            },
+            {
+              "robot_id": "389d0cc4-44dc-4cb2-bd4f-42192f80bab9",
+              "robot_profile": {
+                "name": "K5_L17"
+              }
+            },
+            {
+              "robot_id": "5eaa7c5a-f1e6-468f-98d3-f6996b19cf79",
+              "robot_profile": {
+                "name": "K5_L18"
+              }
+            },
+            {
+              "robot_id": "7cda7e9d-4e5e-4dfa-b5df-873ac72dec03",
+              "robot_profile": {
+                "name": "K5_L19"
+              }
+            },
+            {
+              "robot_id": "57b80f65-ed05-441c-a9f2-2af9f644f7ec",
+              "robot_profile": {
+                "name": "K5_L20"
+              }
+            },
+            {
+              "robot_id": "65e5591b-26e9-428f-ac25-7699483660e9",
+              "robot_profile": {
+                "name": "K5_L21"
+              }
+            },
+            {
+              "robot_id": "ca308483-051e-49c5-a351-bc69f64f4177",
+              "robot_profile": {
+                "name": "K5_L22"
+              }
+            }
+          ]
+        },
+        {
+          "class_profile": {
+            "name": "Preparatoria - Profesor"
+          },
+          "group_id": "cc3df6ee-31da-4a2f-8920-b525d609bed2",
+          "school_group": {
+            "school_id": "bdb06dbb-04de-40a4-9a27-60586111f6c0"
+          },
+          "post_groups": [
+            {
+              "post_id": "1033cb69-b3cd-4750-8d18-56f8f6b1fb60",
+              "post_profile": {
+                "topic": "Ayuda - Elementos mecánicos kínder"
+              }
+            }
+          ],
+          "lesson_groups": [
+            {
+              "lesson_id": "869169c8-da0d-497a-8366-c0c34dcbb663",
+              "lesson_profile": {
+                "title": "PP-L01-A qué se parece.pdf"
+              }
+            },
+            {
+              "lesson_id": "da107366-b1c8-441c-944c-c2430a72dee0",
+              "lesson_profile": {
+                "title": "PP-L02-Conozcamos sobre el cuerpo humano.pdf"
+              }
+            },
+            {
+              "lesson_id": "30f1916d-1a8f-486b-8f7f-14e9ec9c20e9",
+              "lesson_profile": {
+                "title": "PP-L03-Posicionemos objetos.pdf"
+              }
+            },
+            {
+              "lesson_id": "64423934-3ce6-4c04-ba84-965f21952a95",
+              "lesson_profile": {
+                "title": "PP-L04-Aprendamos a ocupar la cinta métrica.pdf"
+              }
+            },
+            {
+              "lesson_id": "c810c776-8c37-4b28-b3d4-b001493ef266",
+              "lesson_profile": {
+                "title": "PP-L05-Ganamos la carrera.pdf"
+              }
+            },
+            {
+              "lesson_id": "be2d346e-19ad-4455-8524-3563fa153855",
+              "lesson_profile": {
+                "title": "PP-L06-Cuenta sus lados y adivina qué es.pdf"
+              }
+            },
+            {
+              "lesson_id": "df634e6e-ab3e-4f88-8af9-b055b2f622c6",
+              "lesson_profile": {
+                "title": "PP-L07-Visitemos el centro comercial.pdf"
+              }
+            },
+            {
+              "lesson_id": "84a61120-f18b-4188-abba-c3fc9fb6f597",
+              "lesson_profile": {
+                "title": "PP-L08-Seamos constructores por un día.pdf"
+              }
+            },
+            {
+              "lesson_id": "4ed23fdd-0834-4140-89a8-98421295ae5f",
+              "lesson_profile": {
+                "title": "PP-L09-Préstame tu caña de pescar.pdf"
+              }
+            },
+            {
+              "lesson_id": "dd244812-b997-4a0d-81d6-c362fa566453",
+              "lesson_profile": {
+                "title": "PP-L10-Vamos a la feria.pdf"
+              }
+            },
+            {
+              "lesson_id": "c3611deb-ad55-4ef0-9dec-016d8ebbb8c0",
+              "lesson_profile": {
+                "title": "PP-L11-Incendio en el bosque!.pdf"
+              }
+            },
+            {
+              "lesson_id": "559d5402-265e-4058-8dde-f92c2f7f78f4",
+              "lesson_profile": {
+                "title": "PP-L12-Volemos como las aves.pdf"
+              }
+            },
+            {
+              "lesson_id": "effe40ad-8f94-44ee-ba13-55a7d94fd11f",
+              "lesson_profile": {
+                "title": "PP-L13-Exploradores del desierto.pdf"
+              }
+            },
+            {
+              "lesson_id": "7c55dbf5-2e52-4983-9bf7-a2be0ad3a7ae",
+              "lesson_profile": {
+                "title": "PP-L14-La semilla mágica.pdf"
+              }
+            },
+            {
+              "lesson_id": "256efedd-20ac-4930-be63-3d99110d6e0d",
+              "lesson_profile": {
+                "title": "PP-L15-Nacemos, crecemos, ¿y luego.pdf"
+              }
+            },
+            {
+              "lesson_id": "a9eeedee-16ff-41ce-af95-691b17cf30aa",
+              "lesson_profile": {
+                "title": "PP-L16-Aprendo la canción.pdf"
+              }
+            },
+            {
+              "lesson_id": "365f914e-7524-4bfb-ab94-06ac5b97dad1",
+              "lesson_profile": {
+                "title": "PP-L17-Cuidado ¡Fuego!.pdf"
+              }
+            },
+            {
+              "lesson_id": "834b187e-4792-4456-8084-5540546e8d2a",
+              "lesson_profile": {
+                "title": "PP-L18-Todos somos investigadores.pdf"
+              }
+            },
+            {
+              "lesson_id": "742dceb3-18bb-44fe-8c0e-c886fcd2d9e4",
+              "lesson_profile": {
+                "title": "PP-L19-Experimentos divertidos.pdf"
+              }
+            },
+            {
+              "lesson_id": "9af3abbc-e6b8-4a64-950a-0d7c3b6174bf",
+              "lesson_profile": {
+                "title": "PP-L20-Vamos a la mar.pdf"
+              }
+            },
+            {
+              "lesson_id": "dcdf5dab-7760-41f1-bba1-5f1e81fe5d03",
+              "lesson_profile": {
+                "title": "PP-L21-Tiremos la basura en su lugar.pdf"
+              }
+            },
+            {
+              "lesson_id": "6525e4cf-ad44-4026-921c-0ef2f6dba5b7",
+              "lesson_profile": {
+                "title": "PP-L22-Cuidado con el viento.pdf"
+              }
+            }
+          ],
+          "robot_groups": [
+            {
+              "robot_id": "7cce8a22-95ea-4d27-9ba2-ad9305c441ae",
+              "robot_profile": {
+                "name": "PP_L01_1"
+              }
+            },
+            {
+              "robot_id": "f3e06bf6-c393-48cc-8e51-05b1917c91ca",
+              "robot_profile": {
+                "name": "PP_L01_2"
+              }
+            },
+            {
+              "robot_id": "ee7984fe-17a7-404f-b7fd-c5e9c628b441",
+              "robot_profile": {
+                "name": "PP_L02"
+              }
+            },
+            {
+              "robot_id": "47f56276-c929-436b-ad66-01a9e0f26b69",
+              "robot_profile": {
+                "name": "PP_L03"
+              }
+            },
+            {
+              "robot_id": "9f88caf6-17fb-4351-8e2c-bc3190c33373",
+              "robot_profile": {
+                "name": "PP_L04"
+              }
+            },
+            {
+              "robot_id": "868d8d0c-bdf5-4e7c-ac84-61429fe7d7b7",
+              "robot_profile": {
+                "name": "PP_L05"
+              }
+            },
+            {
+              "robot_id": "6c0b8d02-d2f2-41b3-ae13-b95498854047",
+              "robot_profile": {
+                "name": "PP_L06"
+              }
+            },
+            {
+              "robot_id": "e910767d-6233-49f8-a637-6bca6f8ea925",
+              "robot_profile": {
+                "name": "PP_L07"
+              }
+            },
+            {
+              "robot_id": "cff1ee24-d928-4692-8737-caff4ee35305",
+              "robot_profile": {
+                "name": "PP_L08"
+              }
+            },
+            {
+              "robot_id": "980c345d-8418-4b94-8855-0769e84b6e1c",
+              "robot_profile": {
+                "name": "PP_L09"
+              }
+            },
+            {
+              "robot_id": "155adf2d-5e1f-45ce-bf99-f14123f116e9",
+              "robot_profile": {
+                "name": "PP_L10"
+              }
+            },
+            {
+              "robot_id": "c87c9708-16ba-4380-a6f3-a60136bdbbe6",
+              "robot_profile": {
+                "name": "PP_L11"
+              }
+            },
+            {
+              "robot_id": "23f178ec-b25e-4320-ac0b-27a85386a711",
+              "robot_profile": {
+                "name": "PP_L12"
+              }
+            },
+            {
+              "robot_id": "04ad6f01-1b80-41a4-9f93-3f8528659c3f",
+              "robot_profile": {
+                "name": "PP_L13"
+              }
+            },
+            {
+              "robot_id": "f93e5535-20f6-4b58-9a67-7217dd8e5ed7",
+              "robot_profile": {
+                "name": "PP_L14"
+              }
+            },
+            {
+              "robot_id": "a9b4b964-76f3-4edf-a2bb-3d04b8c677c0",
+              "robot_profile": {
+                "name": "PP_L15"
+              }
+            },
+            {
+              "robot_id": "9a99e09c-8b16-4d14-a127-3686b590440e",
+              "robot_profile": {
+                "name": "PP_L16_1"
+              }
+            },
+            {
+              "robot_id": "ac2e3310-83e0-4177-8897-bed13aaa9acb",
+              "robot_profile": {
+                "name": "PP_L16_2"
+              }
+            },
+            {
+              "robot_id": "03c84a44-41c5-44cc-aaa9-03ebf25eb109",
+              "robot_profile": {
+                "name": "PP_L17"
+              }
+            },
+            {
+              "robot_id": "38260872-15c9-4583-8554-8b64cbafc043",
+              "robot_profile": {
+                "name": "PP_L18"
+              }
+            },
+            {
+              "robot_id": "8d42d64d-e336-404b-8c32-0ddcd16567aa",
+              "robot_profile": {
+                "name": "PP_L19"
+              }
+            },
+            {
+              "robot_id": "d73a9906-0069-41e4-afb5-5a82a1dddff9",
+              "robot_profile": {
+                "name": "PP_L20"
+              }
+            },
+            {
+              "robot_id": "e3637f3b-53a4-4748-be9a-fe8229735216",
+              "robot_profile": {
+                "name": "PP_L21"
+              }
+            },
+            {
+              "robot_id": "397923d0-c252-4ab2-8d12-8fc4315391b9",
+              "robot_profile": {
+                "name": "PP_L22"
+              }
+            }
+          ]
+        },
+        {
+          "class_profile": {
+            "name": "Primaria 1 - Profesor"
+          },
+          "group_id": "6269c928-12a9-445f-951d-69424e670fb9",
+          "school_group": {
+            "school_id": "bdb06dbb-04de-40a4-9a27-60586111f6c0"
+          },
+          "post_groups": [
+            {
+              "post_id": "a9f08cdf-b6d8-4ea6-8bce-a80fc04919bb",
+              "post_profile": {
+                "topic": "Ayuda - Ejemplos de construcción de Robots - Pirámide"
+              }
+            },
+            {
+              "post_id": "4595449b-ab90-4d27-ac06-bc136b99893b",
+              "post_profile": {
+                "topic": "Ayuda - Función de ruedas y llantas"
+              }
+            },
+            {
+              "post_id": "59bd833b-e1df-417e-bdae-9a2b4b00b4f3",
+              "post_profile": {
+                "topic": "Ayuda - Controles del menú de Roboxmaker"
+              }
+            },
+            {
+              "post_id": "2e3a391e-c3bd-4327-91a9-fb91ca4cc76f",
+              "post_profile": {
+                "topic": "Ayuda - Función de conector clip gris / conector clip 180°"
+              }
+            },
+            {
+              "post_id": "c543582a-6b8e-475d-8cb1-f3700294ad30",
+              "post_profile": {
+                "topic": "Ayuda - Función de conector clip azul / conector clip 360°"
+              }
+            },
+            {
+              "post_id": "8d94e8ac-f4e1-4d3d-855c-a62e22310324",
+              "post_profile": {
+                "topic": "Ayuda - Función de conector naranja / conector de 0° y 180°"
+              }
+            },
+            {
+              "post_id": "5e65ee49-1400-4cc2-9b33-a1798d0368dd",
+              "post_profile": {
+                "topic": "Ayuda - Función de conector gris / conector 45°"
+              }
+            },
+            {
+              "post_id": "6b5c7b95-e66c-4fbf-b80f-e127ec9f4901",
+              "post_profile": {
+                "topic": "Ayuda - Función de conector rojo / conector 90°"
+              }
+            },
+            {
+              "post_id": "1da74073-693e-428d-8bde-4e5396431930",
+              "post_profile": {
+                "topic": "Ayuda - Función de conector verde / conector 135°"
+              }
+            },
+            {
+              "post_id": "87b02722-eb13-421f-8260-d9f76e6c8a69",
+              "post_profile": {
+                "topic": "Ayuda - Función de conector amarillo / conector 180°"
+              }
+            },
+            {
+              "post_id": "c88d4caa-3c5c-450c-9621-87b8dc379efb",
+              "post_profile": {
+                "topic": "Ayuda - Función de conector blanco / conector 360°"
+              }
+            },
+            {
+              "post_id": "728098f7-5941-486c-851c-bbe049901eae",
+              "post_profile": {
+                "topic": "Ayuda - Conectores y ejes"
+              }
+            },
+            {
+              "post_id": "dc16b0b8-5f58-4fea-a2ea-5dfef295ff39",
+              "post_profile": {
+                "topic": "Ayuda - Elementos mecánicos"
+              }
+            }
+          ],
+          "lesson_groups": [
+            {
+              "lesson_id": "660db88f-91b7-422b-8ad2-8b79e93975ba",
+              "lesson_profile": {
+                "title": "P1-L01-¡Conozcamos nuestras piezas!.pdf"
+              }
+            },
+            {
+              "lesson_id": "e616057f-0ed7-44af-bc18-47a9139c29db",
+              "lesson_profile": {
+                "title": "P1-L02-Aprendamos a orientar y posicionar objetos.pdf"
+              }
+            },
+            {
+              "lesson_id": "4a704e40-fc7a-4da9-ba41-1d4e6ad3ac84",
+              "lesson_profile": {
+                "title": "P1-L03-Construyamos castillos.pdf"
+              }
+            },
+            {
+              "lesson_id": "74b72416-511b-4593-91fe-fe500c6f64c8",
+              "lesson_profile": {
+                "title": "P1-L04-Conozcamos las máquinas simples.pdf"
+              }
+            },
+            {
+              "lesson_id": "2f673fcd-bb95-400a-8df0-9f84e5377f23",
+              "lesson_profile": {
+                "title": "P1-L05-Conozcamos sobre el plano inclinado.pdf"
+              }
+            },
+            {
+              "lesson_id": "2d8a71ef-3fe5-43fc-9060-c4e0b05f8ac3",
+              "lesson_profile": {
+                "title": "P1-L06-Clasifiquemos y tracemos líneas.pdf"
+              }
+            },
+            {
+              "lesson_id": "81f6c4e7-d432-4d02-8256-1561ba5dd810",
+              "lesson_profile": {
+                "title": "P1-L07-Armemos pistas de carrera.pdf"
+              }
+            },
+            {
+              "lesson_id": "8dc0282a-8965-46a1-9b88-91cacf68da48",
+              "lesson_profile": {
+                "title": "P1-L08-Aprendamos sobre símbolos patrios.pdf"
+              }
+            },
+            {
+              "lesson_id": "0150ffb0-48e9-4f66-9c00-27788476ba99",
+              "lesson_profile": {
+                "title": "P1-L09-Conozcamos sobre poleas.pdf"
+              }
+            },
+            {
+              "lesson_id": "c5c0dead-e548-406c-8a0a-15edad8df716",
+              "lesson_profile": {
+                "title": "P1-L10-Juguemos a ser pescadores.pdf"
+              }
+            },
+            {
+              "lesson_id": "67e8586a-8a51-4649-ab10-fcccc2c8cec7",
+              "lesson_profile": {
+                "title": "P1-L11-Así funcionan las ruedas.pdf"
+              }
+            },
+            {
+              "lesson_id": "fde8dc8f-c98c-4b6f-b67b-bd45adb03741",
+              "lesson_profile": {
+                "title": "P1-L12-Manejemos helicópteros.pdf"
+              }
+            },
+            {
+              "lesson_id": "0074cd94-ccd3-4ce3-97eb-62b7b1095b55",
+              "lesson_profile": {
+                "title": "P1-L13-Adivina, adivinador.pdf"
+              }
+            },
+            {
+              "lesson_id": "6931ce79-b566-42f9-abad-2f7339193656",
+              "lesson_profile": {
+                "title": "P1-L14-Busquemos semejanzas y diferencias animales.pdf"
+              }
+            },
+            {
+              "lesson_id": "7a04e34a-f66d-4e02-93a1-2a1c2a79a551",
+              "lesson_profile": {
+                "title": "P1-L15-Ideemos y clasifiquemos estructuras.pdf"
+              }
+            },
+            {
+              "lesson_id": "b8678d3b-4b54-4265-a0fb-d14959697580",
+              "lesson_profile": {
+                "title": "P1-L16-Cómo funcionan los molinos de viento.pdf"
+              }
+            },
+            {
+              "lesson_id": "ed6f208e-d1b9-4de4-8fec-4b226f9c8548",
+              "lesson_profile": {
+                "title": "P1-L17-Encajemos los engranajes.pdf"
+              }
+            },
+            {
+              "lesson_id": "26ff6991-3f7b-44d6-ae78-489f4dcdd178",
+              "lesson_profile": {
+                "title": "P1-L18-Giremos la manivela.pdf"
+              }
+            },
+            {
+              "lesson_id": "f9b4a321-4389-48dc-be6a-b98cb381fdda",
+              "lesson_profile": {
+                "title": "P1-L19-Describamos nuestro hogar.pdf"
+              }
+            },
+            {
+              "lesson_id": "7408e4af-15db-4b67-9c5e-1f47fef8bb16",
+              "lesson_profile": {
+                "title": "P1-L20-Compitamos en una carrera de carros.pdf"
+              }
+            },
+            {
+              "lesson_id": "53a21341-7874-4775-8a41-145b9ed4fab8",
+              "lesson_profile": {
+                "title": "P1-L21-El trencito, chucu, chucu, chu….pdf"
+              }
+            },
+            {
+              "lesson_id": "956bbb59-7100-484e-9a22-7a3f9b9ee695",
+              "lesson_profile": {
+                "title": "P1-L22-Cuánta fuerza tiene el agua.pdf"
+              }
+            }
+          ],
+          "robot_groups": [
+            {
+              "robot_id": "9d19d2de-2a7a-4b6e-8fe8-03fc4ab7194a",
+              "robot_profile": {
+                "name": "P1_L01_1"
+              }
+            },
+            {
+              "robot_id": "4829889d-a336-4f06-a4f9-193e8615f770",
+              "robot_profile": {
+                "name": "P1_L01_2"
+              }
+            },
+            {
+              "robot_id": "23540a80-b423-4bc5-9c85-2b7c07d0d4a9",
+              "robot_profile": {
+                "name": "P1_L01_3"
+              }
+            },
+            {
+              "robot_id": "0d067e34-12dd-48fc-beaa-21a89a57eda7",
+              "robot_profile": {
+                "name": "P1_L02_1"
+              }
+            },
+            {
+              "robot_id": "18a449ef-9aa4-4802-9b4e-1122ec606733",
+              "robot_profile": {
+                "name": "P1_L02_2"
+              }
+            },
+            {
+              "robot_id": "1caf787e-1609-48af-8a6c-fa8230deb5d7",
+              "robot_profile": {
+                "name": "P1_L03"
+              }
+            },
+            {
+              "robot_id": "9949878d-8db1-470b-912f-0284312dd7e7",
+              "robot_profile": {
+                "name": "P1_L04"
+              }
+            },
+            {
+              "robot_id": "a0d66726-1f64-4f6d-96b5-c01494351028",
+              "robot_profile": {
+                "name": "P1_L05"
+              }
+            },
+            {
+              "robot_id": "9604718f-1544-40d3-babb-e18b268b7427",
+              "robot_profile": {
+                "name": "P1_L06"
+              }
+            },
+            {
+              "robot_id": "3a7e6686-f1a0-48d1-b874-c180e8f945c4",
+              "robot_profile": {
+                "name": "P1_L07"
+              }
+            },
+            {
+              "robot_id": "321d541b-3665-46f0-94fb-3125674ed7b1",
+              "robot_profile": {
+                "name": "P1_L08"
+              }
+            },
+            {
+              "robot_id": "4ca80a3f-0c6e-492f-92ca-efc5f6bb86af",
+              "robot_profile": {
+                "name": "P1_L09"
+              }
+            },
+            {
+              "robot_id": "d7469224-ba1d-4719-a9a7-64176bece1fd",
+              "robot_profile": {
+                "name": "P1_L10"
+              }
+            },
+            {
+              "robot_id": "31be9911-1caa-45ba-a1ce-c90173c1ec44",
+              "robot_profile": {
+                "name": "P1_L11"
+              }
+            },
+            {
+              "robot_id": "cf58bb24-fef1-4fb7-b735-d9d02613e09d",
+              "robot_profile": {
+                "name": "P1_L12"
+              }
+            },
+            {
+              "robot_id": "60976579-c19c-443a-b9a5-51eb2b548543",
+              "robot_profile": {
+                "name": "P1_L13"
+              }
+            },
+            {
+              "robot_id": "baf82f4d-a27f-44b4-98ff-df77a6533ff7",
+              "robot_profile": {
+                "name": "P1_L14_1"
+              }
+            },
+            {
+              "robot_id": "2f707d83-0399-46da-8436-5bd67eb57572",
+              "robot_profile": {
+                "name": "P1_L14_2"
+              }
+            },
+            {
+              "robot_id": "d7735a12-4141-4ab3-ab75-7c4dac74ed65",
+              "robot_profile": {
+                "name": "P1_L15"
+              }
+            },
+            {
+              "robot_id": "719a8f98-668b-4b19-86d9-43857d28ff82",
+              "robot_profile": {
+                "name": "P1_L16"
+              }
+            },
+            {
+              "robot_id": "c6455f55-ae33-474e-8398-5b1c0a52a50f",
+              "robot_profile": {
+                "name": "P1_L17"
+              }
+            },
+            {
+              "robot_id": "6b273a27-97d3-41af-88ff-6b4d86c76349",
+              "robot_profile": {
+                "name": "P1_L18"
+              }
+            },
+            {
+              "robot_id": "2f164c37-159d-4b29-8356-52eb348019b0",
+              "robot_profile": {
+                "name": "P1_L19"
+              }
+            },
+            {
+              "robot_id": "003d65f9-ff3f-47ea-bc54-fff553a84454",
+              "robot_profile": {
+                "name": "P1_L20"
+              }
+            },
+            {
+              "robot_id": "e1cfb397-aa05-41fb-bc9b-2c9416499c07",
+              "robot_profile": {
+                "name": "P1_L21"
+              }
+            },
+            {
+              "robot_id": "55e3f756-410c-49d8-acb4-42466b83eebd",
+              "robot_profile": {
+                "name": "P1_L22"
+              }
+            },
+            {
+              "robot_id": "a514cd55-1cb4-4cdd-8b3f-c9e0d2b9514d",
+              "robot_profile": {
+                "name": "P1_L23"
+              }
+            },
+            {
+              "robot_id": "37841fe3-900a-4e9a-bfe6-b78d17c29abb",
+              "robot_profile": {
+                "name": "P1_L24"
+              }
+            },
+            {
+              "robot_id": "2e01052b-ba84-46bd-a259-254336d2fc66",
+              "robot_profile": {
+                "name": "P1_L25"
+              }
+            }
+          ]
+        },
+        {
+          "class_profile": {
+            "name": "Primaria 2 - Profesor"
+          },
+          "group_id": "2a09064d-bdc3-4157-942c-3e72d1be4b14",
+          "school_group": {
+            "school_id": "bdb06dbb-04de-40a4-9a27-60586111f6c0"
+          },
+          "post_groups": [
+            {
+              "post_id": "a9f08cdf-b6d8-4ea6-8bce-a80fc04919bb",
+              "post_profile": {
+                "topic": "Ayuda - Ejemplos de construcción de Robots - Pirámide"
+              }
+            }
+          ],
+          "lesson_groups": [
+            {
+              "lesson_id": "479dc116-91c9-49c2-843a-fe733f0f5893",
+              "lesson_profile": {
+                "title": "P2-L01-Con qué piezas puedo jugar.pdf"
+              }
+            },
+            {
+              "lesson_id": "368b8bb9-e8d8-42a1-9162-f47cd4af3884",
+              "lesson_profile": {
+                "title": "P2-L02-¡Movámonos!.pdf"
+              }
+            },
+            {
+              "lesson_id": "6b8526a6-5b7c-4c9f-bd11-2e6de3df0343",
+              "lesson_profile": {
+                "title": "P2-L03-Qué es una mantis.pdf"
+              }
+            },
+            {
+              "lesson_id": "0846d21c-ca28-4880-b8f3-6c4eb32f5e81",
+              "lesson_profile": {
+                "title": "P2-L04-Qué son las palancas.pdf"
+              }
+            },
+            {
+              "lesson_id": "01a9f1e2-2180-4258-9aec-f1afa76d9dd5",
+              "lesson_profile": {
+                "title": "P2-L05-Juguemos con el tobogán.pdf"
+              }
+            },
+            {
+              "lesson_id": "e33e3360-cf73-486f-8c98-a8147eab2d51",
+              "lesson_profile": {
+                "title": "P2-L06-Aprendamos sobre gravedad.pdf"
+              }
+            },
+            {
+              "lesson_id": "fb4696ab-764c-496e-912e-7af641314104",
+              "lesson_profile": {
+                "title": "P2-L07-Pongámosle reglas al juego.pdf"
+              }
+            },
+            {
+              "lesson_id": "7bcfa181-c41b-490f-ae38-52913cb3a199",
+              "lesson_profile": {
+                "title": "P2-L08-Construyamos poleas.pdf"
+              }
+            },
+            {
+              "lesson_id": "db11e294-a797-47d9-928a-05f0edd8f26b",
+              "lesson_profile": {
+                "title": "P2-L09-Qué son los contrapesos.pdf"
+              }
+            },
+            {
+              "lesson_id": "439379a9-531f-4cbd-9d0c-76623a2ab11f",
+              "lesson_profile": {
+                "title": "P2-L10-Así funcionan las grúas.pdf"
+              }
+            },
+            {
+              "lesson_id": "30fb2e42-8919-4e8c-b072-381300fe87b8",
+              "lesson_profile": {
+                "title": "P2-L11-Avioncito, vuela.pdf"
+              }
+            },
+            {
+              "lesson_id": "38607d14-bb9b-46e0-a375-d9a601d29bad",
+              "lesson_profile": {
+                "title": "P2-L12-Armemos un montacargas.pdf"
+              }
+            },
+            {
+              "lesson_id": "4c802698-b035-4cd2-83fe-6528a1cd9afc",
+              "lesson_profile": {
+                "title": "P2-L13-Imaginemos el final del cuento.pdf"
+              }
+            },
+            {
+              "lesson_id": "f1aaafdf-69b9-405b-90d1-b4bcf022caa8",
+              "lesson_profile": {
+                "title": "P2-L14-Construyo medios de transporte terrestre.pdf"
+              }
+            },
+            {
+              "lesson_id": "b51f2bb8-4481-4dd0-95d4-57a8a7ad4016",
+              "lesson_profile": {
+                "title": "P2-L15-Castillos y fortalezas.pdf"
+              }
+            },
+            {
+              "lesson_id": "45c12d70-1e00-4728-9188-3914e14f61f3",
+              "lesson_profile": {
+                "title": "P2-L16-Y la moraleja de esta historia es....pdf"
+              }
+            },
+            {
+              "lesson_id": "db4eb1d9-83c8-453f-941d-c214a913c43c",
+              "lesson_profile": {
+                "title": "P2-L17-Qué son los engranajes.pdf"
+              }
+            },
+            {
+              "lesson_id": "d279e7cf-9de5-40c6-9895-82879d5dfc9f",
+              "lesson_profile": {
+                "title": "P2-L18-Calculemos el ángulo.pdf"
+              }
+            },
+            {
+              "lesson_id": "5420632c-feaf-4cac-978f-ef04c72a6bb8",
+              "lesson_profile": {
+                "title": "P2-L19-Conozcamos sobre industria y producción.pdf"
+              }
+            },
+            {
+              "lesson_id": "a438a563-1828-4874-8647-28b8e5f2ec8d",
+              "lesson_profile": {
+                "title": "P2-L20-Vamos a la mar....pdf"
+              }
+            },
+            {
+              "lesson_id": "a77f6dca-d647-4d15-a340-53ea9fe85796",
+              "lesson_profile": {
+                "title": "P2-L21-¿Se descargaron tus baterías.pdf"
+              }
+            },
+            {
+              "lesson_id": "c21c803a-646f-45cb-8751-e14012f64644",
+              "lesson_profile": {
+                "title": "P2-L22-Hagamos una competencia.pdf"
+              }
+            }
+          ],
+          "robot_groups": [
+            {
+              "robot_id": "758b8cdb-1381-4f5b-9e79-3318aba82ed0",
+              "robot_profile": {
+                "name": "P2_L01_1"
+              }
+            },
+            {
+              "robot_id": "dea9555e-8c93-4f02-86e0-1fc0b6df5b32",
+              "robot_profile": {
+                "name": "P2_L01_2"
+              }
+            },
+            {
+              "robot_id": "52763b22-ed46-427b-ae33-fef2e1f55876",
+              "robot_profile": {
+                "name": "P2_L01_3"
+              }
+            },
+            {
+              "robot_id": "6b5ceda3-ead7-4660-bc9f-e4e75b557c86",
+              "robot_profile": {
+                "name": "P2_L02"
+              }
+            },
+            {
+              "robot_id": "526d29dd-6a0d-47b3-9fd5-306fd45c45e1",
+              "robot_profile": {
+                "name": "P2_L03"
+              }
+            },
+            {
+              "robot_id": "34d65819-1fca-4ed0-9c32-23e29a818da2",
+              "robot_profile": {
+                "name": "P2_L04"
+              }
+            },
+            {
+              "robot_id": "4bcc79ee-3220-413f-b97e-e35c4967738c",
+              "robot_profile": {
+                "name": "P2_L05"
+              }
+            },
+            {
+              "robot_id": "21b3ecf0-b5b3-4feb-b56b-6e1199186956",
+              "robot_profile": {
+                "name": "P2_L06"
+              }
+            },
+            {
+              "robot_id": "98f250e0-762c-429c-83c6-36e5ff8327f4",
+              "robot_profile": {
+                "name": "P2_L07"
+              }
+            },
+            {
+              "robot_id": "76ca4dfb-18f1-49d1-8547-af2aafe423f3",
+              "robot_profile": {
+                "name": "P2_L08"
+              }
+            },
+            {
+              "robot_id": "69e77550-c2a4-4908-8276-7fdd58e793d8",
+              "robot_profile": {
+                "name": "P2_L09"
+              }
+            },
+            {
+              "robot_id": "3de81e31-7049-47f9-aae4-490f397b6338",
+              "robot_profile": {
+                "name": "P2_L10"
+              }
+            },
+            {
+              "robot_id": "0f6cb78f-57de-4919-987d-22cc02e54627",
+              "robot_profile": {
+                "name": "P2_L11"
+              }
+            },
+            {
+              "robot_id": "b2ad77bb-9be3-42ef-af20-d4eff1a57ce0",
+              "robot_profile": {
+                "name": "P2_L12"
+              }
+            },
+            {
+              "robot_id": "3ee812d3-ace4-4970-9150-c97f62e68dde",
+              "robot_profile": {
+                "name": "P2_L13"
+              }
+            },
+            {
+              "robot_id": "a3b77537-de76-44ce-b5c8-8f8386bd116f",
+              "robot_profile": {
+                "name": "P2_L14"
+              }
+            },
+            {
+              "robot_id": "3f2bc1d3-9f18-4df9-8c78-af9c55bbbb3b",
+              "robot_profile": {
+                "name": "P2_L15_1"
+              }
+            },
+            {
+              "robot_id": "3024009c-4bde-46c9-89d2-dbb662b81c27",
+              "robot_profile": {
+                "name": "P2_L15_2"
+              }
+            },
+            {
+              "robot_id": "86e79ce4-8082-465a-8cbb-9f1e6bc052d2",
+              "robot_profile": {
+                "name": "P2_L16"
+              }
+            },
+            {
+              "robot_id": "9bbbbc8d-1d03-4673-bdc0-80f27e5e6cff",
+              "robot_profile": {
+                "name": "P2_L17"
+              }
+            },
+            {
+              "robot_id": "a0654035-32a5-43d7-8bee-ad2ef0e020b6",
+              "robot_profile": {
+                "name": "P2_L18"
+              }
+            },
+            {
+              "robot_id": "52b7a314-ac16-488c-a52a-99d0504a8c73",
+              "robot_profile": {
+                "name": "P2_L19"
+              }
+            },
+            {
+              "robot_id": "9c452c89-aec5-43f3-8616-38003c0a4b6e",
+              "robot_profile": {
+                "name": "P2_L20"
+              }
+            },
+            {
+              "robot_id": "b73a5dfa-4622-4815-8902-ceb71fe07ded",
+              "robot_profile": {
+                "name": "P2_L21"
+              }
+            },
+            {
+              "robot_id": "e1a68672-3607-425f-9d33-59cc14e39c82",
+              "robot_profile": {
+                "name": "P2_L22"
+              }
+            },
+            {
+              "robot_id": "76b04178-435a-4fa5-8149-d2b89f503a3d",
+              "robot_profile": {
+                "name": "P2_L23"
+              }
+            },
+            {
+              "robot_id": "bb730504-6b51-4df7-aabd-012b80f2b3d9",
+              "robot_profile": {
+                "name": "P2_L24"
+              }
+            },
+            {
+              "robot_id": "dcd3e273-b633-4155-b637-7acbc52743d3",
+              "robot_profile": {
+                "name": "P2_L25"
+              }
+            }
+          ]
+        },
+        {
+          "class_profile": {
+            "name": "Primaria 3 - Profesor"
+          },
+          "group_id": "8767c529-ca98-4b9f-b35d-3c438e4f9d47",
+          "school_group": {
+            "school_id": "bdb06dbb-04de-40a4-9a27-60586111f6c0"
+          },
+          "post_groups": [
+            {
+              "post_id": "a9f08cdf-b6d8-4ea6-8bce-a80fc04919bb",
+              "post_profile": {
+                "topic": "Ayuda - Ejemplos de construcción de Robots - Pirámide"
+              }
+            }
+          ],
+          "lesson_groups": [
+            {
+              "lesson_id": "d0ddf4b6-0bdd-45cb-af90-322cd4b8804e",
+              "lesson_profile": {
+                "title": "P3-L01-¡Conozcamos nuestro kit!.pdf"
+              }
+            },
+            {
+              "lesson_id": "ccb8f3ef-9878-4c17-b580-a3efd47197b7",
+              "lesson_profile": {
+                "title": "P3-L02-¡Busquemos ángulos!.pdf"
+              }
+            },
+            {
+              "lesson_id": "6f96bedb-92ed-4e40-8fb3-9a086306ba97",
+              "lesson_profile": {
+                "title": "P3-L03-Aprendamos a ocupar la balanza.pdf"
+              }
+            },
+            {
+              "lesson_id": "e2d0e7f6-bbec-4789-b554-be4532949387",
+              "lesson_profile": {
+                "title": "P3-L04-Construyamos palancas.pdf"
+              }
+            },
+            {
+              "lesson_id": "5c87a349-7c6f-428e-84ab-6679110edda0",
+              "lesson_profile": {
+                "title": "P3-L05-Describo mi vivienda familiar.pdf"
+              }
+            },
+            {
+              "lesson_id": "0e5bbc7b-c268-4c18-b2e9-335039d4d7f8",
+              "lesson_profile": {
+                "title": "P3-L06-Armemos un plano inclinado.pdf"
+              }
+            },
+            {
+              "lesson_id": "1089e3c2-803f-49ef-ab4f-115a3f5b4990",
+              "lesson_profile": {
+                "title": "P3-L07-Dejemos que nos enseñe Newton.pdf"
+              }
+            },
+            {
+              "lesson_id": "c6921137-fb72-42e3-aff7-6dd09c87fcb0",
+              "lesson_profile": {
+                "title": "P3-L08-Aprendo a armar poleas.pdf"
+              }
+            },
+            {
+              "lesson_id": "d1e179b2-c438-40fc-b936-b698429afbeb",
+              "lesson_profile": {
+                "title": "P3-L09-Aprendamos a ser constructores.pdf"
+              }
+            },
+            {
+              "lesson_id": "c40a3412-6f1b-4ca2-ad19-3132d2b2b3f0",
+              "lesson_profile": {
+                "title": "P3-L10-Conozco leyendas de mi país.pdf"
+              }
+            },
+            {
+              "lesson_id": "190ed057-8fad-4a35-94a0-cde2f0557384",
+              "lesson_profile": {
+                "title": "P3-L11-Vamos a la feria.pdf"
+              }
+            },
+            {
+              "lesson_id": "16144f9f-f30a-4349-862f-9e6712391dca",
+              "lesson_profile": {
+                "title": "P3-L12-Colaboro en el aseo y el arreglo de mi hogar - copia.pdf"
+              }
+            },
+            {
+              "lesson_id": "295969af-bd42-4c85-99c1-886dd17fd6fc",
+              "lesson_profile": {
+                "title": "P3-L13-Mecánico por un día.pdf"
+              }
+            },
+            {
+              "lesson_id": "dddcad22-7234-49ee-8b68-7fd5261d3a95",
+              "lesson_profile": {
+                "title": "P3-L14-Todos los vehículos son importantes.pdf"
+              }
+            },
+            {
+              "lesson_id": "a1b72243-f6a9-484d-baa2-c566f422d677",
+              "lesson_profile": {
+                "title": "P3-L15-Cuánta energía produce el viento.pdf"
+              }
+            },
+            {
+              "lesson_id": "f6f4ad58-5ce0-4757-8823-bb16b3960421",
+              "lesson_profile": {
+                "title": "P3-L16-Cuántas estructuras puedo armar.pdf"
+              }
+            },
+            {
+              "lesson_id": "b0b16bec-7361-427f-bc8c-a299bf2b53c8",
+              "lesson_profile": {
+                "title": "P3-L17-Juguemos con engranajes.pdf"
+              }
+            },
+            {
+              "lesson_id": "ebea8941-7ce1-4c18-8ee8-887ab787eb93",
+              "lesson_profile": {
+                "title": "P3-L18-Saquemos nuestra bicicleta.pdf"
+              }
+            },
+            {
+              "lesson_id": "07fc7f38-56cd-4021-bd8e-cc31af69083e",
+              "lesson_profile": {
+                "title": "P3-L19-Vamos de compras a la ferretería.pdf"
+              }
+            },
+            {
+              "lesson_id": "189b997a-0777-4e8f-b19e-085b00f1961a",
+              "lesson_profile": {
+                "title": "P3-L20-Robótica por todos lados.pdf"
+              }
+            },
+            {
+              "lesson_id": "1bb9315e-9977-4bb6-8700-94bf5b6248ac",
+              "lesson_profile": {
+                "title": "P3-L21-¿Y si le ponemos un motor.pdf"
+              }
+            },
+            {
+              "lesson_id": "9bd1b16f-4666-470f-aae0-2643305678e7",
+              "lesson_profile": {
+                "title": "P3-L22-De dónde viene la energía eléctrica.pdf"
+              }
+            }
+          ],
+          "robot_groups": [
+            {
+              "robot_id": "53834f2c-58d1-4da6-9332-682cf49dc45e",
+              "robot_profile": {
+                "name": "P3_L01_1"
+              }
+            },
+            {
+              "robot_id": "b6237bd9-61a2-4fc2-9b14-2e56167723a7",
+              "robot_profile": {
+                "name": "P3_L01_2"
+              }
+            },
+            {
+              "robot_id": "c6bd22cd-7bf4-45c4-81a7-0778d0bbb661",
+              "robot_profile": {
+                "name": "P3_L01_3"
+              }
+            },
+            {
+              "robot_id": "094c4e5a-fd73-4f98-8802-ccb854ec6dc3",
+              "robot_profile": {
+                "name": "P3_L02_1"
+              }
+            },
+            {
+              "robot_id": "c1e9225b-db71-44e7-a1d8-1f0a95241582",
+              "robot_profile": {
+                "name": "P3_L02_2"
+              }
+            },
+            {
+              "robot_id": "31fcf11e-2590-4d72-8a68-c000055207ed",
+              "robot_profile": {
+                "name": "P3_L02_3"
+              }
+            },
+            {
+              "robot_id": "e73de0f2-d4b0-4510-baa0-8b2ef4ec19bc",
+              "robot_profile": {
+                "name": "P3_L03"
+              }
+            },
+            {
+              "robot_id": "11ff2bb2-eda5-4fe4-abdb-d3f5976fc854",
+              "robot_profile": {
+                "name": "P3_L04"
+              }
+            },
+            {
+              "robot_id": "7ad6d141-26be-4cc9-8fd8-48ab14c2e6de",
+              "robot_profile": {
+                "name": "P3_L05"
+              }
+            },
+            {
+              "robot_id": "4202032c-5e98-4851-b173-8aa4dcfc20fc",
+              "robot_profile": {
+                "name": "P3_L06"
+              }
+            },
+            {
+              "robot_id": "ced1c39b-b49e-49b0-a012-8a78daff008c",
+              "robot_profile": {
+                "name": "P3_L07"
+              }
+            },
+            {
+              "robot_id": "7037eed9-4dd4-4c3c-9b30-2c7b4d673503",
+              "robot_profile": {
+                "name": "P3_L08"
+              }
+            },
+            {
+              "robot_id": "902af02a-a17b-4e9b-8db6-7a913f6471b6",
+              "robot_profile": {
+                "name": "P3_L09"
+              }
+            },
+            {
+              "robot_id": "8787938f-69ac-43e8-b9dd-272631fd6ea2",
+              "robot_profile": {
+                "name": "P3_L10"
+              }
+            },
+            {
+              "robot_id": "45da7c95-7e58-401d-a6c0-7fe419eced74",
+              "robot_profile": {
+                "name": "P3_L11"
+              }
+            },
+            {
+              "robot_id": "22db2718-a117-4724-bda6-b78ea841cc7b",
+              "robot_profile": {
+                "name": "P3_L12"
+              }
+            },
+            {
+              "robot_id": "5c54b6d0-a08c-467d-989a-cc0e199be60c",
+              "robot_profile": {
+                "name": "P3_L13"
+              }
+            },
+            {
+              "robot_id": "f2da8d6f-6a3d-4725-ba73-39e5f1b0e210",
+              "robot_profile": {
+                "name": "P3_L14"
+              }
+            },
+            {
+              "robot_id": "ab2c2599-7851-47a9-abc5-45b3724efb3a",
+              "robot_profile": {
+                "name": "P3_L15"
+              }
+            },
+            {
+              "robot_id": "04742ef6-20a6-4db9-960a-3eb0cc2dd21b",
+              "robot_profile": {
+                "name": "P3_L16"
+              }
+            },
+            {
+              "robot_id": "1f18af94-4be9-40e9-b4fd-1245c68f73c0",
+              "robot_profile": {
+                "name": "P3_L17"
+              }
+            },
+            {
+              "robot_id": "64ed8b55-d95a-438f-ac38-8efd855dff5b",
+              "robot_profile": {
+                "name": "P3_L18"
+              }
+            },
+            {
+              "robot_id": "5f354528-5e4d-4b10-add8-4ea0d8fdf53a",
+              "robot_profile": {
+                "name": "P3_L19"
+              }
+            },
+            {
+              "robot_id": "2c366f2c-ea6f-43cf-9a27-6fa265f7aae9",
+              "robot_profile": {
+                "name": "P3_L20"
+              }
+            },
+            {
+              "robot_id": "fdc3fdfb-e117-4813-85f6-528de367c201",
+              "robot_profile": {
+                "name": "P3_L21"
+              }
+            },
+            {
+              "robot_id": "c0164ce7-6e64-4eec-a27d-064c0fb9666b",
+              "robot_profile": {
+                "name": "P3_L22"
+              }
+            },
+            {
+              "robot_id": "753b9233-81bd-47f8-ba4a-deb5b6520268",
+              "robot_profile": {
+                "name": "P3_L23"
+              }
+            },
+            {
+              "robot_id": "78ab7112-9cc0-4ecb-be07-a592c5271701",
+              "robot_profile": {
+                "name": "P3_L24"
+              }
+            },
+            {
+              "robot_id": "ef34aaaf-ee97-40e8-90ef-1fee2b00b6ac",
+              "robot_profile": {
+                "name": "P3_L25"
+              }
+            }
+          ]
+        },
+        {
+          "class_profile": {
+            "name": "Primaria 4 - Profesor"
+          },
+          "group_id": "8d852543-4384-4b03-86d2-ded2791af4bc",
+          "school_group": {
+            "school_id": "bdb06dbb-04de-40a4-9a27-60586111f6c0"
+          },
+          "post_groups": [
+            {
+              "post_id": "fa4764d4-d90a-40aa-a7eb-e0e406a956f7",
+              "post_profile": {
+                "topic": "Ayuda - Ejemplos de construcción de Robots - Ciclista"
+              }
+            }
+          ],
+          "lesson_groups": [
+            {
+              "lesson_id": "dddcad22-7234-49ee-8b68-7fd5261d3a95",
+              "lesson_profile": {
+                "title": "P3-L14-Todos los vehículos son importantes.pdf"
+              }
+            },
+            {
+              "lesson_id": "a1b72243-f6a9-484d-baa2-c566f422d677",
+              "lesson_profile": {
+                "title": "P3-L15-Cuánta energía produce el viento.pdf"
+              }
+            },
+            {
+              "lesson_id": "f6f4ad58-5ce0-4757-8823-bb16b3960421",
+              "lesson_profile": {
+                "title": "P3-L16-Cuántas estructuras puedo armar.pdf"
+              }
+            },
+            {
+              "lesson_id": "b0b16bec-7361-427f-bc8c-a299bf2b53c8",
+              "lesson_profile": {
+                "title": "P3-L17-Juguemos con engranajes.pdf"
+              }
+            },
+            {
+              "lesson_id": "ebea8941-7ce1-4c18-8ee8-887ab787eb93",
+              "lesson_profile": {
+                "title": "P3-L18-Saquemos nuestra bicicleta.pdf"
+              }
+            },
+            {
+              "lesson_id": "07fc7f38-56cd-4021-bd8e-cc31af69083e",
+              "lesson_profile": {
+                "title": "P3-L19-Vamos de compras a la ferretería.pdf"
+              }
+            },
+            {
+              "lesson_id": "189b997a-0777-4e8f-b19e-085b00f1961a",
+              "lesson_profile": {
+                "title": "P3-L20-Robótica por todos lados.pdf"
+              }
+            },
+            {
+              "lesson_id": "c3ffda5c-6e9f-41de-9f1d-bae94b7a9dad",
+              "lesson_profile": {
+                "title": "P4-L01-¡Este es nuestro kit!.pdf"
+              }
+            },
+            {
+              "lesson_id": "57c68bb1-6ac8-4ef4-9149-ad22fe325230",
+              "lesson_profile": {
+                "title": "P4-L02-Aprendamos de gravedad.pdf"
+              }
+            },
+            {
+              "lesson_id": "cdb824e8-121c-408b-ad6b-dfa85f99a298",
+              "lesson_profile": {
+                "title": "P4-L03-Construyamos máquinas medievales.pdf"
+              }
+            },
+            {
+              "lesson_id": "adf5ffb1-72c9-4979-96db-3b646e5894a0",
+              "lesson_profile": {
+                "title": "P4-L04-Así funcionan mis manos.pdf"
+              }
+            },
+            {
+              "lesson_id": "159c8fc4-92d9-47e0-86d7-8edc2960d29a",
+              "lesson_profile": {
+                "title": "P4-L05-Conozcamos sobre planos inclinados.pdf"
+              }
+            },
+            {
+              "lesson_id": "caf28460-f006-4972-8265-7135d714f742",
+              "lesson_profile": {
+                "title": "P4-L06-Es recta o perpendicular.pdf"
+              }
+            },
+            {
+              "lesson_id": "7b4608be-1053-42b3-a719-d3b97341bb34",
+              "lesson_profile": {
+                "title": "P4-L07-Fuerza a distancia.pdf"
+              }
+            },
+            {
+              "lesson_id": "9c15a0cd-828c-40f5-af57-130fb35bb263",
+              "lesson_profile": {
+                "title": "P4-L08-Cómo funcionan las poleas.pdf"
+              }
+            },
+            {
+              "lesson_id": "b310f56c-ca64-430f-b509-be2ba0cbc09e",
+              "lesson_profile": {
+                "title": "P4-L09-Juguemos a ser constructores.pdf"
+              }
+            },
+            {
+              "lesson_id": "857b1080-97c0-4300-b28b-885ae398c896",
+              "lesson_profile": {
+                "title": "P4-L10-Subes o bajas.pdf"
+              }
+            },
+            {
+              "lesson_id": "29f2bab3-79dd-4633-bd90-97d9f972fec4",
+              "lesson_profile": {
+                "title": "P4-L11-Armemos nuestro propio drone.pdf"
+              }
+            },
+            {
+              "lesson_id": "ca74e01c-40b0-4af0-9325-fb5ae0fc9c04",
+              "lesson_profile": {
+                "title": "P4-L12-Motocross.pdf"
+              }
+            },
+            {
+              "lesson_id": "1326c682-9825-494d-aca3-d875fa5ef2c0",
+              "lesson_profile": {
+                "title": "P4-L13-De dónde proviene la energía eléctrica.pdf"
+              }
+            },
+            {
+              "lesson_id": "1d2c98af-a3ce-43f4-a198-55e0041db0f3",
+              "lesson_profile": {
+                "title": "P4-L14-Identifiquemos y midamos ángulos.pdf"
+              }
+            },
+            {
+              "lesson_id": "79e02997-d651-4a56-8e79-02a8c9604a9d",
+              "lesson_profile": {
+                "title": "P4-L15-Clasifiquemos estructuras.pdf"
+              }
+            },
+            {
+              "lesson_id": "c597b7a3-e6ba-4be1-805c-1d2a90f92b41",
+              "lesson_profile": {
+                "title": "P4-L16-Conozcamos los medios de transporte terrestre.pdf"
+              }
+            },
+            {
+              "lesson_id": "2d4c93f0-2326-4d08-b67f-76e27abcf8f5",
+              "lesson_profile": {
+                "title": "P4-L17-Armemos una caja de velocidades.pdf"
+              }
+            },
+            {
+              "lesson_id": "3bab66f4-c654-4778-b3ab-2a93464e53e4",
+              "lesson_profile": {
+                "title": "P4-L18-Conozcamos sobre engranajes.pdf"
+              }
+            },
+            {
+              "lesson_id": "06eaa084-ad30-47b0-809e-53c75026c168",
+              "lesson_profile": {
+                "title": "P4-L19-Redacta un manual.pdf"
+              }
+            },
+            {
+              "lesson_id": "279239cf-3800-45f2-bfe2-21312889d13b",
+              "lesson_profile": {
+                "title": "P4-L20-Está temblando, pero qué hago.pdf"
+              }
+            },
+            {
+              "lesson_id": "6bb42aad-f139-402c-82ff-7087fd087395",
+              "lesson_profile": {
+                "title": "P4-L21-¡Ejercitémonos.pdf"
+              }
+            },
+            {
+              "lesson_id": "63b11e01-8ce0-4a89-b229-a1867108fd63",
+              "lesson_profile": {
+                "title": "P4-L22-Viajemos en tren.pdf"
+              }
+            }
+          ],
+          "robot_groups": [
+            {
+              "robot_id": "16fa1b11-2f7c-4021-83c0-c07dac25f424",
+              "robot_profile": {
+                "name": "P4_L01"
+              }
+            },
+            {
+              "robot_id": "5e8a63a8-29c6-45c2-b64c-420a776e5298",
+              "robot_profile": {
+                "name": "P4_L02"
+              }
+            },
+            {
+              "robot_id": "45e32a65-fc10-4e7f-abfa-bcf209a8cf29",
+              "robot_profile": {
+                "name": "P4_L03"
+              }
+            },
+            {
+              "robot_id": "a3e63e76-ebe9-46bd-86d8-65da8104ae6f",
+              "robot_profile": {
+                "name": "P4_L04"
+              }
+            },
+            {
+              "robot_id": "30e58fe4-fa54-4727-bdfa-bc37311505a3",
+              "robot_profile": {
+                "name": "P4_L05"
+              }
+            },
+            {
+              "robot_id": "1ec47da0-98e4-47c3-95ab-ec99f152c028",
+              "robot_profile": {
+                "name": "P4_L06"
+              }
+            },
+            {
+              "robot_id": "e8d445f3-cc88-4faa-8329-8f553039a7f1",
+              "robot_profile": {
+                "name": "P4_L07"
+              }
+            },
+            {
+              "robot_id": "7ed175ee-e03c-4165-a803-1a7bfde40554",
+              "robot_profile": {
+                "name": "P4_L08"
+              }
+            },
+            {
+              "robot_id": "b829c74e-ba16-4a53-8526-267d0fb609ba",
+              "robot_profile": {
+                "name": "P4_L09"
+              }
+            },
+            {
+              "robot_id": "891d3519-b614-403e-8fff-586b171286db",
+              "robot_profile": {
+                "name": "P4_L10"
+              }
+            },
+            {
+              "robot_id": "44385e32-992d-415d-94f0-fdb550599a89",
+              "robot_profile": {
+                "name": "P4_L11"
+              }
+            },
+            {
+              "robot_id": "e0b9c157-eca2-4869-999c-5c92af8f116d",
+              "robot_profile": {
+                "name": "P4_L12"
+              }
+            },
+            {
+              "robot_id": "2d7d22f7-4769-4650-9aa2-4e1962074f24",
+              "robot_profile": {
+                "name": "P4_L13"
+              }
+            },
+            {
+              "robot_id": "fb3e723d-2525-48f0-81a4-acc0424f97e6",
+              "robot_profile": {
+                "name": "P4_L14"
+              }
+            },
+            {
+              "robot_id": "892ed7a7-ea80-46ba-bb09-df2f70687dd8",
+              "robot_profile": {
+                "name": "P4_L15"
+              }
+            },
+            {
+              "robot_id": "30437a88-79a1-4ce2-9819-0d1c1ef9a4d6",
+              "robot_profile": {
+                "name": "P4_L16"
+              }
+            },
+            {
+              "robot_id": "55927945-2511-4559-83d3-2e515a32e173",
+              "robot_profile": {
+                "name": "P4_L17"
+              }
+            },
+            {
+              "robot_id": "f7454185-ada9-41c1-95f6-7684710d6d5a",
+              "robot_profile": {
+                "name": "P4_L18"
+              }
+            },
+            {
+              "robot_id": "c69121b4-2188-45d4-a69e-26732e08871d",
+              "robot_profile": {
+                "name": "P4_L19"
+              }
+            },
+            {
+              "robot_id": "1e382c04-d6da-47da-a380-4cc98735a953",
+              "robot_profile": {
+                "name": "P4_L20"
+              }
+            },
+            {
+              "robot_id": "41ae1c15-d9e9-4843-9a48-8b3d6b7024d3",
+              "robot_profile": {
+                "name": "P4_L21"
+              }
+            },
+            {
+              "robot_id": "75b4bb6e-77d2-4982-a330-3eec5da85fe7",
+              "robot_profile": {
+                "name": "P4_L22"
+              }
+            },
+            {
+              "robot_id": "d82aeb41-5f1f-4713-8332-264269f75cd5",
+              "robot_profile": {
+                "name": "P4_L23"
+              }
+            },
+            {
+              "robot_id": "5d3b3fb2-cdee-427c-9724-f89f266a7511",
+              "robot_profile": {
+                "name": "P4_L24"
+              }
+            },
+            {
+              "robot_id": "1f2dd634-718e-4975-bad6-f305b1727398",
+              "robot_profile": {
+                "name": "P4_L25"
+              }
+            }
+          ]
+        },
+        {
+          "class_profile": {
+            "name": "Primaria 5 - Profesor"
+          },
+          "group_id": "00377367-62ee-48b2-92e1-60db1c2dc97c",
+          "school_group": {
+            "school_id": "bdb06dbb-04de-40a4-9a27-60586111f6c0"
+          },
+          "post_groups": [
+            {
+              "post_id": "fa4764d4-d90a-40aa-a7eb-e0e406a956f7",
+              "post_profile": {
+                "topic": "Ayuda - Ejemplos de construcción de Robots - Ciclista"
+              }
+            }
+          ],
+          "lesson_groups": [
+            {
+              "lesson_id": "9423ca6b-246b-40d9-8ecf-7d1bfca68794",
+              "lesson_profile": {
+                "title": "P5-L01-¡Ayudemos al castor!.pdf"
+              }
+            },
+            {
+              "lesson_id": "b0ea07a5-45de-487a-8e05-9cf26c9e5d4e",
+              "lesson_profile": {
+                "title": "P5-L02-Sigamos manuales.pdf"
+              }
+            },
+            {
+              "lesson_id": "f653bb04-8952-40d7-9fee-ea0eb803914e",
+              "lesson_profile": {
+                "title": "P5-L03-Ideemos textos descriptivos.pdf"
+              }
+            },
+            {
+              "lesson_id": "868703ee-d438-4e7f-87f6-9e28a4eea43c",
+              "lesson_profile": {
+                "title": "P5-L04-Busquemos palancas dentro de las maquinarias.pdf"
+              }
+            },
+            {
+              "lesson_id": "6efbec91-8648-4125-881f-dbe5d019e5b5",
+              "lesson_profile": {
+                "title": "P5-L05-Hagamos un manual.pdf"
+              }
+            },
+            {
+              "lesson_id": "1b8ba719-e80f-4b99-a8be-5f401e458c5f",
+              "lesson_profile": {
+                "title": "P5-L06-Es o no un círculo.pdf"
+              }
+            },
+            {
+              "lesson_id": "7885ca1f-4577-49d9-b3c8-f94008335220",
+              "lesson_profile": {
+                "title": "P5-L07-Aprendamos a medir ángulos.pdf"
+              }
+            },
+            {
+              "lesson_id": "206f4078-7bd3-422a-be2a-a0eff2b84ca9",
+              "lesson_profile": {
+                "title": "P5-L08-Iniciemos la costrucción.pdf"
+              }
+            },
+            {
+              "lesson_id": "9646e9e3-f09e-42b1-a715-8e94e6f075a2",
+              "lesson_profile": {
+                "title": "P5-L09-Peso para bajar y contrapeso para subir.pdf"
+              }
+            },
+            {
+              "lesson_id": "8172aa90-7fe7-4ee5-95bc-8ec1dd6a6883",
+              "lesson_profile": {
+                "title": "P5-L10-Construyamos poleas.pdf"
+              }
+            },
+            {
+              "lesson_id": "0d5cbecf-c1e7-440f-903c-df720e9a6fa3",
+              "lesson_profile": {
+                "title": "P5-L11-Construyamos con ruedas.pdf"
+              }
+            },
+            {
+              "lesson_id": "9e0ae4bf-769d-4aae-8522-6e6898093cbb",
+              "lesson_profile": {
+                "title": "P5-L12-Organicemos una competencia.pdf"
+              }
+            },
+            {
+              "lesson_id": "da8b6499-afcd-4b1d-87c6-4f72f31feeaf",
+              "lesson_profile": {
+                "title": "P5-L13-Bajo el mar.pdf"
+              }
+            },
+            {
+              "lesson_id": "1dd6606f-1f3c-4276-86bf-4a1c3244deb9",
+              "lesson_profile": {
+                "title": "P5-L14-Construyo medios de transporte terrestre.pdf"
+              }
+            },
+            {
+              "lesson_id": "30c43abe-10a0-41da-bf32-0eafb541457a",
+              "lesson_profile": {
+                "title": "P5-L15-Castillos y fortalezas.pdf"
+              }
+            },
+            {
+              "lesson_id": "80492890-0e64-4911-8dae-b6dae5bed45d",
+              "lesson_profile": {
+                "title": "P5-L16-Y la moraleja de esta historia es....pdf"
+              }
+            },
+            {
+              "lesson_id": "da77fb15-e7c0-467f-8489-5fbf5219f5ea",
+              "lesson_profile": {
+                "title": "P5-L17-Aprendo sobre engranajes.pdf"
+              }
+            },
+            {
+              "lesson_id": "eadf3179-4b05-4595-afb7-be3d95ebcca1",
+              "lesson_profile": {
+                "title": "P5-L18-Qué hacer cuando está temblando.pdf"
+              }
+            },
+            {
+              "lesson_id": "0a130d05-411b-40a3-bb4a-02b238421894",
+              "lesson_profile": {
+                "title": "P5-L19-Ensamblo máquinas compuestas.pdf"
+              }
+            },
+            {
+              "lesson_id": "73864a51-54c0-4549-aefe-a7f38e1b989d",
+              "lesson_profile": {
+                "title": "P5-L20-Cuánto conozco sobre energía.pdf"
+              }
+            },
+            {
+              "lesson_id": "1b1a188b-70de-4333-9942-c6d2374d296b",
+              "lesson_profile": {
+                "title": "P5-L21-Costumbres griegas.pdf"
+              }
+            },
+            {
+              "lesson_id": "a47b694b-9e79-428b-905e-9de74761d731",
+              "lesson_profile": {
+                "title": "P5-L22-Describamos una época.pdf"
+              }
+            }
+          ],
+          "robot_groups": [
+            {
+              "robot_id": "4202032c-5e98-4851-b173-8aa4dcfc20fc",
+              "robot_profile": {
+                "name": "P3_L06"
+              }
+            },
+            {
+              "robot_id": "23b8795e-a258-4ce4-8635-1106c096aeb0",
+              "robot_profile": {
+                "name": "P5_L01"
+              }
+            },
+            {
+              "robot_id": "7d961c5f-47fb-47fb-9e68-527412f864b0",
+              "robot_profile": {
+                "name": "P5_L02"
+              }
+            },
+            {
+              "robot_id": "28719203-7fa1-4acb-9ddf-f47ae1958605",
+              "robot_profile": {
+                "name": "P5_L03"
+              }
+            },
+            {
+              "robot_id": "a543590c-5fc5-4ea1-8a88-4e3874d5642c",
+              "robot_profile": {
+                "name": "P5_L04"
+              }
+            },
+            {
+              "robot_id": "0b6e6d74-6edb-4c0b-8520-453ab7cc99a9",
+              "robot_profile": {
+                "name": "P5_L05"
+              }
+            },
+            {
+              "robot_id": "07203d58-775d-4662-8f7a-f9f7620d1e6b",
+              "robot_profile": {
+                "name": "P5_L06"
+              }
+            },
+            {
+              "robot_id": "b3f16e11-cc5c-4d50-a989-2d6fc5b91440",
+              "robot_profile": {
+                "name": "P5_L07"
+              }
+            },
+            {
+              "robot_id": "68235f62-eeb9-4af8-b9d7-c3edc95e5bff",
+              "robot_profile": {
+                "name": "P5_L08"
+              }
+            },
+            {
+              "robot_id": "040cf365-e9fe-4cbb-ad8d-5a2f40740049",
+              "robot_profile": {
+                "name": "P5_L09"
+              }
+            },
+            {
+              "robot_id": "11c685a0-eadd-44d3-af7d-a654b4880b8f",
+              "robot_profile": {
+                "name": "P5_L10"
+              }
+            },
+            {
+              "robot_id": "9b8fa5ba-f955-41bb-9c10-9836ef578848",
+              "robot_profile": {
+                "name": "P5_L11"
+              }
+            },
+            {
+              "robot_id": "f864cf15-1623-4cde-8b6e-f072fa63f408",
+              "robot_profile": {
+                "name": "P5_L12"
+              }
+            },
+            {
+              "robot_id": "acd95a32-7f7d-4aa7-ac13-4e09102558e7",
+              "robot_profile": {
+                "name": "P5_L13"
+              }
+            },
+            {
+              "robot_id": "02742ec8-4787-434b-8f44-347e7c0bf5ff",
+              "robot_profile": {
+                "name": "P5_L14"
+              }
+            },
+            {
+              "robot_id": "359085f8-fdae-4c87-973b-9da2f4bb8a29",
+              "robot_profile": {
+                "name": "P5_L15"
+              }
+            },
+            {
+              "robot_id": "5de849f1-6e23-4b80-9c0a-9076f04dc308",
+              "robot_profile": {
+                "name": "P5_L16"
+              }
+            },
+            {
+              "robot_id": "37182e2c-e019-4c99-82e8-4e2f8c2e1ea0",
+              "robot_profile": {
+                "name": "P5_L17"
+              }
+            },
+            {
+              "robot_id": "ee0cb9e7-7c79-4a0e-88d0-419fef00d61a",
+              "robot_profile": {
+                "name": "P5_L18"
+              }
+            },
+            {
+              "robot_id": "a1e16d7c-9557-4aac-a346-65c4d6497367",
+              "robot_profile": {
+                "name": "P5_L19"
+              }
+            },
+            {
+              "robot_id": "c1eb54d1-8e0c-48a4-a7b6-49bd955ddfe4",
+              "robot_profile": {
+                "name": "P5_L20"
+              }
+            },
+            {
+              "robot_id": "03d4238b-6ed4-4ffb-bd55-84d3a941d66b",
+              "robot_profile": {
+                "name": "P5_L21"
+              }
+            },
+            {
+              "robot_id": "4524678f-0f0b-4742-b4e0-872d5cd70463",
+              "robot_profile": {
+                "name": "P5_L22"
+              }
+            },
+            {
+              "robot_id": "32e18a01-dfaf-4159-8170-56046485379d",
+              "robot_profile": {
+                "name": "P5_L23"
+              }
+            },
+            {
+              "robot_id": "3343e20d-c670-40bf-9258-97f0a1c90d51",
+              "robot_profile": {
+                "name": "P5_L24"
+              }
+            },
+            {
+              "robot_id": "394fc64a-f81b-4551-98c4-2010a7111ec6",
+              "robot_profile": {
+                "name": "P5_L25"
+              }
+            }
+          ]
+        },
+        {
+          "class_profile": {
+            "name": "Primaria 6 - Profesor"
+          },
+          "group_id": "e1955133-2c20-4070-91b8-a3e8fe55897f",
+          "school_group": {
+            "school_id": "bdb06dbb-04de-40a4-9a27-60586111f6c0"
+          },
+          "post_groups": [
+            {
+              "post_id": "fa4764d4-d90a-40aa-a7eb-e0e406a956f7",
+              "post_profile": {
+                "topic": "Ayuda - Ejemplos de construcción de Robots - Ciclista"
+              }
+            }
+          ],
+          "lesson_groups": [
+            {
+              "lesson_id": "3df7166e-69f6-4c46-aad3-142d27fcc500",
+              "lesson_profile": {
+                "title": "P6-L01-Aprendamos sobre redes viales.pdf"
+              }
+            },
+            {
+              "lesson_id": "ba52bfb8-d890-46a1-9163-380a3563f140",
+              "lesson_profile": {
+                "title": "P6-L02-Ejes de simetría.pdf"
+              }
+            },
+            {
+              "lesson_id": "cfcf4e44-847b-4ab0-ba52-7ff076f48c33",
+              "lesson_profile": {
+                "title": "P6-L03-Cómo funcionan las palancas en mi armado.pdf"
+              }
+            },
+            {
+              "lesson_id": "fba91b68-14a9-4b68-a136-6c6001228a53",
+              "lesson_profile": {
+                "title": "P6-L04-Organicemos una competencia.pdf"
+              }
+            },
+            {
+              "lesson_id": "e2341ea6-f001-494a-b9b8-6b860f81fee8",
+              "lesson_profile": {
+                "title": "P6-L05-Armemos planos inclinados.pdf"
+              }
+            },
+            {
+              "lesson_id": "d4a21386-f4d8-42e0-928b-d23042265e33",
+              "lesson_profile": {
+                "title": "P6-L06-Acaso este es un tornillo.pdf"
+              }
+            },
+            {
+              "lesson_id": "02acff60-14e9-42da-ba0c-0731785100b2",
+              "lesson_profile": {
+                "title": "P6-L07-Aquí es donde deposito la basura.pdf"
+              }
+            },
+            {
+              "lesson_id": "eb290c9e-cf04-4e1b-816d-2429c3fe3202",
+              "lesson_profile": {
+                "title": "P6-L08-Quién será el ganador.pdf"
+              }
+            },
+            {
+              "lesson_id": "4c8a87b4-d9ac-48d6-ac0e-06ca499f4b38",
+              "lesson_profile": {
+                "title": "P6-L09-Construyamos con poleas.pdf"
+              }
+            },
+            {
+              "lesson_id": "8a1baa9a-f228-409f-add9-e1517a27e3d7",
+              "lesson_profile": {
+                "title": "P6-L10-Teleférico o funicular.pdf"
+              }
+            },
+            {
+              "lesson_id": "49faf23c-30b3-4587-bee2-26e6887a8f21",
+              "lesson_profile": {
+                "title": "P6-L11-La robótica del ahora y del mañana.pdf"
+              }
+            },
+            {
+              "lesson_id": "ee0b9cc4-08a4-4086-9411-978384d762dc",
+              "lesson_profile": {
+                "title": "P6-L12-Conozcamos figuras geométricas.pdf"
+              }
+            },
+            {
+              "lesson_id": "76d4c4f5-301d-4a64-bc75-da592ab251f3",
+              "lesson_profile": {
+                "title": "P6-L13-Cómo se almacena la energía.pdf"
+              }
+            },
+            {
+              "lesson_id": "05c75225-accb-45ff-b7c1-74e75ad5b38e",
+              "lesson_profile": {
+                "title": "P6-L14-Todos los vehículos son importantes.pdf"
+              }
+            },
+            {
+              "lesson_id": "2f22e410-5399-4727-9f36-8fcc687c132d",
+              "lesson_profile": {
+                "title": "P6-L15-Cuánta energía produce el viento.pdf"
+              }
+            },
+            {
+              "lesson_id": "6a4960aa-8dc7-4cf1-8b93-2e673b1ba05c",
+              "lesson_profile": {
+                "title": "P6-L16-Cuántas estructuras puedo armar.pdf"
+              }
+            },
+            {
+              "lesson_id": "b4691b3b-0200-4b43-b10e-065f1d0a681f",
+              "lesson_profile": {
+                "title": "P6-L17-¡Movámonos!.pdf"
+              }
+            },
+            {
+              "lesson_id": "f1756ff5-480a-4f3b-93d8-0d8afc6dd804",
+              "lesson_profile": {
+                "title": "P6-L18-¿Simple o compuesta.pdf"
+              }
+            },
+            {
+              "lesson_id": "52ab1521-34d1-4992-8555-3cfe3865a07e",
+              "lesson_profile": {
+                "title": "P6-L19-Construyamos con engranajes.pdf"
+              }
+            },
+            {
+              "lesson_id": "25e10024-0d4a-4ccf-b9c0-9cda3167082f",
+              "lesson_profile": {
+                "title": "P6-L20-Hablemos sobre medios de transporte.pdf"
+              }
+            },
+            {
+              "lesson_id": "cf924145-9141-4806-98c9-764dcb98b112",
+              "lesson_profile": {
+                "title": "P6-L21-La energía que mueve mi cuerpo.pdf"
+              }
+            },
+            {
+              "lesson_id": "9902323a-19c7-49fc-9a0f-eb262fd44d19",
+              "lesson_profile": {
+                "title": "P6-L22-¿Conoces este insecto.pdf"
+              }
+            }
+          ],
+          "robot_groups": [
+            {
+              "robot_id": "d96a0401-3b6e-4ec3-9b5a-3b483b6a3a24",
+              "robot_profile": {
+                "name": "P6_L01"
+              }
+            },
+            {
+              "robot_id": "20d3611e-41e5-4854-b118-5176fb0a1be9",
+              "robot_profile": {
+                "name": "P6_L02"
+              }
+            },
+            {
+              "robot_id": "bd19beff-7ccc-40b3-aa9c-4a8a5c93070c",
+              "robot_profile": {
+                "name": "P6_L03"
+              }
+            },
+            {
+              "robot_id": "9e11ea9f-ee4e-4925-b2b9-c897bbb00618",
+              "robot_profile": {
+                "name": "P6_L04_1"
+              }
+            },
+            {
+              "robot_id": "f2bf64cb-7302-460b-8be7-8105c3cf625d",
+              "robot_profile": {
+                "name": "P6_L04_2"
+              }
+            },
+            {
+              "robot_id": "974aef1b-5b29-4e51-b232-dba4833b5829",
+              "robot_profile": {
+                "name": "P6_L05"
+              }
+            },
+            {
+              "robot_id": "a9c9153d-52c4-4a2a-92d1-1e8cd59fc56f",
+              "robot_profile": {
+                "name": "P6_L06"
+              }
+            },
+            {
+              "robot_id": "5861e9e9-88e0-4ad4-9f84-a74602d44d4b",
+              "robot_profile": {
+                "name": "P6_L07"
+              }
+            },
+            {
+              "robot_id": "d26ff09e-5298-4783-bc4a-4c0a2780c0dc",
+              "robot_profile": {
+                "name": "P6_L08"
+              }
+            },
+            {
+              "robot_id": "26870694-f9cf-4c5e-af69-e9b991eb28d3",
+              "robot_profile": {
+                "name": "P6_L09"
+              }
+            },
+            {
+              "robot_id": "29ac159e-9363-4ae0-877d-6bc6f1af0ed4",
+              "robot_profile": {
+                "name": "P6_L10"
+              }
+            },
+            {
+              "robot_id": "7821db9b-b1a2-497f-bbf5-742540a6d965",
+              "robot_profile": {
+                "name": "P6_L11"
+              }
+            },
+            {
+              "robot_id": "74d415c9-352a-4b5b-935e-7de2dc05a2e4",
+              "robot_profile": {
+                "name": "P6_L12"
+              }
+            },
+            {
+              "robot_id": "c0b7e4c0-e383-45d9-963b-5689e107ab0a",
+              "robot_profile": {
+                "name": "P6_L13"
+              }
+            },
+            {
+              "robot_id": "78824f6d-1ee5-413e-b46e-cbc892883c76",
+              "robot_profile": {
+                "name": "P6_L14"
+              }
+            },
+            {
+              "robot_id": "47fafa66-caa2-400b-8fad-ae82cb1c0cea",
+              "robot_profile": {
+                "name": "P6_L15"
+              }
+            },
+            {
+              "robot_id": "253a19a3-7fb6-4311-814b-dbc793f414b6",
+              "robot_profile": {
+                "name": "P6_L16"
+              }
+            },
+            {
+              "robot_id": "b4a30c5a-ad77-4d05-81e9-acea8d723547",
+              "robot_profile": {
+                "name": "P6_L17"
+              }
+            },
+            {
+              "robot_id": "d6b1484b-b494-43d4-8b83-4b973bd3284d",
+              "robot_profile": {
+                "name": "P6_L18"
+              }
+            },
+            {
+              "robot_id": "9961a295-137d-4575-81e9-e5b57bb96aad",
+              "robot_profile": {
+                "name": "P6_L19"
+              }
+            },
+            {
+              "robot_id": "652b8cdc-d582-4706-a41e-8ea6f8db6c29",
+              "robot_profile": {
+                "name": "P6_L20"
+              }
+            },
+            {
+              "robot_id": "a6357cdc-238b-4c8d-bebb-ae282f1a0c54",
+              "robot_profile": {
+                "name": "P6_L21"
+              }
+            },
+            {
+              "robot_id": "8fae351b-5439-46f5-8dcc-c235c6c96e35",
+              "robot_profile": {
+                "name": "P6_L22"
+              }
+            },
+            {
+              "robot_id": "3efae120-0d1c-4a8a-907d-108d08bd4570",
+              "robot_profile": {
+                "name": "P6_L23"
+              }
+            },
+            {
+              "robot_id": "04ed54fa-0c1e-4ee4-8565-0f197e2576a8",
+              "robot_profile": {
+                "name": "P6_L24"
+              }
+            }
+          ]
+        },
+        {
+          "class_profile": {
+            "name": "Secundaria 1 - Profesor"
+          },
+          "group_id": "b41ed36d-a931-433b-90be-e1ead1f4ab67",
+          "school_group": {
+            "school_id": "bdb06dbb-04de-40a4-9a27-60586111f6c0"
+          },
+          "post_groups": [
+            {
+              "post_id": "355b041d-d477-4769-a894-db02411e4ead",
+              "post_profile": {
+                "topic": "Ayuda - Función de arandelas y esferas"
+              }
+            }
+          ],
+          "lesson_groups": [
+            {
+              "lesson_id": "bc5afb4d-280b-49aa-b253-f25e1501ad77",
+              "lesson_profile": {
+                "title": "S1-L01-Qué armados puedo realizar.pdf"
+              }
+            },
+            {
+              "lesson_id": "127d0cdc-7036-4c6f-926a-49bde4e22c56",
+              "lesson_profile": {
+                "title": "S1-L02-Recordemos el principio de gravedad.pdf"
+              }
+            },
+            {
+              "lesson_id": "af002381-6545-442f-ba46-e191f7d2daba",
+              "lesson_profile": {
+                "title": "S1-L03-Para qué sirven las balanzas.pdf"
+              }
+            },
+            {
+              "lesson_id": "916b3f08-e1a8-4628-8eaa-fff2c2346cc1",
+              "lesson_profile": {
+                "title": "S1-L04-Aprendamos de máquinas simples.pdf"
+              }
+            },
+            {
+              "lesson_id": "5fb31404-6aed-4956-a93c-17419e0f3b77",
+              "lesson_profile": {
+                "title": "S1-L05-Tiremos la basura en su lugar.pdf"
+              }
+            },
+            {
+              "lesson_id": "afcf27ef-56c2-47ff-adb4-01e511715a56",
+              "lesson_profile": {
+                "title": "S1-L06-Creemos nuestros propios manuales.pdf"
+              }
+            },
+            {
+              "lesson_id": "1e0458cd-c802-4a9b-9b3e-409b5e00e6b0",
+              "lesson_profile": {
+                "title": "S1-L07-Dejemos que Newton nos enseñe.pdf"
+              }
+            },
+            {
+              "lesson_id": "7d6f97e6-c379-4d5f-921b-50991802f685",
+              "lesson_profile": {
+                "title": "S1-L08-Conozcamos sobre poleas.pdf"
+              }
+            },
+            {
+              "lesson_id": "35cf8472-9232-483e-9be0-067d2eddffec",
+              "lesson_profile": {
+                "title": "S1-L09-Diseñemos con contrapesos.pdf"
+              }
+            },
+            {
+              "lesson_id": "4e12c6db-42ab-4a04-adcc-643deca121e8",
+              "lesson_profile": {
+                "title": "S1-L10-Qué necesito para ser constructor.pdf"
+              }
+            },
+            {
+              "lesson_id": "c176350e-d58e-454e-bb79-afa116a6dbae",
+              "lesson_profile": {
+                "title": "S1-L11-Aprendamos de mecánica.pdf"
+              }
+            },
+            {
+              "lesson_id": "b00fc35f-8f58-4a4d-b0f8-597960ce9f1d",
+              "lesson_profile": {
+                "title": "S1-L12-Qué hacen los policías.pdf"
+              }
+            },
+            {
+              "lesson_id": "7e0bd1f3-ad94-46b0-b6d4-589104a631e5",
+              "lesson_profile": {
+                "title": "S1-L13-Así se produce la energía eléctrica.pdf"
+              }
+            },
+            {
+              "lesson_id": "248f615d-d6ea-45b4-b6da-a2be116c0ec0",
+              "lesson_profile": {
+                "title": "S1-L14-Conozcamos sobre la energía eólica.pdf"
+              }
+            },
+            {
+              "lesson_id": "e5025eae-7132-4d21-a11e-18b3d6c5fc1b",
+              "lesson_profile": {
+                "title": "S1-L15- Ideemos y clasifiquemos estructuras.pdf"
+              }
+            },
+            {
+              "lesson_id": "a614438d-ee08-4f12-a664-de1f2121f993",
+              "lesson_profile": {
+                "title": "S1-L16-Redactemos noticias.pdf"
+              }
+            },
+            {
+              "lesson_id": "1c14a231-5421-457e-9355-e0d7ba4b22b6",
+              "lesson_profile": {
+                "title": "S1-L17-Cómo funcionan los engranajes.pdf"
+              }
+            },
+            {
+              "lesson_id": "674ca304-51d6-406e-b62a-514c900ca1ba",
+              "lesson_profile": {
+                "title": "S1-L18-Conozcamos sobre energía potencial.pdf"
+              }
+            },
+            {
+              "lesson_id": "21b5bb57-82d1-4ec3-9676-c5f459cbb1e0",
+              "lesson_profile": {
+                "title": "S1-L19-Por qué se necesita una caja de velocidades.pdf"
+              }
+            },
+            {
+              "lesson_id": "0745ccb6-89b6-4888-9151-0d8462e34330",
+              "lesson_profile": {
+                "title": "S1-L20-El agua también produce energía.pdf"
+              }
+            },
+            {
+              "lesson_id": "a0f67962-e0e9-4b2a-9899-1b5261e94154",
+              "lesson_profile": {
+                "title": "S1-L21-Inventemos una película.pdf"
+              }
+            },
+            {
+              "lesson_id": "9ae5f51c-cbfb-4ac6-90c1-826f61d5ee0e",
+              "lesson_profile": {
+                "title": "S1-L22-Todos subamos al tren.pdf"
+              }
+            }
+          ],
+          "robot_groups": [
+            {
+              "robot_id": "ea632f20-b399-43bf-a9b0-5da88eb12081",
+              "robot_profile": {
+                "name": "S1_L01"
+              }
+            },
+            {
+              "robot_id": "ee09e175-1f41-4930-8b27-cb0064d007e4",
+              "robot_profile": {
+                "name": "S1_L02"
+              }
+            },
+            {
+              "robot_id": "f42b55f2-6e39-4c06-80ed-e54097856013",
+              "robot_profile": {
+                "name": "S1_L03"
+              }
+            },
+            {
+              "robot_id": "d3c9896e-7993-4671-a72d-d0965ba9f554",
+              "robot_profile": {
+                "name": "S1_L04"
+              }
+            },
+            {
+              "robot_id": "f9ca3d20-327e-44a4-a99e-2ebd29195619",
+              "robot_profile": {
+                "name": "S1_L05"
+              }
+            },
+            {
+              "robot_id": "5274fe6b-f812-4a3c-9099-e5aed9d92e92",
+              "robot_profile": {
+                "name": "S1_L06"
+              }
+            },
+            {
+              "robot_id": "e4ae7b8e-4cc1-4e85-b742-dc395358ad51",
+              "robot_profile": {
+                "name": "S1_L07"
+              }
+            },
+            {
+              "robot_id": "16e8f8a0-647a-4700-b07d-fd40e6a14920",
+              "robot_profile": {
+                "name": "S1_L08"
+              }
+            },
+            {
+              "robot_id": "2cbf06ef-4ddb-4e88-a6a3-1055631edf0c",
+              "robot_profile": {
+                "name": "S1_L09"
+              }
+            },
+            {
+              "robot_id": "c4fe1d53-9061-443d-bcb2-51f5bf64d3ec",
+              "robot_profile": {
+                "name": "S1_L10"
+              }
+            },
+            {
+              "robot_id": "bef5ccc5-5a2d-4bd9-a46b-1b404182a4c5",
+              "robot_profile": {
+                "name": "S1_L11"
+              }
+            },
+            {
+              "robot_id": "b7cebb69-a0f7-4c0c-98df-bb6a148cc463",
+              "robot_profile": {
+                "name": "S1_L12"
+              }
+            },
+            {
+              "robot_id": "092ecb10-124c-433c-87d7-7c385955d487",
+              "robot_profile": {
+                "name": "S1_L13"
+              }
+            },
+            {
+              "robot_id": "674b3d5c-e89b-4d5c-a247-4a7410eab830",
+              "robot_profile": {
+                "name": "S1_L14"
+              }
+            },
+            {
+              "robot_id": "2fe35712-9250-49c8-a058-f133e63e85a7",
+              "robot_profile": {
+                "name": "S1_L15"
+              }
+            },
+            {
+              "robot_id": "f15d76b0-b35d-4fa2-9f85-6de523ace5cd",
+              "robot_profile": {
+                "name": "S1_L16"
+              }
+            },
+            {
+              "robot_id": "49b46e88-bd84-46dd-b604-5d4d650469bb",
+              "robot_profile": {
+                "name": "S1_L17"
+              }
+            },
+            {
+              "robot_id": "4b1aa74f-5456-46ef-8dcf-5b6c448f8bf7",
+              "robot_profile": {
+                "name": "S1_L18"
+              }
+            },
+            {
+              "robot_id": "c04c82e5-3b15-4f13-a8c5-3a1f5bfed874",
+              "robot_profile": {
+                "name": "S1_L19"
+              }
+            },
+            {
+              "robot_id": "0d5906bb-1006-404e-b537-6b55add27c4b",
+              "robot_profile": {
+                "name": "S1_L20"
+              }
+            },
+            {
+              "robot_id": "86fc4324-716a-4339-8b3c-7ac941acbff9",
+              "robot_profile": {
+                "name": "S1_L21"
+              }
+            },
+            {
+              "robot_id": "d41d9ce2-cccf-4583-9341-68b9d45509a0",
+              "robot_profile": {
+                "name": "S1_L22"
+              }
+            },
+            {
+              "robot_id": "dc532d9e-8955-4555-ae74-94dec1b4841b",
+              "robot_profile": {
+                "name": "S1_L23"
+              }
+            },
+            {
+              "robot_id": "23e0d350-35e9-4cfa-9514-49e085dca784",
+              "robot_profile": {
+                "name": "S1_L24"
+              }
+            },
+            {
+              "robot_id": "1d6d2c47-8356-4b4b-aecd-05e612b161a7",
+              "robot_profile": {
+                "name": "S1_L25"
+              }
+            }
+          ]
+        },
+        {
+          "class_profile": {
+            "name": "Secundaria 2 - Profesor"
+          },
+          "group_id": "d8615039-17fe-46dc-b39f-e136c4b1ec31",
+          "school_group": {
+            "school_id": "bdb06dbb-04de-40a4-9a27-60586111f6c0"
+          },
+          "post_groups": [
+            {
+              "post_id": "59bd833b-e1df-417e-bdae-9a2b4b00b4f3",
+              "post_profile": {
+                "topic": "Ayuda - Controles del menú de Roboxmaker"
+              }
+            }
+          ],
+          "lesson_groups": [
+            {
+              "lesson_id": "3e1fbda1-b26d-4dc8-8e57-7eb13f0da1cd",
+              "lesson_profile": {
+                "title": "S2-L01-Identifiquemos ejes de simetría.pdf"
+              }
+            },
+            {
+              "lesson_id": "1ca708d3-8f67-48ca-ad8e-1d49d81fe7c0",
+              "lesson_profile": {
+                "title": "S2-L02-Conozcamos sobre insectos.pdf"
+              }
+            },
+            {
+              "lesson_id": "c8f1258e-7e3e-42cf-a443-b2b62ca23de4",
+              "lesson_profile": {
+                "title": "S2-L03-Hagamos un torneo de básquetbol.pdf"
+              }
+            },
+            {
+              "lesson_id": "309584f1-29d1-4996-af6b-102155d8c9b8",
+              "lesson_profile": {
+                "title": "S2-L04-Aprendamos sobre la Edad Media.pdf"
+              }
+            },
+            {
+              "lesson_id": "ec2b6fb7-ea0d-45d0-b8e5-1e12049f767b",
+              "lesson_profile": {
+                "title": "S2-L05-Primera Ley de Newton.pdf"
+              }
+            },
+            {
+              "lesson_id": "70e628d6-2871-4abb-9cde-403c72de09bb",
+              "lesson_profile": {
+                "title": "S2-L06-Para qué sirven los planos inclinados.pdf"
+              }
+            },
+            {
+              "lesson_id": "e003d178-d40d-4a5c-98ce-f5d0aa4083ee",
+              "lesson_profile": {
+                "title": "S2-L07-Si cae es porque hay gravedad.pdf"
+              }
+            },
+            {
+              "lesson_id": "c699f55d-c9c6-4273-b99d-abc025a0c755",
+              "lesson_profile": {
+                "title": "S2-L08-Estas son las poleas.pdf"
+              }
+            },
+            {
+              "lesson_id": "19b0b190-5af2-40c7-a44f-0156b223dd90",
+              "lesson_profile": {
+                "title": "S2-L09-Aplico los principios de robótica.pdf"
+              }
+            },
+            {
+              "lesson_id": "11fc7684-c7c2-463c-ba24-02eea69b93f5",
+              "lesson_profile": {
+                "title": "S2-L10-Prevención en carretera.pdf"
+              }
+            },
+            {
+              "lesson_id": "a093631f-b959-4cf9-afd4-193cc2116623",
+              "lesson_profile": {
+                "title": "S2-L11-Principio mecánico de ruedas y ejes.pdf"
+              }
+            },
+            {
+              "lesson_id": "6c99ea75-7c21-4653-b607-8a73cd46589d",
+              "lesson_profile": {
+                "title": "S2-L12-Mira cómo se mueve.pdf"
+              }
+            },
+            {
+              "lesson_id": "ef996652-68ec-4eb2-9f4a-0270ba712672",
+              "lesson_profile": {
+                "title": "S2-L13-Empuja con fuerza.pdf"
+              }
+            },
+            {
+              "lesson_id": "78753f93-ae45-4574-963a-57e423b00bdf",
+              "lesson_profile": {
+                "title": "S2-L14-Qué tipo de energía es esta.pdf"
+              }
+            },
+            {
+              "lesson_id": "c2e754e1-a715-4c84-8c90-6ed4c6472500",
+              "lesson_profile": {
+                "title": "S2-L15-De dónde vienen los productos.pdf"
+              }
+            },
+            {
+              "lesson_id": "b20833e4-8946-4b56-a60c-5827f287630f",
+              "lesson_profile": {
+                "title": "S2-L16-Grandes estructuras.pdf"
+              }
+            },
+            {
+              "lesson_id": "b4162da0-8ba0-445c-b284-c64fee803be9",
+              "lesson_profile": {
+                "title": "S2-L17-Estos son los engranajes.pdf"
+              }
+            },
+            {
+              "lesson_id": "c6cdee23-63cf-4714-875c-328749de236b",
+              "lesson_profile": {
+                "title": "S2-L18-Ejercitémonos.pdf"
+              }
+            },
+            {
+              "lesson_id": "533b665f-72b7-4f9a-82b0-b068da999c13",
+              "lesson_profile": {
+                "title": "S2-L19-Simple o compuesta.pdf"
+              }
+            },
+            {
+              "lesson_id": "d3498949-2ac2-47ec-bc50-5c682ccc75dd",
+              "lesson_profile": {
+                "title": "S2-L20-Cómo ocupamos los combustibles fósiles.pdf"
+              }
+            },
+            {
+              "lesson_id": "aa5b73ab-721c-4e3d-ba2d-1720e2d2dc58",
+              "lesson_profile": {
+                "title": "S2-L21-La energía que el agua produce.pdf"
+              }
+            },
+            {
+              "lesson_id": "e8d7971c-47c9-4957-83da-837a56c61b28",
+              "lesson_profile": {
+                "title": "S2-L22-Desenterremos los fósiles.pdf"
+              }
+            }
+          ],
+          "robot_groups": [
+            {
+              "robot_id": "b6237bd9-61a2-4fc2-9b14-2e56167723a7",
+              "robot_profile": {
+                "name": "P3_L01_2"
+              }
+            },
+            {
+              "robot_id": "2e16c488-db99-41a7-84d7-38c70873ad19",
+              "robot_profile": {
+                "name": "S2_L01"
+              }
+            },
+            {
+              "robot_id": "b0a8f874-d4fb-4090-849a-55447c79d085",
+              "robot_profile": {
+                "name": "S2_L02"
+              }
+            },
+            {
+              "robot_id": "2466c274-33f7-433b-855a-aeea3fd16928",
+              "robot_profile": {
+                "name": "S2_L03"
+              }
+            },
+            {
+              "robot_id": "2b335e3e-179e-469c-89ae-b0bc713a9d9d",
+              "robot_profile": {
+                "name": "S2_L04"
+              }
+            },
+            {
+              "robot_id": "b011ee0f-9989-4c67-84c1-603550b9197e",
+              "robot_profile": {
+                "name": "S2_L05"
+              }
+            },
+            {
+              "robot_id": "c1215bea-90b1-4912-8c72-21a811e3276e",
+              "robot_profile": {
+                "name": "S2_L06"
+              }
+            },
+            {
+              "robot_id": "9f871da5-7d46-4da5-b6aa-92f4481ae6d4",
+              "robot_profile": {
+                "name": "S2_L07"
+              }
+            },
+            {
+              "robot_id": "47400ccb-56db-4072-b0c9-3fa41de0d474",
+              "robot_profile": {
+                "name": "S2_L08"
+              }
+            },
+            {
+              "robot_id": "457dd728-2d39-4eca-b938-67ff44b94d69",
+              "robot_profile": {
+                "name": "S2_L09"
+              }
+            },
+            {
+              "robot_id": "dc41c38b-6f3a-4c7f-a319-684979446c70",
+              "robot_profile": {
+                "name": "S2_L10"
+              }
+            },
+            {
+              "robot_id": "be963884-4a82-4416-9aa6-96c6c1f740c7",
+              "robot_profile": {
+                "name": "S2_L11"
+              }
+            },
+            {
+              "robot_id": "efdf6d02-6fc2-4be3-96cd-f27d8a895d23",
+              "robot_profile": {
+                "name": "S2_L12"
+              }
+            },
+            {
+              "robot_id": "ffdab87a-57d8-4738-8c87-d7470339073b",
+              "robot_profile": {
+                "name": "S2_L13"
+              }
+            },
+            {
+              "robot_id": "c3459cd5-e041-4310-98aa-5dbb7f2590e6",
+              "robot_profile": {
+                "name": "S2_L14"
+              }
+            },
+            {
+              "robot_id": "da0ed3fd-4d1b-4d12-a8a5-821d19087bd2",
+              "robot_profile": {
+                "name": "S2_L15"
+              }
+            },
+            {
+              "robot_id": "55bff982-b916-4c5d-9599-088e247cec19",
+              "robot_profile": {
+                "name": "S2_L16"
+              }
+            },
+            {
+              "robot_id": "f05d4cef-e25f-4926-9bb3-4eafc2e33e78",
+              "robot_profile": {
+                "name": "S2_L17"
+              }
+            },
+            {
+              "robot_id": "49d7b1a1-7009-4fb0-9170-7187afec00bf",
+              "robot_profile": {
+                "name": "S2_L18"
+              }
+            },
+            {
+              "robot_id": "4896f4f7-eccf-40df-8f66-cff4ee21ad1e",
+              "robot_profile": {
+                "name": "S2_L19"
+              }
+            },
+            {
+              "robot_id": "76597d29-4f47-44d7-a466-388e9a6a0833",
+              "robot_profile": {
+                "name": "S2_L20"
+              }
+            },
+            {
+              "robot_id": "e4432837-8a37-4e25-8557-e1fcbfdb41c6",
+              "robot_profile": {
+                "name": "S2_L21"
+              }
+            },
+            {
+              "robot_id": "1705899a-05f4-4d12-84bf-5a91380b4bbb",
+              "robot_profile": {
+                "name": "S2_L22"
+              }
+            },
+            {
+              "robot_id": "ade31e24-9ed4-4ae0-b4ea-196e33e05a49",
+              "robot_profile": {
+                "name": "S2_L23"
+              }
+            },
+            {
+              "robot_id": "39613fc1-3ac7-4d5c-91f7-3b7e047e79be",
+              "robot_profile": {
+                "name": "S2_L24"
+              }
+            },
+            {
+              "robot_id": "29c52e6f-be98-4846-be32-176f8471a4d8",
+              "robot_profile": {
+                "name": "S2_L25"
+              }
+            }
+          ]
+        },
+        {
+          "class_profile": {
+            "name": "Secundaria 3 - Profesor"
+          },
+          "group_id": "cd62952c-0ce1-461c-afff-eebd225723a6",
+          "school_group": {
+            "school_id": "bdb06dbb-04de-40a4-9a27-60586111f6c0"
+          },
+          "post_groups": [
+            {
+              "post_id": "728098f7-5941-486c-851c-bbe049901eae",
+              "post_profile": {
+                "topic": "Ayuda - Conectores y ejes"
+              }
+            }
+          ],
+          "lesson_groups": [
+            {
+              "lesson_id": "1847b5a9-333b-4627-bd50-01bce915cd94",
+              "lesson_profile": {
+                "title": "S3-L01-Hablemos de las grandes ciudades.pdf"
+              }
+            },
+            {
+              "lesson_id": "60250418-d82c-4e63-aee3-af38aa2af6be",
+              "lesson_profile": {
+                "title": "S3-L02-Cómo funcionan mis manos.pdf"
+              }
+            },
+            {
+              "lesson_id": "9693da55-3945-4c6b-a88d-3b5cf7a9c137",
+              "lesson_profile": {
+                "title": "S3-L03-Máquinas simples en vehículos de carga.pdf"
+              }
+            },
+            {
+              "lesson_id": "5c5ec81f-fab1-4828-9861-1ed91be617de",
+              "lesson_profile": {
+                "title": "S3-L04-Aprendamos a redactar una noticia.pdf"
+              }
+            },
+            {
+              "lesson_id": "54e13267-7861-4a11-b4c8-2cba38cfd961",
+              "lesson_profile": {
+                "title": "S3-L05-Qué es el tornillo de Arquímedes.pdf"
+              }
+            },
+            {
+              "lesson_id": "6ea33120-fbd4-40a4-8938-65753ece4167",
+              "lesson_profile": {
+                "title": "S3-L06-Máquinas compuestas.pdf"
+              }
+            },
+            {
+              "lesson_id": "26e96fa9-2fc0-482a-9d8e-62d698f2d142",
+              "lesson_profile": {
+                "title": "S3-L07-Usos del plano inclinado.pdf"
+              }
+            },
+            {
+              "lesson_id": "0b98712e-d623-446e-aa71-4896c4bc6412",
+              "lesson_profile": {
+                "title": "S3-L08-Pesos y contrapesos.pdf"
+              }
+            },
+            {
+              "lesson_id": "2034a203-00ab-42c5-b422-0b0dd060a779",
+              "lesson_profile": {
+                "title": "S3-L09-Así funcionan las poleas.pdf"
+              }
+            },
+            {
+              "lesson_id": "fcfa19a0-87af-417e-aebe-6b00e40de6c0",
+              "lesson_profile": {
+                "title": "S3-L10-Otro medio de transporte.pdf"
+              }
+            },
+            {
+              "lesson_id": "6e5c935f-c569-4c42-bff5-62aadf2631b0",
+              "lesson_profile": {
+                "title": "S3-L11-Drones-Una apuesta a la tecnología.pdf"
+              }
+            },
+            {
+              "lesson_id": "08af1a3c-00e3-437e-9157-c029ef7b92ec",
+              "lesson_profile": {
+                "title": "S3-L12-Ejes y ruedas.pdf"
+              }
+            },
+            {
+              "lesson_id": "8a23b119-0bed-4d52-8767-078839fb735b",
+              "lesson_profile": {
+                "title": "S3-L13-Organicemos una competencia.pdf"
+              }
+            },
+            {
+              "lesson_id": "a0331e88-5e7e-4c6d-a9c1-0a9d15bee15b",
+              "lesson_profile": {
+                "title": "S3-L14-Estructuras de diferentes tamaños.pdf"
+              }
+            },
+            {
+              "lesson_id": "bc60ff96-2c07-4be4-83d4-d52531cb6de9",
+              "lesson_profile": {
+                "title": "S3-L15-Armemos diseños más complejos.pdf"
+              }
+            },
+            {
+              "lesson_id": "dff41063-d524-4a0a-9bd8-758927f268e2",
+              "lesson_profile": {
+                "title": "S3-L16-Los fósiles vuelven a la vida.pdf"
+              }
+            },
+            {
+              "lesson_id": "625581f5-4eee-4d5d-bdc9-0d1a9e69b389",
+              "lesson_profile": {
+                "title": "S3-L17-Tipos de engranajes.pdf"
+              }
+            },
+            {
+              "lesson_id": "b3f6b488-71a0-4fa4-909e-27e68f4139a2",
+              "lesson_profile": {
+                "title": "S3-L18-Terremotos y sismos.pdf"
+              }
+            },
+            {
+              "lesson_id": "36d425e1-5f7a-4d6e-89e6-93574cf9f03b",
+              "lesson_profile": {
+                "title": "S3-L19-Reloj mundial.pdf"
+              }
+            },
+            {
+              "lesson_id": "2bd786b9-560f-4e55-9e3b-f2f6590f5b80",
+              "lesson_profile": {
+                "title": "S3-L20-La marea alta.pdf"
+              }
+            },
+            {
+              "lesson_id": "0ef8f3c0-890b-4d80-ab86-6639cd98d86d",
+              "lesson_profile": {
+                "title": "S3-L21-Grecia antigua.pdf"
+              }
+            },
+            {
+              "lesson_id": "e29bd7d3-18a3-4402-8dbd-f5adecad80fd",
+              "lesson_profile": {
+                "title": "S3-L22-Ejercitémonos.pdf"
+              }
+            }
+          ],
+          "robot_groups": [
+            {
+              "robot_id": "18e611cf-3998-4d23-bbad-1e78de2c638e",
+              "robot_profile": {
+                "name": "S3_L01"
+              }
+            },
+            {
+              "robot_id": "edccf459-15a7-4f01-a86a-f5b8ea4280e3",
+              "robot_profile": {
+                "name": "S3_L02"
+              }
+            },
+            {
+              "robot_id": "f6002398-42ac-4fa2-b110-992e8ea7ab64",
+              "robot_profile": {
+                "name": "S3_L03"
+              }
+            },
+            {
+              "robot_id": "41d23e4e-f19a-4e4d-8064-38c528bdca44",
+              "robot_profile": {
+                "name": "S3_L04_1"
+              }
+            },
+            {
+              "robot_id": "549198f6-8658-4f9c-a8c4-02bf1f82e670",
+              "robot_profile": {
+                "name": "S3_L04_2"
+              }
+            },
+            {
+              "robot_id": "5f96ee01-3d60-454e-868f-7ce0b22a44f0",
+              "robot_profile": {
+                "name": "S3_L05"
+              }
+            },
+            {
+              "robot_id": "3a81dd66-0754-4a5d-804b-034ee7087cc3",
+              "robot_profile": {
+                "name": "S3_L06"
+              }
+            },
+            {
+              "robot_id": "e9392ea9-3f7d-4763-8bfb-08d3eae888d2",
+              "robot_profile": {
+                "name": "S3_L07"
+              }
+            },
+            {
+              "robot_id": "89a6cbb7-8733-4bb4-95ec-5a8e325daa07",
+              "robot_profile": {
+                "name": "S3_L08"
+              }
+            },
+            {
+              "robot_id": "c7519a45-9567-4a41-95b4-9e513141128e",
+              "robot_profile": {
+                "name": "S3_L09"
+              }
+            },
+            {
+              "robot_id": "623114d9-0513-4d1b-be0f-fdbae2b97de8",
+              "robot_profile": {
+                "name": "S3_L10"
+              }
+            },
+            {
+              "robot_id": "4a8811d8-5a8d-4a10-81e4-f6ec57ac538e",
+              "robot_profile": {
+                "name": "S3_L11"
+              }
+            },
+            {
+              "robot_id": "686d1a4b-6c2e-4b3c-900e-d2d65db4b9e2",
+              "robot_profile": {
+                "name": "S3_L12"
+              }
+            },
+            {
+              "robot_id": "202b3923-c82b-44ff-b7f7-1e8754248eb3",
+              "robot_profile": {
+                "name": "S3_L13"
+              }
+            },
+            {
+              "robot_id": "ac639106-84da-4982-8ad0-0cabce02c9b2",
+              "robot_profile": {
+                "name": "S3_L14"
+              }
+            },
+            {
+              "robot_id": "5fa6bf44-4518-4ba5-9637-abf9708ee10c",
+              "robot_profile": {
+                "name": "S3_L15"
+              }
+            },
+            {
+              "robot_id": "c5e7eb42-1e69-40c5-8c95-5a24963c1ade",
+              "robot_profile": {
+                "name": "S3_L16"
+              }
+            },
+            {
+              "robot_id": "eb3d4f1c-62b9-4e61-a020-8d3c1f411d8c",
+              "robot_profile": {
+                "name": "S3_L17"
+              }
+            },
+            {
+              "robot_id": "05a849bf-854a-4b81-bed3-818150637f5f",
+              "robot_profile": {
+                "name": "S3_L18"
+              }
+            },
+            {
+              "robot_id": "baa86e54-7f70-4455-b027-2a67ce6c5928",
+              "robot_profile": {
+                "name": "S3_L19"
+              }
+            },
+            {
+              "robot_id": "f4933bd3-95bc-41ea-9e89-29bb20fbdc80",
+              "robot_profile": {
+                "name": "S3_L20"
+              }
+            },
+            {
+              "robot_id": "48184540-2689-4966-8a5a-82721a380f09",
+              "robot_profile": {
+                "name": "S3_L21"
+              }
+            },
+            {
+              "robot_id": "e6c72832-1d4a-4e10-95e2-1bb1638f6356",
+              "robot_profile": {
+                "name": "S3_L22"
+              }
+            },
+            {
+              "robot_id": "924f46e0-7625-438a-985c-ecf575e7dea0",
+              "robot_profile": {
+                "name": "S3_L23"
+              }
+            },
+            {
+              "robot_id": "8045b8c6-f06e-48ba-962e-85adff159769",
+              "robot_profile": {
+                "name": "S3_L24"
+              }
+            },
+            {
+              "robot_id": "edd1b34c-d8a9-4a5b-b0c4-055fb9f683a6",
+              "robot_profile": {
+                "name": "S3_L25"
+              }
+            }
+          ]
+        },
+        {
+          "class_profile": {
+            "name": "Bachillerato 1 - Profesor"
+          },
+          "group_id": "6f1d251d-9236-4eb9-8bde-39503e4e13a7",
+          "school_group": {
+            "school_id": "bdb06dbb-04de-40a4-9a27-60586111f6c0"
+          },
+          "post_groups": [
+            {
+              "post_id": "c88d4caa-3c5c-450c-9621-87b8dc379efb",
+              "post_profile": {
+                "topic": "Ayuda - Función de conector blanco / conector 360°"
+              }
+            }
+          ],
+          "lesson_groups": [
+            {
+              "lesson_id": "d643a38e-ce92-48ac-8cc4-4167426592cb",
+              "lesson_profile": {
+                "title": "B1-L01-Conozcamos sobre mitología grecolatina.pdf"
+              }
+            },
+            {
+              "lesson_id": "616b7db5-a204-4e99-992d-24e40ba7b54f",
+              "lesson_profile": {
+                "title": "B1-L02-Maquinaria y modernización.pdf"
+              }
+            },
+            {
+              "lesson_id": "a097a78d-f262-4026-81b1-4e6f4f4ce393",
+              "lesson_profile": {
+                "title": "B1-L03-Aprendamos de robótica.pdf"
+              }
+            },
+            {
+              "lesson_id": "b2815b85-a391-449c-8b1f-0415b547a38a",
+              "lesson_profile": {
+                "title": "B1-L04-Máquinas simples_La palanca.pdf"
+              }
+            },
+            {
+              "lesson_id": "20bc8969-a4ae-4d32-9628-5018b6a87963",
+              "lesson_profile": {
+                "title": "B1-L05-Uso planos inclinados.pdf"
+              }
+            },
+            {
+              "lesson_id": "2096ba1c-4bbb-4858-8cfd-bcd43d172a9c",
+              "lesson_profile": {
+                "title": "B1-L06-Fuerzas paralelas.pdf"
+              }
+            },
+            {
+              "lesson_id": "cb212f5c-2340-4790-a4f3-4190ff5f056f",
+              "lesson_profile": {
+                "title": "B1-L07-Aprendamos sobre gravedad.pdf"
+              }
+            },
+            {
+              "lesson_id": "caa597d6-811a-46ad-be63-c3a6b5b4ff1e",
+              "lesson_profile": {
+                "title": "B1-L08-Participemos en la competencia.pdf"
+              }
+            },
+            {
+              "lesson_id": "bf5e3db3-edcf-45e1-b809-fdffae2b2055",
+              "lesson_profile": {
+                "title": "B1-L09-Pesos y contrapesos.pdf"
+              }
+            },
+            {
+              "lesson_id": "0a152a8f-f2df-4f48-be4c-7d6e8965cd78",
+              "lesson_profile": {
+                "title": "B1-L10-Armado y uso de poleas.pdf"
+              }
+            },
+            {
+              "lesson_id": "87275d78-6a0c-4403-860e-c9078fbd01ca",
+              "lesson_profile": {
+                "title": "B1-L11-Calculemos la energía.pdf"
+              }
+            },
+            {
+              "lesson_id": "cc509c19-b6ce-437a-ad8b-370953595fb8",
+              "lesson_profile": {
+                "title": "B1-L12-Las velocidades son relativas.pdf"
+              }
+            },
+            {
+              "lesson_id": "a173e015-4230-4c82-9e40-b21bd296ed5a",
+              "lesson_profile": {
+                "title": "B1-L14-La evolución.pdf"
+              }
+            },
+            {
+              "lesson_id": "00f24182-8ce3-441e-b063-58c261090cd4",
+              "lesson_profile": {
+                "title": "B1-L15-Estructuras.pdf"
+              }
+            },
+            {
+              "lesson_id": "2e5e8779-cc0d-49db-9e3b-3e0621fb0ded",
+              "lesson_profile": {
+                "title": "B1-L16-Estructura de las moléculas.pdf"
+              }
+            },
+            {
+              "lesson_id": "edbe8db7-6426-43d4-ba38-643a16a08222",
+              "lesson_profile": {
+                "title": "B1-L17-Tipos de engranajes.pdf"
+              }
+            },
+            {
+              "lesson_id": "1422ee0a-da7e-4775-af06-c3edd80009a0",
+              "lesson_profile": {
+                "title": "B1-L18-Ensamblo máquinas compuestas.pdf"
+              }
+            },
+            {
+              "lesson_id": "a1680864-445a-4fc8-a4ca-574b1f927b71",
+              "lesson_profile": {
+                "title": "B1-L19-Máquinas de producción.pdf"
+              }
+            },
+            {
+              "lesson_id": "2600dc6c-53d9-43a1-af33-e52347bd40d1",
+              "lesson_profile": {
+                "title": "B1-L20-Segunda Ley de Newton.pdf"
+              }
+            },
+            {
+              "lesson_id": "b773fd58-ff3c-4a8f-98f5-3e87a2ed4be5",
+              "lesson_profile": {
+                "title": "B1-L21-Esta es la energía hidráulica.pdf"
+              }
+            },
+            {
+              "lesson_id": "daa2b784-8170-47e1-a03f-753857e842b7",
+              "lesson_profile": {
+                "title": "B1-L22-Una energía amigable con el medio ambiente.pdf"
+              }
+            }
+          ],
+          "robot_groups": [
+            {
+              "robot_id": "82d274e9-a690-4b48-9174-233b2526039a",
+              "robot_profile": {
+                "name": "B1_L01"
+              }
+            },
+            {
+              "robot_id": "ce733ffa-5404-420c-aecc-5fccfa49ade3",
+              "robot_profile": {
+                "name": "B1_L02"
+              }
+            },
+            {
+              "robot_id": "25f952a9-8741-4636-a7d3-1de943a27dd1",
+              "robot_profile": {
+                "name": "B1_L03"
+              }
+            },
+            {
+              "robot_id": "1099ea61-18c1-4675-90d1-f42933d762f9",
+              "robot_profile": {
+                "name": "B1_L04"
+              }
+            },
+            {
+              "robot_id": "2133f8b4-5bb1-40f2-a762-8ae716d3c026",
+              "robot_profile": {
+                "name": "B1_L05"
+              }
+            },
+            {
+              "robot_id": "c581106b-dbed-4d6e-96b6-f65214350404",
+              "robot_profile": {
+                "name": "B1_L06"
+              }
+            },
+            {
+              "robot_id": "054374b3-0705-459c-b092-1bb9934fe7a4",
+              "robot_profile": {
+                "name": "B1_L07"
+              }
+            },
+            {
+              "robot_id": "f2888c2e-0470-41bc-a646-5eafe517899a",
+              "robot_profile": {
+                "name": "B1_L08"
+              }
+            },
+            {
+              "robot_id": "94418edf-1afc-4779-8fb3-eb30353c0387",
+              "robot_profile": {
+                "name": "B1_L09"
+              }
+            },
+            {
+              "robot_id": "6f98d412-30ad-40ff-ab04-b000a0d716aa",
+              "robot_profile": {
+                "name": "B1_L10"
+              }
+            },
+            {
+              "robot_id": "2fba3160-397c-4835-a3f4-2cd54ab9c3f5",
+              "robot_profile": {
+                "name": "B1_L11"
+              }
+            },
+            {
+              "robot_id": "2d8f8267-0d52-4b7a-9ee1-1bdc1575d9f7",
+              "robot_profile": {
+                "name": "B1_L12"
+              }
+            },
+            {
+              "robot_id": "857a12c2-4ab8-4ab7-897b-ba0aad0ec7a1",
+              "robot_profile": {
+                "name": "B1_L13"
+              }
+            },
+            {
+              "robot_id": "2e11f44e-5719-43db-bf55-8363895ea312",
+              "robot_profile": {
+                "name": "B1_L14"
+              }
+            },
+            {
+              "robot_id": "b792ba40-1411-4302-b40d-21bc84cfb860",
+              "robot_profile": {
+                "name": "B1_L15"
+              }
+            },
+            {
+              "robot_id": "7b7f3416-1734-4bb2-850e-2217b64b0bbf",
+              "robot_profile": {
+                "name": "B1_L16"
+              }
+            },
+            {
+              "robot_id": "664a3219-6c3e-43b9-87d8-07d247fda1a5",
+              "robot_profile": {
+                "name": "B1_L17"
+              }
+            },
+            {
+              "robot_id": "16e08105-e4ae-4418-983f-e100522203ef",
+              "robot_profile": {
+                "name": "B1_L18"
+              }
+            },
+            {
+              "robot_id": "b152e07c-af3b-45e6-9dc2-d1d2dd7734cf",
+              "robot_profile": {
+                "name": "B1_L19"
+              }
+            },
+            {
+              "robot_id": "71c87d61-9a29-41e6-afb3-0504a3cc96b6",
+              "robot_profile": {
+                "name": "B1_L20"
+              }
+            },
+            {
+              "robot_id": "23fd70ae-b10f-4a3b-8d9e-99209906dcf2",
+              "robot_profile": {
+                "name": "B1_L21"
+              }
+            },
+            {
+              "robot_id": "58689eb2-d8cb-4e7e-9744-fbaa990013ea",
+              "robot_profile": {
+                "name": "B1_L22"
+              }
+            },
+            {
+              "robot_id": "1a113ff7-9cf8-41be-8a75-09e506d37cfd",
+              "robot_profile": {
+                "name": "B1_L23"
+              }
+            },
+            {
+              "robot_id": "aa39f7b8-9964-4cb2-a9f4-c82f1b17c3c6",
+              "robot_profile": {
+                "name": "B1_L24"
+              }
+            },
+            {
+              "robot_id": "b5f86734-6986-4638-881a-6e9c37ae55fd",
+              "robot_profile": {
+                "name": "B1_L25"
+              }
+            }
+          ]
+        },
+        {
+          "class_profile": {
+            "name": "Bachillerato 2 - Profesor"
+          },
+          "group_id": "118db163-4465-4cc9-8e06-5c3d17e87c5a",
+          "school_group": {
+            "school_id": "bdb06dbb-04de-40a4-9a27-60586111f6c0"
+          },
+          "post_groups": [
+            {
+              "post_id": "dc16b0b8-5f58-4fea-a2ea-5dfef295ff39",
+              "post_profile": {
+                "topic": "Ayuda - Elementos mecánicos"
+              }
+            }
+          ],
+          "lesson_groups": [
+            {
+              "lesson_id": "f4316e10-5a71-4986-9af9-f485f94b3060",
+              "lesson_profile": {
+                "title": "B2-L01-Organicemos una competencia.pdf"
+              }
+            },
+            {
+              "lesson_id": "6403e049-b149-4cd0-ba2f-8f1bf01419a5",
+              "lesson_profile": {
+                "title": "B2-L02-Qué tipo de palanca es esta.pdf"
+              }
+            },
+            {
+              "lesson_id": "26a10f52-21d1-487a-a3f7-620caa700751",
+              "lesson_profile": {
+                "title": "B2-L03-Apliquemos la Ley de la palanca.pdf"
+              }
+            },
+            {
+              "lesson_id": "4fe6cc30-176a-440b-8717-c9196eccce71",
+              "lesson_profile": {
+                "title": "B2-L04-Conozcamos el funcionamiento de nuestras manos.pdf"
+              }
+            },
+            {
+              "lesson_id": "ee3ac821-51d3-4224-8806-70767abe2431",
+              "lesson_profile": {
+                "title": "B2-L05-Tornillo de Arquímedes.pdf"
+              }
+            },
+            {
+              "lesson_id": "20260d90-1ede-48cc-bf33-9fa7c3e9e26f",
+              "lesson_profile": {
+                "title": "B2-L06-El plano inclinado y la fricción.pdf"
+              }
+            },
+            {
+              "lesson_id": "452b69e3-9c35-4912-902a-bfe48a061c32",
+              "lesson_profile": {
+                "title": "B2-L07-De una simple a una compuesta.pdf"
+              }
+            },
+            {
+              "lesson_id": "1ed723f1-04f9-4fc4-b994-ac2b6a601b23",
+              "lesson_profile": {
+                "title": "B2-L08-Usos y ventajas de las poleas.pdf"
+              }
+            },
+            {
+              "lesson_id": "bb92c818-83ad-4e71-8770-9ab35aca1324",
+              "lesson_profile": {
+                "title": "B2-L09-Medios de transporte optativos.pdf"
+              }
+            },
+            {
+              "lesson_id": "3743b3dc-c036-42dd-b1f6-0563814e2b28",
+              "lesson_profile": {
+                "title": "B2-L10-Aprendamos de mecánica automotriz.pdf"
+              }
+            },
+            {
+              "lesson_id": "ae70084d-d8d3-418f-b6de-a28f46120eca",
+              "lesson_profile": {
+                "title": "B2-L11-Argumento sobre nuestras costumbres.pdf"
+              }
+            },
+            {
+              "lesson_id": "a0d603eb-1a3f-4fb2-a14b-c2ea745b0636",
+              "lesson_profile": {
+                "title": "B2-L12-Ruedas y ejes.pdf"
+              }
+            },
+            {
+              "lesson_id": "855ffc3e-cc6a-4f43-9558-b3a3340a0cd4",
+              "lesson_profile": {
+                "title": "B2-L13-Tecnología y desarrollo sostenible.pdf"
+              }
+            },
+            {
+              "lesson_id": "16a32864-9875-42e7-8d1f-7a7821fc4cc2",
+              "lesson_profile": {
+                "title": "B2-L14-Observando ecosistemas imperceptibles.pdf"
+              }
+            },
+            {
+              "lesson_id": "b294681e-d324-445a-af07-819fda820077",
+              "lesson_profile": {
+                "title": "B2-L15-Conozcamos de historia.pdf"
+              }
+            },
+            {
+              "lesson_id": "4bc92ec7-8f63-4c29-942c-de7ef5c05523",
+              "lesson_profile": {
+                "title": "B2-L16-Usos de las estructuras.pdf"
+              }
+            },
+            {
+              "lesson_id": "02071909-7892-4d74-bdb6-8b00c5fe1abc",
+              "lesson_profile": {
+                "title": "B2-L18-Viaje a la luna.pdf"
+              }
+            },
+            {
+              "lesson_id": "59c3ddfe-5ee4-4144-b238-858fcc013f52",
+              "lesson_profile": {
+                "title": "B2-L19-Las construcciones, ¿perjudican el medio ambiente¿.pdf"
+              }
+            },
+            {
+              "lesson_id": "01ee0020-87e9-4227-a6d9-b544e934b8c5",
+              "lesson_profile": {
+                "title": "B2-L20-Fuerza de fricción.pdf"
+              }
+            },
+            {
+              "lesson_id": "4281d866-cd00-4230-a50f-1060bbf7b211",
+              "lesson_profile": {
+                "title": "B2-L21-Energía amigable con el medio ambiente.pdf"
+              }
+            },
+            {
+              "lesson_id": "3ec25aeb-ca61-4c96-b788-1b7312198456",
+              "lesson_profile": {
+                "title": "B2-L22-De la Edad Antigua a la contemporaneidad.pdf"
+              }
+            }
+          ],
+          "robot_groups": [
+            {
+              "robot_id": "d6bc0869-5ebc-4c2f-9638-710a29c4e651",
+              "robot_profile": {
+                "name": "B2_L01"
+              }
+            },
+            {
+              "robot_id": "6a7f968e-90b8-43e2-a59c-e771db6311d1",
+              "robot_profile": {
+                "name": "B2_L02"
+              }
+            },
+            {
+              "robot_id": "05c51d1d-da71-40b6-a577-a59076c63f33",
+              "robot_profile": {
+                "name": "B2_L03"
+              }
+            },
+            {
+              "robot_id": "9cd62312-3f23-40d8-92dc-d77b62f49d12",
+              "robot_profile": {
+                "name": "B2_L04"
+              }
+            },
+            {
+              "robot_id": "c59f6e11-67e5-4445-a504-51130cbfb953",
+              "robot_profile": {
+                "name": "B2_L05"
+              }
+            },
+            {
+              "robot_id": "2839a2be-d1fd-4ecf-8a76-435cb19ba1ea",
+              "robot_profile": {
+                "name": "B2_L06"
+              }
+            },
+            {
+              "robot_id": "f4da7e93-54e4-4733-8576-0351b775d604",
+              "robot_profile": {
+                "name": "B2_L07"
+              }
+            },
+            {
+              "robot_id": "f34f7be8-4f43-43b8-8085-681f5bc3ca9e",
+              "robot_profile": {
+                "name": "B2_L08"
+              }
+            },
+            {
+              "robot_id": "81e7f282-8741-48c7-b7bf-c1076aa4b179",
+              "robot_profile": {
+                "name": "B2_L09"
+              }
+            },
+            {
+              "robot_id": "4a67b0cb-ca64-44ac-a6c2-998fc8309050",
+              "robot_profile": {
+                "name": "B2_L10"
+              }
+            },
+            {
+              "robot_id": "831e47e2-bc76-442c-92a1-ca48f0c165fc",
+              "robot_profile": {
+                "name": "B2_L11"
+              }
+            },
+            {
+              "robot_id": "001c9d09-e425-4f0d-b297-3a60b7e299a2",
+              "robot_profile": {
+                "name": "B2_L12"
+              }
+            },
+            {
+              "robot_id": "1225c8cc-a303-468b-8d18-ac8123b5c9be",
+              "robot_profile": {
+                "name": "B2_L13"
+              }
+            },
+            {
+              "robot_id": "71e7949f-a629-45cd-ae6b-1e6874035bf5",
+              "robot_profile": {
+                "name": "B2_L14"
+              }
+            },
+            {
+              "robot_id": "376561b4-3209-454f-9954-67ec1e489d23",
+              "robot_profile": {
+                "name": "B2_L15"
+              }
+            },
+            {
+              "robot_id": "9575122c-fe8e-44c1-a127-3feeccb28800",
+              "robot_profile": {
+                "name": "B2_L16"
+              }
+            },
+            {
+              "robot_id": "18f34c65-f216-48d2-82ec-ed2a3008c7f9",
+              "robot_profile": {
+                "name": "B2_L17"
+              }
+            },
+            {
+              "robot_id": "129cd076-b890-44bb-9084-9cbd73674d9f",
+              "robot_profile": {
+                "name": "B2_L18"
+              }
+            },
+            {
+              "robot_id": "05c0acfc-fa9f-4c2f-8082-eb52db71a2d1",
+              "robot_profile": {
+                "name": "B2_L19"
+              }
+            },
+            {
+              "robot_id": "2b37e1ec-f12b-4c97-a170-5b998b9a50bf",
+              "robot_profile": {
+                "name": "B2_L20"
+              }
+            },
+            {
+              "robot_id": "54bcbb3b-bd1e-4b73-a70d-80b541a0013f",
+              "robot_profile": {
+                "name": "B2_L21"
+              }
+            },
+            {
+              "robot_id": "917bc00f-87a8-44e5-b0fd-2a47d4fee999",
+              "robot_profile": {
+                "name": "B2_L22"
+              }
+            },
+            {
+              "robot_id": "9e7bcd35-7bab-4963-a830-69bc82ecaefa",
+              "robot_profile": {
+                "name": "B2_L23"
+              }
+            },
+            {
+              "robot_id": "cc4d7f33-2b62-4de9-b619-ed8db6b5f71f",
+              "robot_profile": {
+                "name": "B2_L24"
+              }
+            },
+            {
+              "robot_id": "7cde8d4d-d3be-4ffc-9c40-46bc4d3a185a",
+              "robot_profile": {
+                "name": "B2_L25"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }

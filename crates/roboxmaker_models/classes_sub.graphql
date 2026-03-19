@@ -1,0 +1,20 @@
+subscription get_classes_list($group_id: uuid!) {
+  class_group(where: {group_id: {_eq: $group_id}}) {
+    class_profile {
+      name
+      section_id
+      class_classes(order_by: {classes_profile: {timestamp: asc}}) {
+        classes_id
+        section_id
+        classes_profile {
+          topic
+        }
+      }
+    }
+    classes_groups(where: {group_id: {_eq: $group_id}}) {
+      archived
+      published
+      classes_id
+    }
+  }
+}
