@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roboxmaker Dashboard</title>
+    <title>Roboxmaker</title>
 
     <meta http-equiv="Content-Security-Policy"
         content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' ws://localhost:8080 http://localhost:8080; frame-src 'self' https://landing.roboxmaker.com https://*.roboxmaker.com;">
@@ -19,9 +19,7 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            /* Evita barras de desplazamiento dobles */
             background-color: #f4f4f4;
-            /* Un color de fondo neutral por si acaso */
         }
 
         #root,
@@ -31,11 +29,22 @@
             display: block;
         }
 
-        /* Si la app inyecta un iframe directamente, también lo estiramos */
-        iframe {
+        /* Regla agresiva 1: Si Yew mete un div intermediario, oblígalo a estirarse */
+        #root>div,
+        #app>div {
             width: 100%;
             height: 100%;
+        }
+
+        /* Regla agresiva 2: El iframe medirá el 100% de la PANTALLA, sin importar sus padres */
+        iframe {
+            width: 100vw !important;
+            height: 100vh !important;
             border: none;
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
     </style>
 </head>
