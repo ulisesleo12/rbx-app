@@ -73,6 +73,38 @@ pub struct SearchByClassesGradeByGroupId;
 impl Request for SearchByClassesGradeByGroupId {}
 
 
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "schema.graphql",
+    query_path = "query.graphql",
+    response_derives = "Debug, Clone",
+    normalization = "rust"
+)]
+pub struct ClassesGroupAdd;
+impl Request for ClassesGroupAdd {}
+
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "schema.graphql",
+    query_path = "query.graphql",
+    response_derives = "Debug, Clone",
+    normalization = "rust"
+)]
+pub struct ClassesGroupDelete;
+impl Request for ClassesGroupDelete {}
+
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "schema.graphql",
+    query_path = "query.graphql",
+    response_derives = "Debug, Clone",
+    normalization = "rust"
+)]
+pub struct ClassesGroupCreate;
+impl Request for ClassesGroupCreate {}
+
 // #[derive(GraphQLQuery)]
 // #[graphql(
 //     schema_path = "schema.graphql",
@@ -115,46 +147,12 @@ pub struct ClassesByGroupId;
 impl Subscribe for ClassesByGroupId {}
 
 
-// <------------------------ NEW QUERY------------------------> //
-
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "schema.graphql",
-    query_path = "classes_sub.graphql",
+    query_path = "query.graphql",
     response_derives = "Clone, Debug",
     normalization = "rust"
 )]
-pub struct GetClassesList; 
-impl Subscribe for GetClassesList {}
-
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "schema.graphql",
-    query_path = "classes_mut.graphql",
-    response_derives = "Debug, Clone",
-    normalization = "rust"
-)]
-pub struct ClassesClassAndGroupAdd;
-impl Request for ClassesClassAndGroupAdd {}
-
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "schema.graphql",
-    query_path = "classes_mut.graphql",
-    response_derives = "Debug, Clone",
-    normalization = "rust"
-)]
-pub struct ClassesGroupDelete;
-impl Request for ClassesGroupDelete {}
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "schema.graphql",
-    query_path = "classes_mut.graphql",
-    response_derives = "Debug, Clone",
-    normalization = "rust"
-)]
-pub struct ClassesClassAndGroupCreate;
-impl Request for ClassesClassAndGroupCreate {}
+pub struct ClassesListByGroup; 
+impl Subscribe for ClassesListByGroup {}

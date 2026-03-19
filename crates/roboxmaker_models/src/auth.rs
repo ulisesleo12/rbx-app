@@ -1,9 +1,10 @@
-use log::info;
 use uuid::Uuid;
-use reqwest::header::HeaderMap;
+use log::info;
+use yew::format::Json;
 use serde::{Deserialize, Serialize};
+use yew::{Component, ComponentLink};
 use base64::{engine::general_purpose::{self}, Engine};
-// use yew::services::{fetch::{FetchService, FetchTask, Request, Response}, storage::{Area, StorageService}};
+use yew::services::{fetch::{FetchService, FetchTask, Request, Response}, storage::{Area, StorageService}};
 
 use roboxmaker_main::config;
 
@@ -64,130 +65,12 @@ pub enum TokenRequest {
     RefreshToken(RefreshTokenRequest),
 }
 
-pub async fn token_req(req_type: TokenRequest) -> Result<Option<(Auth, Token)>, anyhow::Error> {
-    let base_url = config::AKER_AUTH_URL;
-    let url = format!(
-        "{}/auth/realms/aker/protocol/openid-connect/token",
-        base_url.to_string()
-    );
-    let mut headers = HeaderMap::new();
-    headers.insert(
-        "Content-Type",
-        "application/x-www-form-urlencoded".parse().unwrap(),
-    );
-
-    let client =  reqwest::Client::new();
-
-    match req_type {
-        TokenRequest::AccessToken(data) => {
-            let request = client.post(url).headers(headers).form(&data).build();
-
-            match request {
-                Ok(req) => {
-                    let response = client.execute(req).await;
-
-                    match response {
-                        Ok(respon) => {
-                            let data = respon.json::<Auth>().await;
-                            match &data {
-                                Ok(_auth) => {
-                                    let token: Option<Token> = data
-                                        .as_ref()
-                                        .ok()
-                                        .map(|auth| {
-                                            auth.access_token.split(".").collect::<Vec<_>>()
-                                        })
-                                        .unwrap_or_default()
-                                        .iter()
-                                        .skip(1)
-                                        // .map(|b| base64::decode(b))
-                                        .map(|b| Engine::decode(&general_purpose::STANDARD_NO_PAD, b))
-                                        .filter_map(Result::ok)
-                                        .map(|b| String::from_utf8(b))
-                                        .filter_map(Result::ok)
-                                        .map(|token| serde_json::from_str::<Token>(&token))
-                                        .filter_map(Result::ok)
-                                        .last();
-
-                                    Ok(data.ok().zip(token))
-                                },
-                                Err(e) => {
-                                    info!("Err {:?}", &e);
-                                    Ok(None)
-                                }
-                            }
-                        },
-                        Err(e) => {
-                            info!("Err {:?}", &e);
-                            Ok(None)
-                        },
-                    }
-                },
-                Err(e) => {
-                    info!("Err {:?}", &e);
-                    Ok(None)
-                },
-            }
-        },
-        TokenRequest::RefreshToken(data) => {
-            let request = client.post(url).headers(headers).form(&data).build();
-
-            match request {
-                Ok(req) => {
-                    let response = client.execute(req).await;
-
-                    match response {
-                        Ok(response) => {
-                            let data = response.json::<Auth>().await;
-                            match &data {
-                                Ok(_auth) => {
-                                    let token: Option<Token> = data
-                                        .as_ref()
-                                        .ok()
-                                        .map(|auth| {
-                                            auth.access_token.split(".").collect::<Vec<_>>()
-                                        })
-                                        .unwrap_or_default()
-                                        .iter()
-                                        .skip(1)
-                                        // .map(|b| base64::decode(b))
-                                        .map(|b| Engine::decode(&general_purpose::STANDARD_NO_PAD, b))
-                                        .filter_map(Result::ok)
-                                        .map(|b| String::from_utf8(b))
-                                        .filter_map(Result::ok)
-                                        .map(|token| serde_json::from_str::<Token>(&token))
-                                        .filter_map(Result::ok)
-                                        .last();
-
-                                    Ok(data.ok().zip(token))
-                                }
-                                Err(e) => {
-                                    info!("Err {:?}", &e);
-                                    Ok(None)
-                                }
-                            }
-                        }
-                        Err(e) => {
-                            info!("Err {:?}", &e);
-                            Ok(None)
-                        }
-                    }
-                }
-                Err(e) => {
-                    info!("{:?}", e);
-                    Ok(None)
-                }
-            }
-        },
+fn struct_to_json(req: TokenRequest) -> Result<String, serde_urlencoded::ser::Error> {
+    match req {
+        TokenRequest::AccessToken(req) => serde_urlencoded::to_string(req),
+        TokenRequest::RefreshToken(req) => serde_urlencoded::to_string(req),
     }
 }
-
-// fn struct_to_json(req: TokenRequest) -> Result<String, serde_urlencoded::ser::Error> {
-//     match req {
-//         TokenRequest::AccessToken(req) => serde_urlencoded::to_string(req),
-//         TokenRequest::RefreshToken(req) => serde_urlencoded::to_string(req),
-//     }
-// }
 // fn struct_to_json(req: TokenRequest) -> Result<String, serde_json::Error> {
 //     match req {
 //         TokenRequest::AccessToken(req) => serde_json::to_string(&req),
@@ -195,82 +78,82 @@ pub async fn token_req(req_type: TokenRequest) -> Result<Option<(Auth, Token)>, 
 //     }
 // }
 
-// fn token_req(req: TokenRequest) -> Request<Result<String, anyhow::Error>> {
-//     let enc_body = Ok(struct_to_json(req).expect("bad urlencoded token request"));
-//     let url = format!(
-//         "{}/auth/realms/aker/protocol/openid-connect/token",
-//         config::AKER_AUTH_URL
-//     );
-//     let req = Request::post(url)
-//         .header("Content-Type", format!("application/x-www-form-urlencoded"))
-//         .body(enc_body)
-//         .expect("Failed to build request.");
-//     req
-// }
+fn token_req(req: TokenRequest) -> Request<Result<String, anyhow::Error>> {
+    let enc_body = Ok(struct_to_json(req).expect("bad urlencoded token request"));
+    let url = format!(
+        "{}/auth/realms/aker/protocol/openid-connect/token",
+        config::AKER_AUTH_URL
+    );
+    let req = Request::post(url)
+        .header("Content-Type", format!("application/x-www-form-urlencoded"))
+        .body(enc_body)
+        .expect("Failed to build request.");
+    req
+}
 
-// type AuthFetchResponse = Response<Json<Result<Auth, anyhow::Error>>>;
+type AuthFetchResponse = Response<Json<Result<Auth, anyhow::Error>>>;
 
-// pub fn fetch_token<C, F, M>(
-//     link: &ComponentLink<C>,
-//     vars: TokenRequest,
-//     response: F,
-// ) -> Result<FetchTask, anyhow::Error>
-// where
-//     C: Component,
-//     M: Into<C::Message>,
-//     F: Fn(Option<(Auth, Token)>) -> M + 'static,
-// {
-//     let post_request = token_req(vars);
-//     let post_callback = link.callback(move |callback: AuthFetchResponse| {
-//         let (_meta, Json(data)) = callback.into_parts();
-//         info!("token {:?}", data);
-//         // info!("MYTOKENDATA {:?}", data);
-//         let token: Option<Token> = data
-//             .as_ref()
-//             .ok()
-//             .map(|auth| {
-//                 auth.access_token.split(".").collect::<Vec<_>>()
-//             })
-//             .unwrap_or_default()
-//             .iter()
-//             .skip(1)
-//             // .map(|b| base64::decode(b))
-//             .map(|b| Engine::decode(&general_purpose::STANDARD_NO_PAD, b))
-//             .filter_map(Result::ok)
-//             .map(|b| String::from_utf8(b))
-//             .filter_map(Result::ok)
-//             .map(|&token| serde_json::from_str::<Token>(&token))
-//             .filter_map(Result::ok)
-//             .last();
-//         response(data.ok().zip(token))
-//     });
-//     FetchService::fetch(post_request, post_callback)
-// }
+pub fn fetch_token<C, F, M>(
+    link: &ComponentLink<C>,
+    vars: TokenRequest,
+    response: F,
+) -> Result<FetchTask, anyhow::Error>
+where
+    C: Component,
+    M: Into<C::Message>,
+    F: Fn(Option<(Auth, Token)>) -> M + 'static,
+{
+    let post_request = token_req(vars);
+    let post_callback = link.callback(move |callback: AuthFetchResponse| {
+        let (_meta, Json(data)) = callback.into_parts();
+        info!("token {:?}", data);
+        // info!("MYTOKENDATA {:?}", data);
+        let token: Option<Token> = data
+            .as_ref()
+            .ok()
+            .map(|auth| {
+                auth.access_token.split(".").collect::<Vec<_>>()
+            })
+            .unwrap_or_default()
+            .iter()
+            .skip(1)
+            // .map(|b| base64::decode(b))
+            .map(|b| Engine::decode(&general_purpose::STANDARD_NO_PAD, b))
+            .filter_map(Result::ok)
+            .map(|b| String::from_utf8(b))
+            .filter_map(Result::ok)
+            .map(|token| serde_json::from_str::<Token>(&token))
+            .filter_map(Result::ok)
+            .last();
+        response(data.ok().zip(token))
+    });
+    FetchService::fetch(post_request, post_callback)
+}
 
 
-// pub const AKER_TOKEN_KEY: &'static str = "app.aker.token";
-// pub const AKER_AUTH_KEY: &'static str = "app.aker.auth";
+pub const AKER_TOKEN_KEY: &'static str = "app.aker.token";
+pub const AKER_AUTH_KEY: &'static str = "app.aker.auth";
 
-// pub fn query_req<T>(query: Json<T>) -> Option<Request<Json<T>>> {
-//     let url = config::AKER_API_URL;
-//     StorageService::new(Area::Local)
-//         .ok()
-//         .and_then(|storage| {
-//             storage
-//                 .restore::<Json<anyhow::Result<Auth>>>(AKER_AUTH_KEY)
-//                 .0
-//                 .ok()
-//         })
-//         .and_then(|auth| {
-//             Some(
-//                 Request::post(url)
-//                     .header("Content-Type", "application/json")
-//                     .header("Authorization", format!("Bearer {}", auth.access_token))
-//                     .body(query)
-//                     .expect("Failed to build request."),
-//             )
-//         })
-// }
+pub fn query_req<T>(query: Json<T>) -> Option<Request<Json<T>>> {
+    let url = config::AKER_API_URL;
+    StorageService::new(Area::Local)
+        .ok()
+        .and_then(|storage| {
+            storage
+                .restore::<Json<anyhow::Result<Auth>>>(AKER_AUTH_KEY)
+                .0
+                .ok()
+        })
+        .and_then(|auth| {
+            Some(
+                Request::post(url)
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", format!("Bearer {}", auth.access_token))
+                    .body(query)
+                    .expect("Failed to build request."),
+            )
+        })
+}
 
 
 // type UserRobotsFetchResponse = Response<Json<Result<Vec<String>, anyhow::Error>>>;

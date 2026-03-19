@@ -8,19 +8,19 @@ impl Component for CardPostListPlaceholder {
     type Message = Msg;
     type Properties = ();
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(_props: Self::Properties, _link: ComponentLink<Self>) -> Self {
         Self {}
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, _msg: Self::Message) -> bool {
+    fn update(&mut self, _msg: Self::Message) -> ShouldRender {
         true
     }
 
-    fn changed(&mut self, _ctx: &Context<Self>, _old_props: &Self::Properties) -> bool {
+    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
         false
     }
 
-    fn view(&self, _ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
         html! {
             <div class="card-post-list is-loading-post-list p-4 mb-4 w-100">
                 <div class="content-post-list-header">

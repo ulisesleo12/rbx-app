@@ -57,8 +57,8 @@ impl Component for MessageListPost {
     type Message = MessageListPostMessage;
     type Properties = MessageListPostProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        link().send_message(MessageListPostMessage::FetchMessagesByPostGroup);
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(MessageListPostMessage::FetchMessagesByPostGroup);
         MessageListPost {
             link,
             props,
@@ -74,15 +74,15 @@ impl Component for MessageListPost {
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
             MessageListPostMessage::FetchMessagesByPostGroup => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let vars = message_model::messages_by_post_group::Variables {
-                        group_id: ctx.props().group_id.0,
-                        post_id: ctx.props().post_id.0,
+                        group_id: self.props.group_id.0,
+                        post_id: self.props.post_id.0,
                     };
                     let task = message_model::MessagesByPostGroup::subscribe(
                         graphql_task, 
@@ -173,8 +173,8 @@ impl Component for MessageListPost {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let vars = message_model::message_post_group_create::Variables {
                         content,
-                        group_id: ctx.props().group_id.0,
-                        post_id: ctx.props().post_id.0,
+                        group_id: self.props.group_id.0,
+                        post_id: self.props.post_id.0,
                         reply_id: self.replying_to.and_then(|reply_id| Some(reply_id.0)),
                         replies_private: self.replies_private,
                         timestamp: local,
@@ -206,23 +206,23 @@ impl Component for MessageListPost {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
 
         if self.props != props {
             self.props = props;
-            self.link().send_message(MessageListPostMessage::FetchMessagesByPostGroup);
+            self.link.send_message(MessageListPostMessage::FetchMessagesByPostGroup);
             should_render= true;
         }
         
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let auth_user = ctx.props().auth_user.clone();
-        let on_message_delete = ctx.link().callback(|message_id| MessageListPostMessage::DeleteMessage(message_id));
-        let on_change_list = ctx.link().callback(|(message_id, content, replies_private)| MessageListPostMessage::UpdateMessage(message_id, content, replies_private));
+    fn view(&self) -> Html {
+        let auth_user = self.props.auth_user.clone();
+        let on_message_delete = self.link.callback(|message_id| MessageListPostMessage::DeleteMessage(message_id));
+        let on_change_list = self.link.callback(|(message_id, content, replies_private)| MessageListPostMessage::UpdateMessage(message_id, content, replies_private));
 
         let stats = self.messages.iter().fold(
             HashMap::new(),
@@ -249,9 +249,9 @@ impl Component for MessageListPost {
             .map(|message_profile| {
                 info!("{:?} {}", message_profile.reply_id, message_profile.message_id);
                 html!{
-                    <MessageCard on_app_route=ctx.props().on_app_route.clone() 
+                    <MessageCard on_app_route=self.props.on_app_route.clone() 
                         auth_user=auth_user.clone() 
-                        group_category=MessageGroupCategory::Posts(ctx.props().group_id, ctx.props().post_id)
+                        group_category=MessageGroupCategory::Posts(self.props.group_id, self.props.post_id)
                         message_profile=message_profile.clone() 
                         on_message_delete=on_message_delete.clone()
                         message_edit_style=MessageEdit::EditModal
@@ -270,9 +270,9 @@ impl Component for MessageListPost {
             .filter(|message_profile| message_profile.reply_id.is_none())
             .map(|message_profile| {
                 html! {
-                    <MessageCard on_app_route=ctx.props().on_app_route.clone() 
+                    <MessageCard on_app_route=self.props.on_app_route.clone() 
                         auth_user=auth_user.clone() 
-                        group_category=MessageGroupCategory::Posts(ctx.props().group_id, ctx.props().post_id)
+                        group_category=MessageGroupCategory::Posts(self.props.group_id, self.props.post_id)
                         message_profile=message_profile.clone()
                         on_message_delete=on_message_delete.clone()
                         message_edit_style=MessageEdit::EditModal
@@ -286,9 +286,9 @@ impl Component for MessageListPost {
             .collect::<Html>()
         };
         let maybe_add_message = html! {
-            <MessageCard on_app_route=ctx.props().on_app_route.clone() 
+            <MessageCard on_app_route=self.props.on_app_route.clone() 
                 auth_user=auth_user.clone() 
-                group_category=MessageGroupCategory::Posts(ctx.props().group_id, ctx.props().post_id)
+                group_category=MessageGroupCategory::Posts(self.props.group_id, self.props.post_id)
                 message_profile=None 
                 message_edit_style=MessageEdit::Thread
                 on_message_delete=on_message_delete.clone()
@@ -299,7 +299,7 @@ impl Component for MessageListPost {
                 stats_messages_reply=stats.clone() />
         };
         let maybe_exit_thread = if self.replying_to.is_some() {
-            let on_exit_thread = ctx.link().callback(move |_| MessageListPostMessage::ExitThread);
+            let on_exit_thread = self.link.callback(move |_| MessageListPostMessage::ExitThread);
             html! {
                 <a class="btn bg-purple-on ms-5" onclick=&on_exit_thread>
                     <span class="text-white">
@@ -319,9 +319,9 @@ impl Component for MessageListPost {
             .filter(|message_profile| message_profile.reply_id.is_none())
             .map(|message_profile| {
                 html! {
-                    <MessageCard on_app_route=ctx.props().on_app_route.clone() 
+                    <MessageCard on_app_route=self.props.on_app_route.clone() 
                         auth_user=auth_user.clone() 
-                        group_category=MessageGroupCategory::Posts(ctx.props().group_id, ctx.props().post_id)
+                        group_category=MessageGroupCategory::Posts(self.props.group_id, self.props.post_id)
                         message_profile=message_profile.clone()
                         on_message_delete=on_message_delete.clone()
                         message_edit_style=MessageEdit::Thread
@@ -364,7 +364,7 @@ impl Component for MessageListPost {
         // let on_replies_private_toggle = self
         //     .link
         //     .callback(|_: MouseEvent| MessageListPostMessage::OnPrivateRepliesToggle);
-        // let maybe_replies = ctx.props().auth_user.clone().and_then(|data| data.user_by_pk).clone().and_then(|user| {
+        // let maybe_replies = self.props.auth_user.clone().and_then(|data| data.user_by_pk).clone().and_then(|user| {
         //     if user.user_teacher.is_some() || user.user_staff.is_some() && self.replying_to.is_none() {
         //         Some(html! {
         //             <label class="checkbox d-flex align-items-center">
@@ -380,7 +380,7 @@ impl Component for MessageListPost {
         //     .link
         //     .callback(move |data| MessageListPostMessage::OnContent(data));
 
-        // let on_send = ctx.link().callback(move |_| MessageListPostMessage::Send);
+        // let on_send = self.link.callback(move |_| MessageListPostMessage::Send);
 
         // let on_replies_private_toggle = self
         //     .link
@@ -391,7 +391,7 @@ impl Component for MessageListPost {
         // } else {
         //     html! {}
         // };
-        // let maybe_replies_student = ctx.props().auth_user.clone().and_then(|data| data.user_by_pk).clone().and_then(|user| {
+        // let maybe_replies_student = self.props.auth_user.clone().and_then(|data| data.user_by_pk).clone().and_then(|user| {
         //     if user.user_student.is_some() && self.replying_to.is_some() {
         //         Some(html! {
         //             <label class="checkbox d-flex align-items-center">
@@ -422,9 +422,9 @@ impl Component for MessageListPost {
         //     }
         // };
         let maybe_add = html! {
-            <MessageCard on_app_route=ctx.props().on_app_route.clone() 
+            <MessageCard on_app_route=self.props.on_app_route.clone() 
                 auth_user=auth_user.clone() 
-                group_category=MessageGroupCategory::Posts(ctx.props().group_id, ctx.props().post_id)
+                group_category=MessageGroupCategory::Posts(self.props.group_id, self.props.post_id)
                 message_profile=None
                 message_edit_style=MessageEdit::Thread
                 on_change_list=on_change_list.clone()

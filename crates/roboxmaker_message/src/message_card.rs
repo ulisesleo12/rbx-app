@@ -4,15 +4,15 @@ use yew::prelude::*;
 use crate::MessageProfile;
 use yew::virtual_dom::VNode;
 use std::collections::HashMap;
-use web_sys::{Node, self};
+use yew::web_sys::{Node, self};
 use crate::MessageGroupCategory;
 use code_location::code_location;
-use yew::{html, Component, Html};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_ckeditor::ckeditor;
 use roboxmaker_main::{lang, config};
 use roboxmaker_models::message_model;
-use roboxmaker_types::types::{MessageId, MyUserProfile};
+use roboxmaker_types::types::{MessageId, AppRoute, MyUserProfile};
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
 
 
@@ -23,6 +23,8 @@ pub enum MessageEdit {
 }
 
 pub struct MessageCard {
+    link: ComponentLink<Self>,
+    props: MessageCardProperties,
     graphql_task: Option<GraphQLTask>,
     save_task: Option<RequestTask>,
     node: Option<Node>,
@@ -34,6 +36,7 @@ pub struct MessageCard {
 
 #[derive(Properties, Debug, Clone, PartialEq)]
 pub struct MessageCardProperties {
+    pub on_app_route: Option<Callback<AppRoute>>,
     pub user_profile: Option<MyUserProfile>,
     pub group_category: MessageGroupCategory,
     pub message_profile: Option<MessageProfile>,
@@ -72,9 +75,11 @@ impl Component for MessageCard {
     type Message = MessageCardMessage;
     type Properties = MessageCardProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(MessageCardMessage::ContentUpdate);
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(MessageCardMessage::ContentUpdate);
         MessageCard {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             save_task: None,
             node: None,
@@ -85,14 +90,14 @@ impl Component for MessageCard {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
 
         let should_update = true;
         match msg {
             MessageCardMessage::ContentUpdate => {
-                self.replies_private = ctx.props().message_profile.clone().and_then(|data| Some(data.replies_private)).unwrap_or(false);
-                self.content = ctx.props().message_profile.clone().and_then(|data| Some(data.content)).unwrap_or("".to_string());
+                self.replies_private = self.props.message_profile.clone().and_then(|data| Some(data.replies_private)).unwrap_or(false);
+                self.content = self.props.message_profile.clone().and_then(|data| Some(data.content)).unwrap_or("".to_string());
                 self.node = web_sys::window()
                     .and_then(|window| window.document())
                     .and_then(|document| document.create_element("div").ok())
@@ -108,7 +113,7 @@ impl Component for MessageCard {
             MessageCardMessage::ContentSaved(_) => {
                 self.content = String::default();
             }
-            MessageCardMessage::Send => match ctx.props().group_category {
+            MessageCardMessage::Send => match self.props.group_category {
                 MessageGroupCategory::Lessons(group_id, lesson_id) => {
                     let local = chrono::Local::now().naive_local();
                     let content = self.content.clone();
@@ -117,13 +122,13 @@ impl Component for MessageCard {
                             content,
                             group_id: group_id.0,
                             lesson_id: lesson_id.0,
-                            reply_id: ctx.props().replying_to.and_then(|reply_id| Some(reply_id.0)),
+                            reply_id: self.props.replying_to.and_then(|reply_id| Some(reply_id.0)),
                             replies_private: self.replies_private,
                             timestamp: local,
                         };
                         let task = message_model::MessageLessonGroupCreate::request(
                             graphql_task, 
-                            &ctx, 
+                            &self.link, 
                             vars, 
                             |response| {
                                 MessageCardMessage::ContentSaved(MessageContentSaved::Lesson(response))
@@ -140,13 +145,13 @@ impl Component for MessageCard {
                             content,
                             group_id: group_id.0,
                             post_id: post_id.0,
-                            reply_id: ctx.props().replying_to.and_then(|reply_id| Some(reply_id.0)),
+                            reply_id: self.props.replying_to.and_then(|reply_id| Some(reply_id.0)),
                             replies_private: self.replies_private,
                             timestamp: local,
                         };
                         let task = message_model::MessagePostGroupCreate::request(
                             graphql_task, 
-                            &ctx, 
+                            &self.link, 
                             vars, 
                             |response| {
                                 MessageCardMessage::ContentSaved(MessageContentSaved::Post(response))
@@ -163,13 +168,13 @@ impl Component for MessageCard {
                             content,
                             group_id: group_id.0,
                             robot_id: robot_id.0,
-                            reply_id: ctx.props().replying_to.and_then(|reply_id| Some(reply_id.0)),
+                            reply_id: self.props.replying_to.and_then(|reply_id| Some(reply_id.0)),
                             replies_private: self.replies_private,
                             timestamp: local,
                         };
                         let task = message_model::MessageRobotGroupCreate::request(
                             graphql_task, 
-                            &ctx, 
+                            &self.link, 
                             vars, 
                             |response| {
                                 MessageCardMessage::ContentSaved(MessageContentSaved::Robot(response))
@@ -185,13 +190,13 @@ impl Component for MessageCard {
                         let vars = message_model::direct_message_group_create::Variables {
                             content,
                             group_id: group_id.0,
-                            reply_id: ctx.props().replying_to.and_then(|reply_id| Some(reply_id.0)),
+                            reply_id: self.props.replying_to.and_then(|reply_id| Some(reply_id.0)),
                             replies_private: self.replies_private,
                             timestamp: local,
                         };
                         let task = message_model::DirectMessageGroupCreate::request(
                             graphql_task, 
-                            &ctx, 
+                            &self.link, 
                             vars, 
                             |response| {
                                 MessageCardMessage::ContentSaved(MessageContentSaved::DirectMessage(response))
@@ -211,7 +216,7 @@ impl Component for MessageCard {
                 self.maybe_messages = false;
             }
             MessageCardMessage::OnReplyTo(message_id) => {
-                ctx.props()
+                self.props
                     .on_reply_to
                     .as_ref()
                     .and_then(|on_reply_to| Some(on_reply_to.emit(message_id)));
@@ -224,12 +229,12 @@ impl Component for MessageCard {
                 }
             }
             MessageCardMessage::DeleteMessage(message_id) => {
-                if let Some(on_message_delete) = &ctx.props().on_message_delete {
+                if let Some(on_message_delete) = &self.props.on_message_delete {
                     on_message_delete.emit(message_id)
                 }
             }
             MessageCardMessage::MessageUpdate(message_id) => {
-                ctx.props().on_change_list.emit((message_id, self.content.clone(), self.replies_private));
+                self.props.on_change_list.emit((message_id, self.content.clone(), self.replies_private));
                 self.edit = false;
                 self.maybe_messages = false;
             }
@@ -237,69 +242,69 @@ impl Component for MessageCard {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = true;
 
-        if ctx.props() != old_props {
-            // ctx.props() = old_props;
-            ctx.link().send_message(MessageCardMessage::ContentUpdate);
+        if self.props != props {
+            self.props = props;
+            self.link.send_message(MessageCardMessage::ContentUpdate);
             should_render = true;
         }
 
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
         let upload_url = format!("{}/upload.php", config::AKER_FILES_URL);
 
-        let message_class = if ctx.props().replying_to.is_some()
-            && ctx
-                .props()
+        let message_class = if self.props.replying_to.is_some()
+            && self
+                .props
                 .message_profile
                 .as_ref()
                 .and_then(|message_profile| Some(MessageId(message_profile.message_id)))
-                != ctx.props().replying_to
+                != self.props.replying_to
         {
             "message-frame reply-to has-background-light p-2 ms-6 mb-3"
         } else {
             "message-frame mb-3"
         };
 
-        if let Some(message_profile) = &ctx.props().message_profile {
+        if let Some(message_profile) = &self.props.message_profile {
             if self.edit {
                 let message_id = MessageId(message_profile.message_id);
 
-                let on_data = ctx
-                    .link()
+                let on_data = self
+                    .link
                     .callback(move |data| MessageCardMessage::OnContent(data));
 
-                let on_save = ctx
-                    .link()
+                let on_save = self
+                    .link
                     .callback(move |_| MessageCardMessage::MessageUpdate(message_id));
 
-                let on_cancel = ctx
-                    .link()
+                let on_cancel = self
+                    .link
                     .callback(move |_| MessageCardMessage::CancelEditMessage(message_id));
 
-                let on_replies_private_toggle_edit = ctx
-                    .link()
+                let on_replies_private_toggle_edit = self
+                    .link
                     .callback(|_: MouseEvent| MessageCardMessage::OnPrivateRepliesToggle);
 
                 let maybe_replies_private = html! {
                     <label class="checkbox">
                         <span class="pe-2">{lang::dict("Private replies?")}</span>
-                        <input class="bg-checkbox" type="checkbox" checked={self.replies_private}
-                            onclick={&on_replies_private_toggle_edit} />
+                        <input class="bg-checkbox" type="checkbox" checked=self.replies_private
+                            onclick=&on_replies_private_toggle_edit />
                     </label>
                 };
-                let maybe_replies_private_edith = ctx.props().user_profile.as_ref().and_then(|user| {
+                let maybe_replies_private_edith = self.props.user_profile.as_ref().and_then(|user| {
                     if user.user_staff.is_some() || user.user_teacher.is_some() {
                         Some(html! {
                             <label class="checkbox">
                                 <span class="pe-2">{lang::dict("Private replies?")}</span>
-                                <input class="bg-checkbox" type="checkbox" checked={self.replies_private}
-                                    onclick={&on_replies_private_toggle_edit} />
+                                <input class="bg-checkbox" type="checkbox" checked=self.replies_private
+                                    onclick=&on_replies_private_toggle_edit />
                             </label>
                         })
                     } else {
@@ -317,15 +322,15 @@ impl Component for MessageCard {
                     "display: none;"
                 };
                 let maybe_edit_option = {
-                    match ctx.props().message_edit_style {
+                    match self.props.message_edit_style {
                         MessageEdit::Thread => {
                             html! {
-                                <div class={class_modal_response} id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style={class_reponse_scroll} aria-modal="true" role="dialog">
+                                <div class=class_modal_response id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style=class_reponse_scroll aria-modal="true" role="dialog">
                                     <div class="modal-dialog modal-dialog-scrollable modal-xl">
                                         <div class="modal-content">
                                             <div class="modal-header">
                                                 <h1 class="hello-my-space text-center">{lang::dict("Edit")}</h1>
-                                                <a class="btn bg-purple-on ms-5" onclick={&on_cancel}>
+                                                <a class="btn bg-purple-on ms-5" onclick=&on_cancel>
                                                     <span class="text-white">
                                                         <i class="fas fa-times"></i>
                                                     </span>
@@ -334,15 +339,15 @@ impl Component for MessageCard {
                                             <div class="modal-body vh-80">
                                                 <div class="px-4">
                                                     <div class="box-my-space-direct bg-white d-flex flex-column">
-                                                        <ckeditor::CKEditor user_profile={ctx.props().user_profile.clone()}
-                                                            content={self.content.clone()} upload_url={upload_url.clone()}
-                                                            on_data={on_data.clone()} />
+                                                        <ckeditor::CKEditor user_profile=self.props.user_profile.clone()
+                                                            content=self.content.clone() upload_url=upload_url.clone()
+                                                            on_data=on_data.clone() />
                                                         <div class="d-flex justify-content-end pe-4">
                                                             {maybe_replies_private_edith}</div>
                                                     </div>
                                                     <div class="d-flex flex-wrap align-items-center justify-content-evenly mt-3">
                                                         <button class="btn btn-purple-on border-0 rounded-3"
-                                                            onclick={&on_cancel}>
+                                                            onclick=&on_cancel>
                                                             <span class="text-white">
                                                                 <span class="me-2">
                                                                     <i class="fas fa-times fas fal-lg"></i>
@@ -351,7 +356,7 @@ impl Component for MessageCard {
                                                             </span>
                                                         </button>
                                                         <button class="btn btn-primary-blue-dark border-0 rounded-3"
-                                                            onclick={on_save.clone()}>
+                                                            onclick=on_save.clone()>
                                                             <span class="text-white">
                                                                 <span class="me-2">
                                                                     <i class="fas fa-check"></i>
@@ -369,16 +374,16 @@ impl Component for MessageCard {
                         },
                         MessageEdit::EditModal => {
                             html! {
-                                <div key={message_id.to_string()}>
+                                <div key=message_id.to_string()>
                                     <div class="box-my-space-direct bg-white d-flex flex-column">
-                                        <ckeditor::CKEditor user_profile={ctx.props().user_profile.clone()}
-                                            content={self.content.clone()}
-                                            upload_url={upload_url.clone()} on_data={on_data.clone()} />
+                                        <ckeditor::CKEditor user_profile=self.props.user_profile.clone()
+                                            content=self.content.clone()
+                                            upload_url=upload_url.clone() on_data=on_data.clone() />
                                         <div class="d-flex justify-content-end pe-4">
                                             {maybe_replies_private}</div>
                                     </div>
                                     <div class="d-flex flex-wrap align-items-center justify-content-evenly mt-3">
-                                        <button class="btn btn-purple-on border-0 rounded-3" onclick={on_cancel.clone()}>
+                                        <button class="btn btn-purple-on border-0 rounded-3" onclick=on_cancel.clone()>
                                             <span class="text-white">
                                                 <span class="me-2">
                                                     <i class="fas fa-times fas fal-lg"></i>
@@ -386,7 +391,7 @@ impl Component for MessageCard {
                                                 <span>{lang::dict("Cancel")}</span>
                                             </span>
                                         </button>
-                                        <button class="btn btn-primary-blue-dark border-0 rounded-3" onclick={on_save.clone()}>
+                                        <button class="btn btn-primary-blue-dark border-0 rounded-3" onclick=on_save.clone()>
                                             <span class="text-white">
                                                 <span class="me-2">
                                                     <i class="fas fa-check"></i>
@@ -401,7 +406,7 @@ impl Component for MessageCard {
                     }
                 };
                 let maybe_style_message = {
-                    match ctx.props().group_category {
+                    match self.props.group_category {
                         MessageGroupCategory::Lessons(_group_id, _lesson_id) => {
                             html! {
                                 {maybe_edit_option.clone()}
@@ -421,12 +426,12 @@ impl Component for MessageCard {
                         }
                         MessageGroupCategory::DirectMessages(_group_id) => {
                             html! {
-                                <div class={class_modal_response} id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style={class_reponse_scroll} aria-modal="true" role="dialog">
+                                <div class=class_modal_response id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style=class_reponse_scroll aria-modal="true" role="dialog">
                                     <div class="modal-dialog modal-dialog-scrollable modal-xl">
                                         <div class="modal-content">
                                             <div class="modal-header">
                                                 <h1 class="hello-my-space text-center">{lang::dict("Edit")}</h1>
-                                                <a class="btn bg-purple-on ms-5" onclick={&on_cancel}>
+                                                <a class="btn bg-purple-on ms-5" onclick=&on_cancel>
                                                     <span class="text-white">
                                                         <i class="fas fa-times"></i>
                                                     </span>
@@ -434,15 +439,15 @@ impl Component for MessageCard {
                                             </div>
                                             <div class="modal-body vh-80">
                                                 <div class="px-4">
-                                                    <div key={message_id.to_string()}>
+                                                    <div key=message_id.to_string()>
                                                         <div class="box-my-space-direct bg-white d-flex flex-column">
-                                                            <ckeditor::CKEditor user_profile={ctx.props().user_profile.clone()}
-                                                                content={self.content.clone()} upload_url={upload_url.clone()}
-                                                                on_data={on_data.clone()} />
+                                                            <ckeditor::CKEditor user_profile=self.props.user_profile.clone()
+                                                                content=self.content.clone() upload_url=upload_url.clone()
+                                                                on_data=on_data.clone() />
                                                         </div>
                                                         <div class="d-flex flex-wrap align-items-center justify-content-evenly mt-3">
                                                             <button class="btn btn-purple-on border-0 rounded-3"
-                                                                onclick={&on_cancel}>
+                                                                onclick=&on_cancel>
                                                                 <span class="text-white">
                                                                     <span class="me-2">
                                                                         <i class="fas fa-times fas fal-lg"></i>
@@ -451,7 +456,7 @@ impl Component for MessageCard {
                                                                 </span>
                                                             </button>
                                                             <button class="btn btn-primary-blue-dark border-0 rounded-3"
-                                                                onclick={on_save.clone()}>
+                                                                onclick=on_save.clone()>
                                                                 <span class="text-white">
                                                                     <span class="me-2">
                                                                         <i class="fas fa-check"></i>
@@ -483,22 +488,22 @@ impl Component for MessageCard {
                     html! {}
                 };
 
-                let maybe_message_edit = ctx
-                    .props()
+                let maybe_message_edit = self
+                    .props
                     .user_profile
                     .as_ref()
-                    .zip(ctx.props().message_profile.as_ref())
+                    .zip(self.props.message_profile.as_ref())
                     .and_then(|(user, message_profile)| {
                         let message_id = message_profile.message_id;
                         let author_id = message_profile.author.user_id;
-                        let on_message_edit = ctx.link().callback(move |_| {
+                        let on_message_edit = self.link.callback(move |_| {
                             MessageCardMessage::EditMessage(MessageId(message_id))
                         });
-                        if user.user_id.0 == author_id || user.user_staff.is_some() || user.user_teacher.is_some() && (ctx.props().replying_to.is_none()
-                                || ctx.props().replying_to != Some(MessageId(message_id)))
+                        if user.user_id.0 == author_id || user.user_staff.is_some() || user.user_teacher.is_some() && (self.props.replying_to.is_none()
+                                || self.props.replying_to != Some(MessageId(message_id)))
                         {
                             Some(html! {
-                                <button class="btn bg-white text-purple-gray me-4" onclick={on_message_edit}>
+                                <button class="btn bg-white text-purple-gray me-4" onclick=on_message_edit>
                                     <i class="far fa-edit fas fa-lg"></i>
                                 </button>
                             })
@@ -508,22 +513,22 @@ impl Component for MessageCard {
                     })
                     .unwrap_or(html! {});
 
-                let maybe_message_edit_two = ctx
-                    .props()
+                let maybe_message_edit_two = self
+                    .props
                     .user_profile
                     .as_ref()
-                    .zip(ctx.props().message_profile.as_ref())
+                    .zip(self.props.message_profile.as_ref())
                     .and_then(|(user, message_profile)| {
                         let message_id = message_profile.message_id;
                         let author_id = message_profile.author.user_id;
-                        let on_message_edit = ctx.link().callback(move |_| {
+                        let on_message_edit = self.link.callback(move |_| {
                             MessageCardMessage::EditMessage(MessageId(message_id))
                         });
                         if (user.user_id.0 == author_id || user.user_staff.is_some() || 
                             ( user.user_teacher.is_some() && message_profile.author.user_student.is_some()))
-                            && (ctx.props().replying_to.is_none() || ctx.props().replying_to != Some(MessageId(message_id))) {
+                            && (self.props.replying_to.is_none() || self.props.replying_to != Some(MessageId(message_id))) {
                             Some(html! {
-                                <button class="btn btn-outline-brown border-0 btn-sm" onclick={on_message_edit}>
+                                <button class="btn btn-outline-brown border-0 btn-sm" onclick=on_message_edit>
                                     <i class="far fa-edit fas fa-lg"></i>
                                 </button>
                             })
@@ -533,22 +538,22 @@ impl Component for MessageCard {
                     })
                     .unwrap_or(html! {});
 
-                let maybe_message_delete = ctx
-                    .props()
+                let maybe_message_delete = self
+                    .props
                     .user_profile
                     .as_ref()
-                    .zip(ctx.props().message_profile.as_ref())
+                    .zip(self.props.message_profile.as_ref())
                     .and_then(|(user, message_profile)| {
                         let message_id = message_profile.message_id;
                         let author_id = message_profile.author.user_id;
-                        let on_message_delete = ctx.link().callback(move |_| {
+                        let on_message_delete = self.link.callback(move |_| {
                             MessageCardMessage::DeleteMessage(MessageId(message_id))
                         });
                         if (user.user_id.0 == author_id || user.user_staff.is_some() || 
                             ( user.user_teacher.is_some() && message_profile.author.user_student.is_some()))
-                            && (ctx.props().replying_to.is_none() || ctx.props().replying_to != Some(MessageId(message_id))) {
+                            && (self.props.replying_to.is_none() || self.props.replying_to != Some(MessageId(message_id))) {
                             Some(html! {
-                                <button class="btn bg-white text-purple-gray" onclick={on_message_delete}>
+                                <button class="btn bg-white text-purple-gray" onclick=on_message_delete>
                                     <i class="far fa-trash-alt fas fa-lg"></i>
                                 </button>
                             })
@@ -557,34 +562,34 @@ impl Component for MessageCard {
                         }
                     })
                     .unwrap_or(html! {});
-                let class_margin_btn = if ctx.props().replying_to.is_some()
-                    && ctx
-                        .props()
+                let class_margin_btn = if self.props.replying_to.is_some()
+                    && self
+                        .props
                         .message_profile
                         .as_ref()
                         .and_then(|message_profile| Some(MessageId(message_profile.message_id)))
-                        != ctx.props().replying_to
+                        != self.props.replying_to
                 {
                     "btn btn-outline-brown border-0 btn-sm"
                 } else {
                     "btn btn-outline-brown border-0 btn-sm mt-2"
                 };
-                let maybe_message_delete_two = ctx
-                    .props()
+                let maybe_message_delete_two = self
+                    .props
                     .user_profile
                     .as_ref()
-                    .zip(ctx.props().message_profile.as_ref())
+                    .zip(self.props.message_profile.as_ref())
                     .and_then(|(item, message_profile)| {
                         let message_id = message_profile.message_id;
                         let author_id = message_profile.author.user_id;
-                        let on_message_delete = ctx.link().callback(move |_| {
+                        let on_message_delete = self.link.callback(move |_| {
                             MessageCardMessage::DeleteMessage(MessageId(message_id))
                         });
                         if (item.user_id.0 == author_id || item.user_staff.is_some() || 
                             ( item.user_teacher.is_some() && message_profile.author.user_student.is_some()))
-                            && (ctx.props().replying_to.is_none() || ctx.props().replying_to != Some(MessageId(message_id))) {
+                            && (self.props.replying_to.is_none() || self.props.replying_to != Some(MessageId(message_id))) {
                             Some(html! {
-                                <button class={class_margin_btn} onclick={on_message_delete}>
+                                <button class=class_margin_btn onclick=on_message_delete>
                                     <i class="far fa-trash-alt fas fa-lg"></i>
                                 </button>
                             })
@@ -594,22 +599,22 @@ impl Component for MessageCard {
                     })
                     .unwrap_or(html! {});
 
-                let maybe_message_delete_files = ctx
-                    .props()
+                let maybe_message_delete_files = self
+                    .props
                     .user_profile
                     .as_ref()
-                    .zip(ctx.props().message_profile.as_ref())
+                    .zip(self.props.message_profile.as_ref())
                     .and_then(|(item, message_profile)| {
                         let message_id = message_profile.message_id;
                         let author_id = message_profile.author.user_id;
-                        let on_message_delete = ctx.link().callback(move |_| {
+                        let on_message_delete = self.link.callback(move |_| {
                             MessageCardMessage::DeleteMessage(MessageId(message_id))
                         });
                         if (item.user_id.0 == author_id || item.user_staff.is_some() || 
                             ( item.user_teacher.is_some() && message_profile.author.user_student.is_some()))
-                            && (ctx.props().replying_to.is_none() || ctx.props().replying_to != Some(MessageId(message_id))) {
+                            && (self.props.replying_to.is_none() || self.props.replying_to != Some(MessageId(message_id))) {
                             Some(html! {
-                                <button class="btn bg-white text-purple-gray" onclick={on_message_delete}>
+                                <button class="btn bg-white text-purple-gray" onclick=on_message_delete>
                                     <i class="far fa-trash-alt fas fa-lg"></i>
                                 </button>
                             })
@@ -618,45 +623,45 @@ impl Component for MessageCard {
                         }
                     })
                     .unwrap_or(html! {});
-                let maybe_message_reply_to = ctx
-                    .props()
+                let maybe_message_reply_to = self
+                    .props
                     .on_reply_to
                     .as_ref()
-                    .zip(ctx.props().message_profile.as_ref())
+                    .zip(self.props.message_profile.as_ref())
                     .and_then(|(_on_reply_to, message_profile)| {
                         let message_id = message_profile.message_id;
-                        let on_reply_to = ctx.link().callback(move |_| {
+                        let on_reply_to = self.link.callback(move |_| {
                             MessageCardMessage::OnReplyTo(MessageId(message_id))
                         });
                         Some(html! {
-                            <a onclick={on_reply_to}>
+                            <a onclick=on_reply_to>
                                 <span class="text-brown noir-light is-size-14 lh-17 ps-2">{"Ver "}<span>{format!("{}",
-                                    ctx.props().stats_messages_reply.get(&message_id).unwrap_or(&0))}</span>{" respuestas"}</span>
+                                    self.props.stats_messages_reply.get(&message_id).unwrap_or(&0))}</span>{" respuestas"}</span>
                             </a>
                         })
                     })
                     .unwrap_or_default();
 
-                let maybe_message_reply_message = ctx
-                    .props()
+                let maybe_message_reply_message = self
+                    .props
                     .on_reply_to
                     .as_ref()
-                    .zip(ctx.props().message_profile.as_ref())
+                    .zip(self.props.message_profile.as_ref())
                     .and_then(|(_on_reply_to, message_profile)| {
                         let message_id = message_profile.message_id;
-                        let on_reply_to = ctx.link().callback(move |_| {
+                        let on_reply_to = self.link.callback(move |_| {
                             MessageCardMessage::OnReplyTo(MessageId(message_id))
                         });
                         Some(html! {
-                            <a onclick={on_reply_to}>
+                            <a onclick=on_reply_to>
                                 <span class="text-secondary-purple noir-medium is-size-14 lh-17 ps-3">{"Responder"}</span>
                             </a>
                         })
                     })
                     .unwrap_or_default();
 
-                let message_div_key = ctx
-                    .props()
+                let message_div_key = self
+                    .props
                     .message_profile
                     .as_ref()
                     .and_then(|message_profile| Some(message_profile.message_id))
@@ -673,24 +678,24 @@ impl Component for MessageCard {
                 } else {
                     html! {}
                 };
-                let class_module_txt = if ctx.props().replying_to.is_some()
-                    && ctx
-                        .props()
+                let class_module_txt = if self.props.replying_to.is_some()
+                    && self
+                        .props
                         .message_profile
                         .as_ref()
                         .and_then(|message_profile| Some(MessageId(message_profile.message_id))).is_some()
-                        // != ctx.props().replying_to
+                        // != self.props.replying_to
                 {
                     "module-message line-clamp-message text-brown noir-light is-size-16 lh-19 text-justify"
                 } else {
                     "module-message line-clamp-message text-brown noir-light is-size-16 lh-19 text-justify"
                 };
 
-                let maybe_author_message = ctx
-                    .props()
+                let maybe_author_message = self
+                    .props
                     .user_profile
                     .as_ref()
-                    .zip(ctx.props().message_profile.as_ref())
+                    .zip(self.props.message_profile.as_ref())
                     .and_then(|(user, message_profile)| {
                         let author_id = message_profile.author.user_id;
                         if user.user_id.0 == author_id {
@@ -702,47 +707,47 @@ impl Component for MessageCard {
                         }
                     })
                     .unwrap_or(html! {});
-                let pic_path_class_message = if ctx.props().replying_to.is_some()
-                    && ctx
-                        .props()
+                let pic_path_class_message = if self.props.replying_to.is_some()
+                    && self
+                        .props
                         .message_profile
                         .as_ref()
                         .and_then(|message_profile| Some(MessageId(message_profile.message_id)))
-                        != ctx.props().replying_to
+                        != self.props.replying_to
                 {
                     "img-card-32"
                 } else {
                     "img-card-48"
                 };
-                let class_author_class = if ctx.props().replying_to.is_some()
-                    && ctx
-                        .props()
+                let class_author_class = if self.props.replying_to.is_some()
+                    && self
+                        .props
                         .message_profile
                         .as_ref()
                         .and_then(|message_profile| Some(MessageId(message_profile.message_id)))
-                        != ctx.props().replying_to
+                        != self.props.replying_to
                 {
                     "text-primary-blue-dark noir-bold is-size-16 lh-25"
                 } else {
                     "text-primary-blue-dark noir-bold is-size-16 lh-25"
                 };
-                let class_options_message = if ctx.props().mod_commets {
+                let class_options_message = if self.props.mod_commets {
                     "d-flex flex-wrap h-20"
                 } else {
                     "d-flex flex-column"
                 };
-                let class_display_mod = if ctx.props().mod_commets {
+                let class_display_mod = if self.props.mod_commets {
                     "d-flex flex-row"
                 } else {
                     "d-flex flex-row justify-content-between"
                 };
                 let message_card_one = html! {
-                    <div key={message_div_key.to_string()} class={message_class}>
-                        <div class={class_display_mod}>
-                            <img src={message_profile.author.pic_path.clone()} class={pic_path_class_message} />
+                    <div key=message_div_key.to_string() class=message_class>
+                        <div class=class_display_mod>
+                            <img src=message_profile.author.pic_path.clone() class=pic_path_class_message />
                             <div class="d-flex justify-content-start flex-column ms-2 w-80">
-                                <span class={class_author_class}>{&message_profile.author.full_name}<span class="mx-2">{is_replies_private}</span>{maybe_author_message}</span>
-                                <span class={class_module_txt}>
+                                <span class=class_author_class>{&message_profile.author.full_name}<span class="mx-2">{is_replies_private}</span>{maybe_author_message}</span>
+                                <span class=class_module_txt>
                                     { maybe_node.clone() }
                                 </span>
                                 <div class="d-flex flex-wrap align-items-center">
@@ -754,7 +759,7 @@ impl Component for MessageCard {
                                     {maybe_message_reply_to}
                                 </div>
                             </div>
-                            <div class={class_options_message}>
+                            <div class=class_options_message>
                                 {maybe_message_edit_two}
                                 {maybe_message_delete_two}
                             </div>
@@ -762,7 +767,7 @@ impl Component for MessageCard {
                     </div>
                 };
                 let message_card_direct = html! {
-                    <div key={message_div_key.to_string()} class={message_class}>
+                    <div key=message_div_key.to_string() class=message_class>
                         <div class="card-messages-view-direct bg-white mb-4">
                             <div class="d-flex flex-column p-4">
                                 <span class="text-primary-blue-dark noir-light is-size-16 lh-19 text-justify">
@@ -777,7 +782,7 @@ impl Component for MessageCard {
                     </div>
                 };
                 let maybe_style_message = {
-                    match ctx.props().group_category {
+                    match self.props.group_category {
                         MessageGroupCategory::Lessons(_group_id, _lesson_id) => {
                             html! {
                                 {message_card_one.clone()}
@@ -802,7 +807,7 @@ impl Component for MessageCard {
                         }
                         MessageGroupCategory::FilesUser => {
                             html! {
-                                <div key={message_div_key.to_string()} class={message_class}>
+                                <div key=message_div_key.to_string() class=message_class>
                                     <div class="card-messages-view-files-user bg-white d-flex align-items-center justify-content-between mb-4">
                                         <span class="d-flex align-items-center text-primary-blue-dark noir-bold is-size-16 lh-22">
                                             <span class="me-3">
@@ -825,15 +830,15 @@ impl Component for MessageCard {
                     {maybe_style_message}
                 }
             }
-        } else if let Some(item) = &ctx.props().user_profile {
-            let on_replies_private_toggle = ctx
-                .link()
+        } else if let Some(item) = &self.props.user_profile {
+            let on_replies_private_toggle = self
+                .link
                 .callback(|_: MouseEvent| MessageCardMessage::OnPrivateRepliesToggle);
             let maybe_replies = {
-                if item.user_teacher.is_some() || item.user_staff.is_some() && ctx.props().replying_to.is_none() {
+                if item.user_teacher.is_some() || item.user_staff.is_some() && self.props.replying_to.is_none() {
                     Some(html! {
                         <label class="checkbox d-flex align-items-center">
-                            <input type="checkbox" checked={self.replies_private} onclick={&on_replies_private_toggle} />
+                            <input type="checkbox" checked=self.replies_private onclick=&on_replies_private_toggle />
                             <span class="ps-3">{lang::dict("Private replies?")}</span>
                         </label>
                     })
@@ -842,14 +847,14 @@ impl Component for MessageCard {
                 }
             }.unwrap_or(html! {});
 
-            let on_data = ctx
-                .link()
+            let on_data = self
+                .link
                 .callback(move |data| MessageCardMessage::OnContent(data));
 
-            let on_send = ctx.link().callback(move |_| MessageCardMessage::Send);
+            let on_send = self.link.callback(move |_| MessageCardMessage::Send);
 
-            let on_replies_private_toggle = ctx
-                .link()
+            let on_replies_private_toggle = self
+                .link
                 .callback(|_: MouseEvent| MessageCardMessage::OnPrivateRepliesToggle);
 
             let maybe_replies_private = if self.content.len() > 0 {
@@ -858,10 +863,10 @@ impl Component for MessageCard {
                 html! {}
             };
             let maybe_replies_student = {
-                if item.user_student.is_some() && ctx.props().replying_to.is_some() {
+                if item.user_student.is_some() && self.props.replying_to.is_some() {
                     Some(html! {
                         <label class="checkbox d-flex align-items-center">
-                            <input type="checkbox" checked={self.replies_private} onclick={&on_replies_private_toggle} />
+                            <input type="checkbox" checked=self.replies_private onclick=&on_replies_private_toggle />
                             <span class="ps-3">{lang::dict("Private replies?")}</span>
                         </label>
                     })
@@ -877,37 +882,37 @@ impl Component for MessageCard {
             };
             let maybe_add = if self.content.len() > 1 {
                 html! {
-                    <button class="send-message-to-space" onclick={&on_send}>
+                    <button class="send-message-to-space" onclick=&on_send>
                         <span class="text-white noir-bold is-size-16 lh-20">{lang::dict("To Post")}</span>
                     </button>
                 }
             } else {
                 html! {
-                    <button class="send-message-to-space opacity-75" disabled=true onclick={&on_send}>
+                    <button class="send-message-to-space opacity-75" disabled=true onclick=&on_send>
                         <span class="text-white noir-bold is-size-16 lh-20">{lang::dict("To Post")}</span>
                     </button>
                 }
             };
             let maybe_add_direct = if self.content.len() > 1 {
                 html! {
-                    <button class="send-message-to-space" onclick={&on_send}>
+                    <button class="send-message-to-space" onclick=&on_send>
                         <span class="text-white noir-bold is-size-16 lh-20">{lang::dict("Place")}</span>
                     </button>
                 }
             } else {
                 html! {
-                    <button class="send-message-to-space opacity-75" disabled=true onclick={&on_send}>
+                    <button class="send-message-to-space opacity-75" disabled=true onclick=&on_send>
                         <span class="text-white noir-bold is-size-16 lh-20">{lang::dict("Place")}</span>
                     </button>
                 }
             };
-            let message_class_create = if ctx.props().replying_to.is_some()
-                && ctx
-                    .props()
+            let message_class_create = if self.props.replying_to.is_some()
+                && self
+                    .props
                     .message_profile
                     .as_ref()
                     .and_then(|message_profile| Some(MessageId(message_profile.message_id)))
-                    != ctx.props().replying_to
+                    != self.props.replying_to
             {
                 "box-message-to-post bg-white"
             } else {
@@ -915,11 +920,11 @@ impl Component for MessageCard {
             };
             let maybe_created = html! {
                 <>
-                    <div class={message_class_create}>
-                        <ckeditor::CKEditor user_profile={ctx.props().user_profile.clone()}
-                            content={self.content.clone()}
-                            upload_url={upload_url.clone()}
-                            on_data={on_data.clone()} />
+                    <div class=message_class_create>
+                        <ckeditor::CKEditor user_profile=self.props.user_profile.clone()
+                            content=self.content.clone()
+                            upload_url=upload_url.clone()
+                            on_data=on_data.clone() />
                     </div>
                     <div class="d-flex justify-content-between align-items-center pt-4 pb-5">
                         <div>{maybe_replies_private.clone()}</div>
@@ -931,10 +936,10 @@ impl Component for MessageCard {
             let maybe_created_2 = html! {
                 <>
                     <div class="box-message-to-post bg-white">
-                        <ckeditor::CKEditor user_profile={ctx.props().user_profile.clone()}
-                            content={self.content.clone()}
-                            upload_url={upload_url.clone()}
-                            on_data={on_data.clone()} />
+                        <ckeditor::CKEditor user_profile=self.props.user_profile.clone()
+                            content=self.content.clone()
+                            upload_url=upload_url.clone()
+                            on_data=on_data.clone() />
                     </div>
                     <div class="d-flex justify-content-between align-items-center pt-4 pb-5">
                         <div>{maybe_replies_private.clone()}</div>
@@ -943,7 +948,7 @@ impl Component for MessageCard {
                 </>
             };
             let maybe_button_message = {
-                match ctx.props().group_category {
+                match self.props.group_category {
                     MessageGroupCategory::Lessons(_group_id, _lesson_id) => {
                         html! {
                             {maybe_created.clone()}

@@ -66,6 +66,50 @@ impl Request for LessonsByName {}
     response_derives = "Debug, Clone",
     normalization = "rust"
 )]
+pub struct LessonGroupAdd;
+impl Request for LessonGroupAdd {}
+
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "schema.graphql",
+    query_path = "query.graphql",
+    response_derives = "Debug, Clone",
+    normalization = "rust"
+)]
+pub struct LessonGroupDelete;
+impl Request for LessonGroupDelete {}
+
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "schema.graphql",
+    query_path = "query.graphql",
+    response_derives = "Debug, Clone",
+    normalization = "rust"
+)]
+pub struct LessonGroupCreate;
+impl Request for LessonGroupCreate {}
+
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "schema.graphql",
+    query_path = "query.graphql",
+    response_derives = "Debug, Clone",
+    normalization = "rust"
+)]
+pub struct DeleteLessonById;
+impl Request for DeleteLessonById {}
+
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "schema.graphql",
+    query_path = "query.graphql",
+    response_derives = "Debug, Clone",
+    normalization = "rust"
+)]
 pub struct UpdateLessonGroupOptions;
 impl Request for UpdateLessonGroupOptions {}
 
@@ -101,56 +145,13 @@ impl Subscribe for LessonsListByGroup {}
 pub struct LessonByGroupId; 
 impl Subscribe for LessonByGroupId {}
 
-// <------------------------ NEW QUERY------------------------> //
 
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "schema.graphql",
-    query_path = "lesson_sub.graphql",
+    query_path = "query.graphql",
     response_derives = "Clone, Debug, PartialEq",
     normalization = "rust"
 )]
-pub struct GetLessonList; 
-impl Subscribe for GetLessonList {}
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "schema.graphql",
-    query_path = "lesson_mut.graphql",
-    response_derives = "Debug, Clone",
-    normalization = "rust"
-)]
-pub struct LessonClassAndGroupAdd;
-impl Request for LessonClassAndGroupAdd {}
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "schema.graphql",
-    query_path = "lesson_mut.graphql",
-    response_derives = "Debug, Clone",
-    normalization = "rust"
-)]
-pub struct LessonClassAndGroupCreate;
-impl Request for LessonClassAndGroupCreate {}
-
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "schema.graphql",
-    query_path = "lesson_mut.graphql",
-    response_derives = "Debug, Clone",
-    normalization = "rust"
-)]
-pub struct LessonGroupDelete;
-impl Request for LessonGroupDelete {}
-
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "schema.graphql",
-    query_path = "lesson_mut.graphql",
-    response_derives = "Debug, Clone",
-    normalization = "rust"
-)]
-pub struct DeleteLesson;
-impl Request for DeleteLesson {}
+pub struct GetLessonType; 
+impl Request for GetLessonType {}

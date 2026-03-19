@@ -1,11 +1,12 @@
 use log::*;
-use web_sys::Node;
 use yew::prelude::*;
 use yew::virtual_dom::VNode;
-use yew::{html, Component, Html};
 use wasm_bindgen::prelude::{Closure, wasm_bindgen, JsValue};
+use yew::{html, Component, ComponentLink, Html, ShouldRender, web_sys::{Node, self}};
 
 pub struct CreateMeetVCalendar {
+    link: ComponentLink<Self>,
+    props: CreateMeetVCalendarProps,
     node_vcalendar: Node,
 }
 
@@ -43,7 +44,7 @@ impl Component for CreateMeetVCalendar {
     type Message = CreateMeetVCalendarMessage;
     type Properties = CreateMeetVCalendarProps;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let node_vcalendar = web_sys::window()
             .and_then(|window| window.document())
             .and_then(|document| document.create_element("div").ok())
@@ -53,52 +54,58 @@ impl Component for CreateMeetVCalendar {
             });
             
         CreateMeetVCalendar {
+            link,
+            props,
             node_vcalendar: node_vcalendar.unwrap(),
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
             CreateMeetVCalendarMessage::DateFromVCalendar(date) => {
-                ctx.props().on_callback_date.emit(date.clone());
+                self.props.on_callback_date.emit(date.clone());
                 info!("DDD {:?}", date.clone()); 
             }
         }
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
-        let mut should_render = false;
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        let mut should_render = true;
 
-        if ctx.props() != old_props {
+        if self.props != props {
+            self.props = props;
             should_render = true;
-        } 
+        }
 
         should_render
     }
 
-    fn view(&self, _ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
         html! {
             <div>
                 { VNode::VRef(self.node_vcalendar.clone()) }
             </div>
         }
     }
-    fn rendered(&mut self, ctx: &Context<Self>, first_render: bool) {
-            let on_res_selected = ctx.link().callback(move |date| CreateMeetVCalendarMessage::DateFromVCalendar(date));
-            
-            let today = chrono::Local::now().date_naive().to_string();
-    
-            if first_render {
-                self.date_selected_activity(
-                    today, 
-                    on_res_selected
-                )
-            }
-        
+    fn rendered(&mut self, first_render: bool) {
+        // let day = Local::now().date().day().to_string();
+        // let month = Local::now().date().month().to_string();
+        // let year = Local::now().date().year().to_string();
+        // info!("DDDD {:?}", first_render); 
+        let on_res_selected = self.link.callback(move |date| CreateMeetVCalendarMessage::DateFromVCalendar(date));
+        // let today = {year} + {"-"} + {&month} + {"-"} + {&day};
+        let today = chrono::Local::now().date_naive().to_string();
+
+        if first_render {
+            self.date_selected_activity(
+                today, 
+                on_res_selected
+            )
+        }
     }
 }
 

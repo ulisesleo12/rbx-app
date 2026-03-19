@@ -1,14 +1,12 @@
 use log::*;
 use std::vec;
 use uuid::Uuid;
-use yew::prelude::*;
+use yew::{prelude::*, web_sys};
 use code_location::code_location;
-use yew::{html, Component, Html};
-use yew_router::scope_ext::RouterScopeExt;
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_main::lang;
-use roboxmaker_models::classes_model;
-use roboxmaker_utils::functions::get_value_from_input_event;
+use roboxmaker_models::{school_model, classes_model};
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
 use roboxmaker_types::types::{ClassesId, GroupId, AppRoute, SchoolId, MyUserProfile};
 
@@ -30,6 +28,8 @@ pub enum ClassesSelectOption {
     Classes(ClassesId),
 }
 pub struct ClassesSelect {
+    link: ComponentLink<Self>,
+    props: ClassesSelectProperties,
     graphql_task: Option<GraphQLTask>,
     classes_task: Option<RequestTask>,
     classes: Vec<classes_model::classes_by_name::ClassesByNameClasses>,
@@ -42,13 +42,16 @@ pub struct ClassesSelect {
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct ClassesSelectProperties {
     pub on_select: Callback<ClassesSelectOption>,
+    pub auth_school: Option<school_model::school_by_id::SchoolByIdSchoolByPk>,
     pub user_profile: Option<MyUserProfile>,
     pub group_id: GroupId,
+    pub on_app_route: Callback<AppRoute>,
     pub school_id: SchoolId,
 }
 
 #[derive(Debug)]
 pub enum ClassesSelectMessage {
+    AppRoute(AppRoute),
     FetchClassesByClassesName(String),
     Classes(Option<classes_model::classes_by_name::ResponseData>),
     SelectClasses(ClassesSelectOption),
@@ -61,9 +64,10 @@ impl Component for ClassesSelect {
     type Message = ClassesSelectMessage;
     type Properties = ClassesSelectProperties;
 
-    fn create(_ctx: &Context<Self>) -> Self {
-
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         ClassesSelect {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             classes_task: None,
             classes: vec![],
@@ -74,20 +78,23 @@ impl Component for ClassesSelect {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_render = true;
         match msg {
+            ClassesSelectMessage::AppRoute(route) => {
+                self.props.on_app_route.emit(route)
+            }
             ClassesSelectMessage::FetchClassesByClassesName(search) => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
 
                     let vars = classes_model::classes_by_name::Variables {
-                        search: format!("%{}%", search)
+                        search 
                     };
 
                     let task = classes_model::ClassesByName::request(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             |response| {
                                 ClassesSelectMessage::Classes(response)
@@ -112,7 +119,7 @@ impl Component for ClassesSelect {
                 self.show_create = false;
                 self.maybe_section_search = false;
                 self.classes = vec![];
-                ctx.props().on_select.emit(select_option);
+                self.props.on_select.emit(select_option);
             }
             ClassesSelectMessage::OnFocus => {
                 self.show_create = true;
@@ -135,38 +142,49 @@ impl Component for ClassesSelect {
         should_render
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        let mut should_render = false;
+
+        if self.props != props {
+            self.props = props;
+            should_render = true;
+        } 
         
-        true
+        should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_focus = ctx.link().callback(move |_| ClassesSelectMessage::OnFocus);
-        let on_blur = ctx.link().callback(move |_| ClassesSelectMessage::OnBlur);
-        let on_hidden_modal = ctx.link().callback(move |_| ClassesSelectMessage::HiddenModal);
+    fn view(&self) -> Html {
+        let on_focus = self.link.callback(move |_| ClassesSelectMessage::OnFocus);
+        let on_blur = self.link.callback(move |_| ClassesSelectMessage::OnBlur);
+        let on_hidden_modal = self.link.callback(move |_| ClassesSelectMessage::HiddenModal);
 
-        let on_search = ctx.link().callback(|search: InputEvent| ClassesSelectMessage::FetchClassesByClassesName(get_value_from_input_event(search)));
+        let on_search = self.link.callback(|search: InputData| {
+            info!("search: {:?}", search);
+            let search = if search.value.len() > 0 {
+                format!("%{}%", search.value)
+            } else {
+                search.value
+            };
+            ClassesSelectMessage::FetchClassesByClassesName(search)
+        });
         
-        let group_id = ctx.props().group_id;
+        let group_id = self.props.group_id;
         let classes = self
             .classes
             .iter()
             .map(|classes| {
                 let classes_id = ClassesId(classes.id);
-                let on_select = ctx.link().callback(move |_| {
+                let on_select = self.link.callback(move |_| {
                     ClassesSelectMessage::SelectClasses(ClassesSelectOption::Classes(classes_id))
                 });
-                let school_id = ctx.props().school_id;
-
-                let navigator = ctx.link().navigator().unwrap();
-                let on_classes = Callback::from(move |_| navigator.push(&AppRoute::Classes{school_id, group_id, classes_id}));
-
+                let school_id = self.props.school_id;
+                let on_classes = self.link.callback(move |_| ClassesSelectMessage::AppRoute(AppRoute::Classes(school_id, group_id, classes_id)));  
                 let topic = classes.classes_profile.clone().unwrap().topic;
                 let group_uuid = classes.classes_profile.clone().and_then(|data| data.classes_group.clone().and_then(|data| Some(data.group_id))).unwrap_or(Uuid::default());
-                let maybe_option = if ctx.props().group_id == GroupId(group_uuid) {
+                let maybe_option = if self.props.group_id == GroupId(group_uuid) {
                     html! {
-                        <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={on_classes}>
+                        <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown=on_classes>
                             <span>
                                 {lang::dict("View")}
                             </span>
@@ -174,7 +192,7 @@ impl Component for ClassesSelect {
                     }
                 } else {
                     html! {
-                        <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={on_select}>
+                        <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown=on_select>
                             <span>
                                 {lang::dict("Add")}
                             </span>
@@ -197,7 +215,7 @@ impl Component for ClassesSelect {
                 }
             })
             .collect::<Html>();
-        let _maybe_option_user = ctx.props().user_profile.as_ref().and_then(|user| {
+        let _maybe_option_user = self.props.user_profile.as_ref().and_then(|user| {
             if user.user_staff.is_some() || user.user_teacher.is_some() {
                 Some(html! {
                     <span class="title is-6 text-white text-center">{"Todas las Clases"}</span>
@@ -242,7 +260,7 @@ impl Component for ClassesSelect {
 
         html! {
             <>
-                <a class="button-search-univeral mt-3" onclick={&on_hidden_modal}>
+                <a class="button-search-univeral mt-3" onclick=&on_hidden_modal>
                     <span class="icon-text-search-universal">
                         <span>{lang::dict("Search")}</span>
                         <span class="icon">
@@ -250,7 +268,7 @@ impl Component for ClassesSelect {
                         </span>
                     </span>
                 </a>
-                <div class={class_search_modal} id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style={class_search_scroll} aria-modal="true" role="dialog">
+                <div class=class_search_modal id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style=class_search_scroll aria-modal="true" role="dialog">
                     <div class="modal-dialog modal-dialog-scrollable modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -258,10 +276,10 @@ impl Component for ClassesSelect {
                                     <span class="input-group-text text-primary-blue-dark input-group-search">
                                         <i class="fas fa-search"></i>
                                     </span>
-                                    <input type="text" class="form-control input-style-class" ref={self.search_node.clone()}
-                                        oninput={on_search.clone()} onfocus={on_focus.clone()} onblur={on_blur.clone()} placeholder={lang::dict("Search")} />
+                                    <input type="text" class="form-control input-style-class" ref=self.search_node.clone()
+                                        oninput=on_search.clone() onfocus=on_focus.clone() onblur=on_blur.clone() placeholder=lang::dict("Search") />
                                 </div>
-                                <a class="btn bg-purple-on ms-5" onclick={&on_hidden_modal}>
+                                <a class="btn bg-purple-on ms-5" onclick=&on_hidden_modal>
                                     <span class="text-white">
                                         <i class="fas fa-times"></i>
                                     </span>

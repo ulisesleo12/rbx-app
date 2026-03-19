@@ -1,14 +1,12 @@
 use log::*;
 use uuid::Uuid;
 use chrono::Local;
-use yew::prelude::*;
+use yew::{prelude::*, web_sys};
 use code_location::code_location;
-use yew::{html, Component, Html};
-use yew_router::scope_ext::RouterScopeExt;
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_main::lang;
 use roboxmaker_models::meetings_model;
-use roboxmaker_utils::functions::get_value_from_input_event;
 use roboxmaker_types::types::{AppRoute, GroupId, MeetingsId};
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
 
@@ -24,6 +22,8 @@ enum LoadSearch {
     Load(LoadSearchFound),
 }
 pub struct SearchMeetingsList {
+    link: ComponentLink<Self>,
+    props: SearchMeetingsListProps,
     search_node: NodeRef,
     graphql_task: Option<GraphQLTask>,
     search_task: Option<RequestTask>,
@@ -33,10 +33,13 @@ pub struct SearchMeetingsList {
 }
 
 #[derive(Debug, Properties, Clone, PartialEq)]
-pub struct SearchMeetingsListProps {}
+pub struct SearchMeetingsListProps {
+    pub on_app_route: Callback<AppRoute>,
+}
 
 #[derive(Debug)]
 pub enum SearchMeetingsListMessage {
+    AppRoute(AppRoute),
     FetchMeetingsSearch(String),
     Meetings(Option<meetings_model::search_meetings_all_schools::ResponseData>),
     OnFocus,
@@ -48,8 +51,10 @@ impl Component for SearchMeetingsList {
     type Message = SearchMeetingsListMessage;
     type Properties = SearchMeetingsListProps;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         SearchMeetingsList { 
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             search_task: None,
             search_node: NodeRef::default(),
@@ -59,23 +64,26 @@ impl Component for SearchMeetingsList {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
+            SearchMeetingsListMessage::AppRoute(route) => {
+                self.props.on_app_route.emit(route)
+            }
             SearchMeetingsListMessage::FetchMeetingsSearch(search) => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let scheduled_meetings = Local::now().date_naive();
                     let end_of_meetings = Local::now().time();
                     let vars = meetings_model::search_meetings_all_schools::Variables { 
-                        search: format!("%{}%", search), 
+                        search: search, 
                         scheduled_meetings: scheduled_meetings,
                         end_of_meetings: end_of_meetings,
                     };
 
                     let task = meetings_model::SearchMeetingsAllSchools::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             SearchMeetingsListMessage::Meetings(response)
@@ -111,19 +119,28 @@ impl Component for SearchMeetingsList {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
-        
-        true
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        trace!("{:?} => {:?}", self.props, props);
+        let mut should_render = false;
+        if self.props != self.props {
+            self.props = props;
+            should_render = true;
+        }
+        should_render
     }
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_focus = ctx.link().callback(move |_| SearchMeetingsListMessage::OnFocus);
-        let on_blur = ctx.link().callback(move |_| SearchMeetingsListMessage::OnBlur);
-        let on_hidden_modal = ctx.link().callback(move |_| SearchMeetingsListMessage::HiddenModal);
-
-        let on_search = ctx.link().callback(|search: InputEvent| SearchMeetingsListMessage::FetchMeetingsSearch(get_value_from_input_event(search)));
-
-
+    fn view(&self) -> Html {
+        let on_focus = self.link.callback(move |_| SearchMeetingsListMessage::OnFocus);
+        let on_blur = self.link.callback(move |_| SearchMeetingsListMessage::OnBlur);
+        let on_hidden_modal = self.link.callback(move |_| SearchMeetingsListMessage::HiddenModal);
+        let on_search = self.link.callback(|search: InputData| {
+            info!("search: {:?}", search);
+            let search = if search.value.len() > 0 {
+                format!("%{}%", search.value)
+            } else {
+                search.value
+            };
+            SearchMeetingsListMessage::FetchMeetingsSearch(search)
+        });
         let meetings_response = self
             .meetings_search
             .iter()
@@ -134,9 +151,7 @@ impl Component for SearchMeetingsList {
                     let group_id = GroupId(data.group_id);
                     let id = data.meetings_profile.clone().and_then(|data| Some(data.meet_id)).unwrap_or(Uuid::default());
                     let meetings_id = MeetingsId(id);
-                    let navigator = ctx.link().navigator().unwrap();
-
-                    let on_go_meet = Callback::from(move |_| navigator.push(&AppRoute::Meet{group_id, meetings_id}));
+                    let on_go_meet = self.link.callback(move |_| SearchMeetingsListMessage::AppRoute(AppRoute::Meet(group_id, meetings_id)));
                     html! {
                         <div class="m-4">
                             <div class="card card-search-u vh-15">
@@ -146,7 +161,7 @@ impl Component for SearchMeetingsList {
                                     </span>
                                 </div>
                                 <div class="card-body border-top d-flex px-5 py-2">
-                                    <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={&on_go_meet}>
+                                    <a class="btn btn-outline-secondary btn-sm mx-auto" onclick={&on_go_meet}>
                                         <span>
                                             {lang::dict("Go to video call")}
                                         </span>
@@ -194,7 +209,7 @@ impl Component for SearchMeetingsList {
         };
         html! {
             <>
-                <a class="button-search-univeral mt-3 me-5" onclick={&on_hidden_modal}>
+                <a class="button-search-univeral mt-3 me-5" onclick=&on_hidden_modal>
                     <span class="icon-text-search-universal">
                         <span>{lang::dict("Search")}</span>
                         <span class="icon">
@@ -202,7 +217,7 @@ impl Component for SearchMeetingsList {
                         </span>
                     </span>
                 </a>
-                <div class={class_search_modal} id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style={class_search_scroll} aria-modal="true" role="dialog">
+                <div class=class_search_modal id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style=class_search_scroll aria-modal="true" role="dialog">
                     <div class="modal-dialog modal-dialog-scrollable modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -210,10 +225,10 @@ impl Component for SearchMeetingsList {
                                     <span class="input-group-text text-primary-blue-dark input-group-search">
                                         <i class="fas fa-search"></i>
                                     </span>
-                                    <input type="text" class="form-control input-style-class" ref={self.search_node.clone()}
-                                        oninput={on_search.clone()} onfocus={on_focus.clone()} onblur={on_blur.clone()} placeholder={lang::dict("Search")} />
+                                    <input type="text" class="form-control input-style-class" ref=self.search_node.clone()
+                                        oninput=on_search.clone() onfocus=on_focus.clone() onblur=on_blur.clone() placeholder=lang::dict("Search") />
                                 </div>
-                                <a class="btn bg-purple-on ms-5" onclick={&on_hidden_modal}>
+                                <a class="btn bg-purple-on ms-5" onclick=&on_hidden_modal>
                                     <span class="text-white">
                                         <i class="fas fa-times"></i>
                                     </span>

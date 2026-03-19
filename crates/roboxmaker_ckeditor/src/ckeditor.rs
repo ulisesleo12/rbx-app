@@ -1,17 +1,19 @@
 use log::*;
 use uuid::Uuid;
-use web_sys::Node;
+use yew::virtual_dom::VNode;
 use wasm_bindgen::prelude::*;
-use yew::{virtual_dom::VNode, Context};
-use yew::{Callback, Component, Html, Properties};
+use yew::web_sys::{Node, self};
+use yew::{Callback, Component, ComponentLink, Html, Properties, ShouldRender};
 
 use roboxmaker_types::types::{MyUserProfile, UserId};
 
 pub struct CKEditor {
+    _link: ComponentLink<Self>,
     node: Node,
+    props: CKEditorProps,
 }
 
-#[derive(Debug, Properties, Clone, PartialEq)]
+#[derive(Debug, Properties, Clone)]
 pub struct CKEditorProps {
     pub user_profile: Option<MyUserProfile>,
     pub content: String,
@@ -26,41 +28,43 @@ impl Component for CKEditor {
     type Message = Message;
     type Properties = CKEditorProps;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         // Creating an element that we can render the React component into later
         let node = web_sys::window()
             .and_then(|window| window.document())
             .and_then(|document| document.create_element("div").ok())
             .and_then(|div| Some(Node::from(div)));
-
         CKEditor {
+            _link: link,
             node: node.unwrap(),
+            props,
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         true
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        trace!("{:?} => {:?} ", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        trace!("{:?} => {:?}", self.props, props);
+        self.props = props;
         true
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let user_id = ctx
-            .props()
+    fn view(&self) -> Html {
+        let user_id = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|user| Some(user.user_id))
             .unwrap_or(UserId(Uuid::default()));
         render_ckeditor(
             &self.node,
-            ctx.props().content.clone(),
+            self.props.content.clone(),
             user_id.to_string(),
-            ctx.props().upload_url.clone(),
-            ctx.props().on_data.clone(),
+            self.props.upload_url.clone(),
+            self.props.on_data.clone(),
         );
         VNode::VRef(self.node.clone())
     }

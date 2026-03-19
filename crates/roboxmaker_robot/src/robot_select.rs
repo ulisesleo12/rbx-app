@@ -1,13 +1,12 @@
 use log::*;
 use uuid::Uuid;
+use yew::web_sys;
 use yew::prelude::*;
 use code_location::code_location;
-use yew_router::scope_ext::RouterScopeExt;
-use yew::{html, Component, Html, Properties};
+use yew::{html, Component, ComponentLink, Html, ShouldRender, Properties};
 
 use roboxmaker_main::lang;
-use roboxmaker_models::robot_model;
-use roboxmaker_utils::functions::get_value_from_input_event;
+use roboxmaker_models::{school_model, robot_model};
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
 use roboxmaker_types::types::{RobotId, GroupId, UserId, AppRoute, MyUserProfile};
 
@@ -29,6 +28,8 @@ pub enum RobotSelectOption {
 }
 
 pub struct RobotSelect {
+    link: ComponentLink<Self>,
+    props: RobotSelectProperties,
     graphql_task: Option<GraphQLTask>,
     robot_task: Option<RequestTask>,
     robots: Vec<robot_model::robots_by_name::RobotsByNameRobot>,
@@ -43,13 +44,15 @@ pub struct RobotSelectProperties {
     pub on_select: Callback<RobotSelectOption>,
     pub allow_create: bool,
     pub group_id: Option<GroupId>,
+    pub on_app_route: Callback<AppRoute>,
+    pub auth_school: Option<school_model::school_by_id::SchoolByIdSchoolByPk>,
     pub user_profile: Option<MyUserProfile>,
-    #[prop_or(None)]
     pub user_id: Option<UserId>,
 }
 
 #[derive(Debug)]
 pub enum RobotSelectMessage {
+    AppRoute(AppRoute),
     FetchRobotsByRobotName(String),
     Robots(Option<robot_model::robots_by_name::ResponseData>),
     SelectRobot(RobotSelectOption),
@@ -62,8 +65,11 @@ impl Component for RobotSelect {
     type Message = RobotSelectMessage;
     type Properties = RobotSelectProperties;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        info!("data-groupid{:?}", props.group_id);
         RobotSelect {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             robot_task: None,
             robots: vec![],
@@ -74,21 +80,24 @@ impl Component for RobotSelect {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let mut should_render = true;
         match msg {
+            RobotSelectMessage::AppRoute(route) => {
+                self.props.on_app_route.emit(route)
+            }
             RobotSelectMessage::FetchRobotsByRobotName(search) => {
                 should_render = false;
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
 
                     let vars = robot_model::robots_by_name::Variables {
-                        search: format!("%{}%", search)
+                        search
                     };
 
                     let task = robot_model::RobotsByName::request(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             |response| {
                                 RobotSelectMessage::Robots(response)
@@ -113,7 +122,7 @@ impl Component for RobotSelect {
                 self.show_create = false;
                 self.maybe_section_search = false;
                 self.robots = vec![];
-                ctx.props().on_select.emit(select_option);
+                self.props.on_select.emit(select_option);
             }
             RobotSelectMessage::OnFocus => {
                 self.show_create = true;
@@ -137,25 +146,39 @@ impl Component for RobotSelect {
         should_render
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        let mut should_render = false;
+
+        if self.props != props {
+            self.props = props;
+            should_render = true;
+        } 
         
-        true
+        should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_focus = ctx.link().callback(move |_| RobotSelectMessage::OnFocus);
-        let on_blur = ctx.link().callback(move |_| RobotSelectMessage::OnBlur);
-        let on_hidden_modal = ctx.link().callback(move |_| RobotSelectMessage::HiddenModal);
+    fn view(&self) -> Html {
+        let on_focus = self.link.callback(move |_| RobotSelectMessage::OnFocus);
+        let on_blur = self.link.callback(move |_| RobotSelectMessage::OnBlur);
+        let on_hidden_modal = self.link.callback(move |_| RobotSelectMessage::HiddenModal);
 
-        let on_search = ctx.link().callback(|search: InputEvent| RobotSelectMessage::FetchRobotsByRobotName(get_value_from_input_event(search)));
+        let on_search = self.link.callback(|search: InputData| {
+            info!("search: {:?}", search);
+            let search = if search.value.len() > 0 {
+                format!("%{}%", search.value)
+            } else {
+                search.value
+            };
+            RobotSelectMessage::FetchRobotsByRobotName(search)
+        });
 
-        let user_id = if let Some(user_id) = ctx.props().user_id {
+        let user_id = if let Some(user_id) = self.props.user_id {
             user_id
         } else {
             UserId(Uuid::default())
         };
-        let group_id = if let Some(group_id) = ctx.props().group_id {
+        let group_id = if let Some(group_id) = self.props.group_id {
             group_id
         } else {
             GroupId(Uuid::default())
@@ -165,18 +188,15 @@ impl Component for RobotSelect {
             .iter()
             .map(|robot| {
                 let robot_id = RobotId(robot.id);
-                let on_select = ctx.link().callback(move |_| {
+                let on_select = self.link.callback(move |_| {
                     RobotSelectMessage::SelectRobot(RobotSelectOption::Robot(robot_id))
                 });
                 let name = robot.robot_profile.clone().unwrap().name;
-
-                let navigator = ctx.link().navigator().unwrap();
-                let on_robot = Callback::from(move |_| navigator.push(&AppRoute::Robot{robot_id, group_id, user_id}));
-                // let on_robot = ctx.link().callback(move |_| RobotSelectMessage::AppRoute(AppRoute::Robot{robot_id, group_id, user_id}));  
+                let on_robot = self.link.callback(move |_| RobotSelectMessage::AppRoute(AppRoute::Robot(robot_id, group_id, user_id)));  
                 let group_uuid = robot.robot_profile.clone().and_then(|data| data.robot_group.clone().and_then(|data| Some(data.group_id))).unwrap_or(Uuid::default());
-                let maybe_option = if ctx.props().group_id == Some(GroupId(group_uuid)) {
+                let maybe_option = if self.props.group_id == Some(GroupId(group_uuid)) {
                     html! {
-                        <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={on_robot}>
+                        <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown=on_robot>
                             <span>
                                 {lang::dict("View")}
                             </span>
@@ -184,7 +204,7 @@ impl Component for RobotSelect {
                     }
                 } else {
                     html! {
-                        <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={on_select}>
+                        <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown=on_select>
                             <span>
                                 {lang::dict("Add")}
                             </span>
@@ -207,7 +227,7 @@ impl Component for RobotSelect {
                 }
             })
             .collect::<Html>();
-        let _maybe_option_user = ctx.props().user_profile.as_ref().and_then(|item| {
+        let _maybe_option_user = self.props.user_profile.as_ref().and_then(|item| {
             if item.user_staff.is_some() || item.user_teacher.is_some() {
                 Some(html! {
                     <span class="title is-6 text-white text-center">{"Todos los Robots"}</span>
@@ -251,7 +271,7 @@ impl Component for RobotSelect {
         };
         html! {
             <>
-                <a class="button-search-univeral mt-3" onclick={&on_hidden_modal}>
+                <a class="button-search-univeral mt-3" onclick=&on_hidden_modal>
                     <span class="icon-text-search-universal">
                         <span>{lang::dict("Search")}</span>
                         <span class="icon">
@@ -259,7 +279,7 @@ impl Component for RobotSelect {
                         </span>
                     </span>
                 </a>
-                <div class={class_search_modal} id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style={class_search_scroll} aria-modal="true" role="dialog">
+                <div class=class_search_modal id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style=class_search_scroll aria-modal="true" role="dialog">
                     <div class="modal-dialog modal-dialog-scrollable modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -267,10 +287,10 @@ impl Component for RobotSelect {
                                     <span class="input-group-text text-primary-blue-dark input-group-search">
                                         <i class="fas fa-search"></i>
                                     </span>
-                                    <input type="text" class="form-control input-style-class" ref={self.search_node.clone()}
-                                        oninput={on_search.clone()} onfocus={on_focus.clone()} onblur={on_blur.clone()} placeholder={lang::dict("Search")} />
+                                    <input type="text" class="form-control input-style-class" ref=self.search_node.clone()
+                                        oninput=on_search.clone() onfocus=on_focus.clone() onblur=on_blur.clone() placeholder=lang::dict("Search") />
                                 </div>
-                                <a class="btn bg-purple-on ms-5" onclick={&on_hidden_modal}>
+                                <a class="btn bg-purple-on ms-5" onclick=&on_hidden_modal>
                                     <span class="text-white">
                                         <i class="fas fa-times"></i>
                                     </span>

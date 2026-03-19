@@ -3,8 +3,8 @@ use uuid::Uuid;
 use yew::prelude::*;
 use gloo_storage::Storage;
 use code_location::code_location;
-use yew::{html, Component, Html};
 use serde_derive::{Deserialize, Serialize};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_main::lang;
 use roboxmaker_loaders::fullscreen_loader::FullScreenLoader;
@@ -26,6 +26,8 @@ pub struct DataSchool {
 }
 
 pub struct AddUsers {
+    link: ComponentLink<Self>,
+    props: AddUsersProps,
     graphql_task: Option<GraphQLTask>,
     list_schools_task: Option<RequestTask>,
     school_selected: Option<SchoolId>,
@@ -36,7 +38,6 @@ pub struct AddUsers {
     show_dropdown_degree: bool,
     user_section_on: bool,
     loading_screen: LoadFullScreen,
-    saved_sidebar_state: bool,
 }
 
 #[derive(Debug, Properties, Clone, PartialEq)]
@@ -68,16 +69,17 @@ impl Component for AddUsers {
     type Message = AddUsersMessage;
     type Properties = AddUsersProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(AddUsersMessage::FetchSchoolList);
-
-        let saved_sidebar_state = if let Ok(value) = gloo_storage::LocalStorage::get("saved_sidebar_state") {
+    fn create(mut props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(AddUsersMessage::FetchSchoolList);
+        props.saved_sidebar_state = if let Ok(value) = gloo_storage::LocalStorage::get("saved_sidebar_state") {
             value 
         } else {
             true
         };
-
+        // props.saved_sidebar_state = saved_sidebar_state;
         AddUsers { 
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             list_schools_task: None,
             school_selected: None,
@@ -88,16 +90,15 @@ impl Component for AddUsers {
             show_dropdown_degree: false,
             user_section_on: false,
             loading_screen: LoadFullScreen::Loading,
-            saved_sidebar_state,
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
             AddUsersMessage::AppRoute(route) => {
-                ctx.props().on_app_route.emit(route)
+                self.props.on_app_route.emit(route)
             }
             AddUsersMessage::FetchSchoolList => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
@@ -105,7 +106,7 @@ impl Component for AddUsers {
 
                     let task = meetings_model::ListSchoolsMeets::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             AddUsersMessage::SchoolList(response)
@@ -144,7 +145,7 @@ impl Component for AddUsers {
                     self.loading_screen = LoadFullScreen::Load(LoadFullScreenFound::NotFound);
                 }
                 if self.school_selected.is_some() {
-                    ctx.link().send_message(AddUsersMessage::FetchClassGroups);
+                    self.link.send_message(AddUsersMessage::FetchClassGroups);
                 }
             }
             AddUsersMessage::FetchClassGroups => {
@@ -156,7 +157,7 @@ impl Component for AddUsers {
     
                         let task = grade_model::GroupsBySchoolIdListClass::request(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             |response| {
                                 AddUsersMessage::ClassGroups(response)
@@ -192,7 +193,7 @@ impl Component for AddUsers {
                 self.school_selected = Some(school_id);
                 self.show_dropdown_school = false;
                 self.show_dropdown_degree = false;
-                ctx.link().send_message(AddUsersMessage::FetchClassGroups);
+                self.link.send_message(AddUsersMessage::FetchClassGroups);
             }
             AddUsersMessage::GroupChangeData(group_id) => {
                 self.group_id_selected = Some(group_id);
@@ -208,13 +209,13 @@ impl Component for AddUsers {
             }
             AddUsersMessage::ChangeSidebarState => {
                 if let Some(element) = gloo_utils::document().get_element_by_id("show-sidebar-right") {
-                    if self.saved_sidebar_state {
+                    if self.props.saved_sidebar_state {
                         let _ = gloo_storage::LocalStorage::set("saved_sidebar_state", false);
-                        self.saved_sidebar_state = false;
+                        self.props.saved_sidebar_state = false;
                         let _ = element.set_attribute("class", "fa-angle-double-left fa-w-14 fa-2x");
                     } else {
                         let _ = gloo_storage::LocalStorage::set("saved_sidebar_state", true);
-                        self.saved_sidebar_state = true;
+                        self.props.saved_sidebar_state = true;
                         let _ = element.set_attribute("class", "fa fa-angle-double-right fa-w-14 fa-2x");
                     }
                 }
@@ -226,22 +227,23 @@ impl Component for AddUsers {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        trace!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        trace!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
 
-        if ctx.props() != old_props {
+        if self.props != props {
+            self.props = props;
             should_render = true;
         }
         should_render
     }
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
         // DROPDOWN SCHOOLS
 
         let all_schools = self.data_school.iter().map(|school_group| {
             let school_id = school_group.school_id;
             let school_id_select = format!("{:?}", school_group.school_id);
-            let on_show_list_degrees = ctx.link().callback(move |_| AddUsersMessage::SchoolChangeData(school_id));
+            let on_show_list_degrees = self.link.callback(move |_| AddUsersMessage::SchoolChangeData(school_id));
             let school_selected = if self.school_selected.and_then(|id| Some(id.0)).unwrap_or_default() == school_group.school_id.0 {
                 true
             } else {
@@ -253,11 +255,7 @@ impl Component for AddUsers {
                 "dropdown-item text-gray-purple noir-regular is-size-14 lh-20 d-flex align-items-center text-break-spaces"
             };
             html! {
-                <li>
-                    <a class={class_selected} onclick={on_show_list_degrees}>
-                    <input class="bg-checkbox me-1 d-flex align-items-center" type="checkbox" value={school_id_select} checked={school_selected} />
-                    {&school_group.name}</a>
-                </li>
+                <li><a class=class_selected onclick=on_show_list_degrees><input class="bg-checkbox me-1 d-flex align-items-center" type="checkbox" value=school_id_select checked=school_selected />{&school_group.name}</a></li>
             }
         })
         .collect::<Html>();
@@ -292,15 +290,15 @@ impl Component for AddUsers {
             "dropdown-menu dropdown-menu-home"
         };
 
-        let on_dropdown_school = ctx.link().callback(|_| AddUsersMessage::ShowDropdownSchool);
+        let on_dropdown_school = self.link.callback(|_| AddUsersMessage::ShowDropdownSchool);
 
         let dropdown_schools = html! {
             <div class="dropdown dropdown-h me-4">
-                <button class={class_dropdown_school} type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false" onclick={on_dropdown_school}>
+                <button class=class_dropdown_school type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false" onclick=on_dropdown_school>
                     <img src="/icons/school-3.svg" style="height: 22px;" />
                     {change_school}
                 </button>
-                <ul class={class_dropdown_list_school} aria-labelledby="dropdownMenuButton2">
+                <ul class=class_dropdown_list_school aria-labelledby="dropdownMenuButton2">
                     {all_schools}
                 </ul>
             </div>
@@ -312,7 +310,7 @@ impl Component for AddUsers {
         let alls_class_groups = self.class_groups.iter().map(|class_group| {
             let group_id = class_group.group_id;
             let class_id_select = format!("{:?}", group_id);
-            let on_show_list_degrees = ctx.link().callback(move |_| AddUsersMessage::GroupChangeData(group_id));
+            let on_show_list_degrees = self.link.callback(move |_| AddUsersMessage::GroupChangeData(group_id));
             let class_group_selected = if self
                 .group_id_selected
                 .and_then(|id| Some(id.0))
@@ -333,8 +331,8 @@ impl Component for AddUsers {
                 };
             html! {
                 <li>
-                    <a class={class_selected} onclick={on_show_list_degrees}>
-                        <input class="bg-checkbox me-1 d-flex align-items-center" type="checkbox" value={class_id_select} checked={class_group_selected} />
+                    <a class=class_selected onclick=on_show_list_degrees>
+                        <input class="bg-checkbox me-1 d-flex align-items-center" type="checkbox" value=class_id_select checked=class_group_selected />
                         {&class_group.class_name}
                     </a>
                 </li>
@@ -377,21 +375,21 @@ impl Component for AddUsers {
             "dropdown-menu dropdown-menu-home"
         };
 
-        let on_dropdown_degree = ctx.link().callback(|_| AddUsersMessage::ShowDropdownDegree);
+        let on_dropdown_degree = self.link.callback(|_| AddUsersMessage::ShowDropdownDegree);
         let dropdown_degrees = html! {
             <div class="dropdown dropdown-h mt-3 mt-md-0">
-                <button class={class_dropdown} type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false" onclick={on_dropdown_degree}>
+                <button class=class_dropdown type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false" onclick=on_dropdown_degree>
                     <img src="/icons/graduation_1.svg" style="height: 18px;" />
                     {change_class_group}
                 </button>
-                <ul class={class_dropdown_list} aria-labelledby="dropdownMenuButton2">
+                <ul class=class_dropdown_list aria-labelledby="dropdownMenuButton2">
                     {alls_class_groups}
                 </ul>
             </div>
         };
         // END DROPDOWN DEGREES
 
-        let welcome_class_view = ctx.props().user_profile.as_ref().and_then(|user_profile| {
+        let welcome_class_view = self.props.user_profile.as_ref().and_then(|user_profile| {
             Some(html! {
                 <div class="d-flex justify-content-between">
                     <h1 class="text-primary-blue-dark text-uppercase noir-bold is-size-36 lh-43 pb-4 mb-1">{lang::dict("Hello, ")}
@@ -400,6 +398,28 @@ impl Component for AddUsers {
                 </div>
             })
         }).unwrap_or(html! {});
+
+        let _maybe_schools_list = self.data_school.iter().map(|data| {
+            html! {
+                <div class="d-flex align-items-center justify-content-evenly mb-4">
+                    <span class="text-primary-blue-light noir-bold is-size-18 lh-22">{&data.name}</span>
+                    <span class="text-primary-blue-light noir-bold is-size-18 lh-22">{"<----------------------------->"}</span>
+                    <span class="text-primary-blue-light noir-bold is-size-14 lh-22">{&data.school_id}</span>
+                    // <button type="button" class="btn btn-outline-danger" onclick={&on_delete_degree}>{"DELETE CLASS GROUP"}</button>
+                </div>
+            }
+        }).collect::<Html>();
+
+        let _maybe_group_list = self.class_groups.iter().map(|data| {
+            html! {
+                <div class="d-flex align-items-center justify-content-evenly mb-4">
+                    <span class="text-primary-blue-light noir-bold is-size-18 lh-22">{&data.class_name}</span>
+                    // <span class="text-primary-blue-light noir-bold is-size-18 lh-22">{"<----------------------------->"}</span>
+                    <span class="text-primary-blue-light noir-bold is-size-14 lh-22">{&data.group_id}</span>
+                    // <button type="button" class="btn btn-outline-danger" onclick={&on_delete_degree}>{"DELETE CLASS GROUP"}</button>
+                </div>
+            }
+        }).collect::<Html>();
 
 
         let home_view_staff = match self.loading_screen {
@@ -418,6 +438,7 @@ impl Component for AddUsers {
                                     {dropdown_schools}
                                     {dropdown_degrees}
                                 </div>
+                                // {maybe_group_list}
                             </div>
                         </div>
                     </>

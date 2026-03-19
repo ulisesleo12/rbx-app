@@ -7,7 +7,6 @@ edition = "2021"
 
 [dependencies]
 roboxmaker_main = { path = "../roboxmaker_main" }
-roboxmaker_utils = { path = "../roboxmaker_utils" }
 roboxmaker_models = { path = "../roboxmaker_models" }
 roboxmaker_types = { path = "../roboxmaker_types" }
 roboxmaker_degree = { path = "../roboxmaker_degree" }
@@ -17,40 +16,21 @@ roboxmaker-graphql = { path = "../roboxmaker-graphql" }
 
 log = "0.4"
 anyhow = "1.0.56"
-yew = "0.21"
-uuid = { version = "1.6.1", features = ["serde", "v4", "v5", "wasm-bindgen"] }
-serde_derive = "1"
+yew = { version = "0.18", features = ["default", "toml"] }
+uuid = { version = "1.2.2", features = ["serde", "v4", "v5", "wasm-bindgen"] }
+serde_derive = "1.0.152"
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"]  }
-serde = { version = "1", features = ["derive"] }
-yew-router = "0.18"
-js-sys = "0.3"
-regex = "1.10"
-gloo-utils = "0.2"
-gloo-storage = "0.3"
+serde = { version = "1.0.152", features = ["derive"] }
+
+js-sys = "0.3.60"
+regex = "1.7.1"
+gloo-utils = "0.1.6"
+gloo-storage = "0.2.2"
 code_location = "1.1"
 
 [dependencies.web-sys]
-version = "0.3"
+version = "0.3.60"
+optional = true
 features = [
-  "Document",
-  "Headers",
-  "Request",
-  "RequestInit",
-  "RequestMode",
-  "Response",
-  "Window",
-  "Element",
-  "DomTokenList",
-  "HtmlSelectElement",
-  "HtmlDocument",
-  "HtmlMediaElement",
-  "HtmlElement",
-  "Navigator",
-  "BinaryType",
-  "Blob",
-  "FileReader",
-  "ProgressEvent",
-  "FocusEvent",
-  "InputEvent",
-  "CssStyleDeclaration"
+  'HtmlSelectElement',
 ]

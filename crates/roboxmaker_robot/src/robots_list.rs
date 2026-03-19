@@ -5,13 +5,13 @@ use code_location::code_location;
 use crate::robots_card::RobotsCard;
 use crate::robot_select::RobotSelect;
 use crate::robot_select::RobotSelectOption;
-use yew_router::scope_ext::RouterScopeExt;
-use yew::{html, Component, Html, Properties};
+use yew::{html, Component, ComponentLink, Html, ShouldRender, Properties};
 
 use roboxmaker_main::lang;
-use roboxmaker_models::robot_model;
+use roboxmaker_utils::funtions::get_creation_date;
+use roboxmaker_models::{school_model, robot_model};
 use roboxmaker_searches::search_robots_group::SearchRobotdGroup;
-use roboxmaker_models::robot_model::{get_robot_list, robot_group_add};
+use roboxmaker_models::robot_model::{robots_list_by_group, robot_group_add};
 use roboxmaker_types::types::{RobotId, GroupId, UserId, AppRoute, MyUserProfile};
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Subscribe, SubscriptionTask, Request, RequestTask};
 
@@ -19,12 +19,15 @@ use roboxmaker_graphql::{GraphQLService, GraphQLTask, Subscribe, SubscriptionTas
 pub struct RobotProfile {
     pub name: String,
     pub path: String,
+    pub timestamp: String,
     pub robot_id: RobotId,
     pub enabled: bool,
-    pub robot_type: get_robot_list::RoboxRobotTypeEnum,
+    pub robot_type: robots_list_by_group::RoboxRobotTypeEnum,
 }
 
 pub struct RobotsList {
+    link: ComponentLink<Self>,
+    props: RobotsListProperties,
     graphql_task: Option<GraphQLTask>,
     robot_sub: Option<SubscriptionTask>,
     robot_delete_task: Option<RequestTask>,
@@ -32,7 +35,6 @@ pub struct RobotsList {
     show_dropdown_filter: bool,
     filter: RobotFilter,
     robot_list: Vec<RobotProfile>,
-    robot_list_view: Vec<RobotProfile>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -46,14 +48,17 @@ pub enum RobotFilter {
 pub struct RobotsListProperties {
     pub group_id: GroupId,
     pub user_profile: Option<MyUserProfile>,
+    pub auth_school: Option<school_model::school_by_id::SchoolByIdSchoolByPk>,
     pub user_id: Option<UserId>,
+    pub on_app_route: Callback<AppRoute>,
     pub class_name: String,
 }
 
 #[derive(Debug)]
 pub enum RobotsListMessage {
+    AppRoute(AppRoute),
     FetchRobotsByGroupId,
-    Robots(Option<robot_model::get_robot_list::ResponseData>),
+    Robots(Option<robot_model::robots_list_by_group::ResponseData>),
     AddRobot(RobotId),
     RemoveRobot(RobotId),
     RobotAdded(Option<RobotId>),
@@ -67,11 +72,11 @@ impl Component for RobotsList {
     type Message = RobotsListMessage;
     type Properties = RobotsListProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-
-        ctx.link().send_message(RobotsListMessage::FetchRobotsByGroupId);
-        
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(RobotsListMessage::FetchRobotsByGroupId);
         RobotsList {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             robot_sub: None,
             robot_delete_task: None,
@@ -79,25 +84,27 @@ impl Component for RobotsList {
             show_dropdown_filter: false,
             filter: RobotFilter::Alls,
             robot_list: vec![],
-            robot_list_view: vec![],
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
-        let should_update = true;
+        let mut should_update = true;
         match msg {
+            RobotsListMessage::AppRoute(route) => {
+                self.props.on_app_route.emit(route)
+            }
             RobotsListMessage::FetchRobotsByGroupId => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
-                    let group_id = ctx.props().group_id;
+                    let group_id = self.props.group_id;
 
-                    let vars = robot_model::get_robot_list::Variables {
+                    let vars = robot_model::robots_list_by_group::Variables {
                         group_id: group_id.0,
                     };
 
-                    let task = robot_model::GetRobotList::subscribe(
+                    let task = robot_model::RobotsListByGroup::subscribe(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             |response| {
                                 RobotsListMessage::Robots(response)
@@ -107,57 +114,51 @@ impl Component for RobotsList {
                 }
             }
             RobotsListMessage::Robots(response) => {
-                info!("RESPONSE-ROBOTS {:?}", response.clone());
+                self.robot_list = response
+                    .clone()
+                    .and_then(|data| Some(data.robot_group))
+                    .unwrap_or(vec![])
+                    .iter()
+                    .filter(|robots| {
 
-                if let Some(class_group) = response.clone().and_then(|data| Some(data.class_group)) {
+                        self.filter == RobotFilter::Alls && {robots.enabled == true || robots.enabled == false} ||
                 
-                    for class_robot in class_group.iter() {
-                        let main_section_id = class_robot.class_profile.clone().and_then(|class| Some(class.section_id)).unwrap_or(Uuid::default());
-                        // let section_id = class_robot.class_profile.clone().and_then(|data| data.class_robot);
+                        self.filter == RobotFilter::Enabled && robots.enabled == true ||
+        
+                        self.filter == RobotFilter::Disabled && robots.enabled == false
+        
+                    })
+                    .map(|item| {
+                        let naive = chrono::NaiveDate::from_ymd_opt(2023, 01, 01).unwrap().and_hms_opt(23, 59, 59).unwrap();
 
-                        let robots = class_robot.class_profile.clone().and_then(|data| Some(data.class_robot)).unwrap_or(vec![]);
-                        let robot_group = class_robot.robot_groups.clone();
+                        let timestamp = item.robot_profile.clone().and_then(|data| Some(data.timestamp)).unwrap_or(naive);
 
-                        let robot_list = robots.iter().map(|item| {
+                        let robot_type = item.robot_type.clone().unwrap_or(robots_list_by_group::RoboxRobotTypeEnum::Different);
 
-                            // let robot_type = item.robot_profile.robot_group.clone().and_then(|data| data.robot_type).unwrap_or(get_robot_list::RoboxRobotTypeEnum::Different);
-                            let robot_type = if main_section_id == item.section_id { true } else { false };
-                            RobotProfile { 
-                                name: item.robot_profile.name.clone(), 
-                                path: item.robot_profile.path.clone(), 
-                                robot_id: RobotId(item.robot_profile.robot_id.clone()), 
-                                enabled: false,
-                                robot_type: get_robot_list::RoboxRobotTypeEnum::Different,
-                            }
-                        }).collect();
+                        let time_fn = get_creation_date(timestamp);
 
-                        self.robot_list = robot_list;
-
-                        for robot_list in self.robot_list.iter_mut() {
-                            for item in robot_group.iter() {
-                                if robot_list.robot_id.0 == item.robot_id {
-                                    robot_list.enabled = item.enabled;
-                                    robot_list.robot_type = item.robot_type.clone().unwrap_or(get_robot_list::RoboxRobotTypeEnum::Different);
-                                }
-                            }
+                        RobotProfile { 
+                            name: item.robot_profile.clone().and_then(|data| Some(data.name)).unwrap_or("".to_string()), 
+                            path: item.robot_profile.clone().and_then(|data| Some(data.path)).unwrap_or("".to_string()), 
+                            timestamp: time_fn,
+                            robot_id: RobotId(item.robot_profile.clone().and_then(|data| Some(data.robot_id)).unwrap_or(Uuid::default())), 
+                            enabled: item.enabled,
+                            robot_type,
                         }
-                    }
-                }
-
-                ctx.link().send_message(RobotsListMessage::ChangeFilter(self.filter.clone()))
+                    }).collect();
             }
             RobotsListMessage::AddRobot(robot_id) => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                         
                     let vars = robot_model::robot_group_add::Variables { 
-                        group_id: ctx.props().group_id.0,
+                        group_id: self.props.group_id.0,
                         robot_id: robot_id.0,
                         robot_type: robot_group_add::RoboxRobotTypeEnum::Different,
                     };
 
                     let task = robot_model::RobotGroupAdd::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             let robot_id = if let Some(robot) = response {
@@ -175,13 +176,13 @@ impl Component for RobotsList {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
 
                     let vars = robot_model::robot_group_delete::Variables { 
-                        group_id: ctx.props().group_id.0,
+                        group_id: self.props.group_id.0,
                         robot_id: robot_id.0,
                     };
 
                     let task = robot_model::RobotGroupDelete::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             let robot_id = if let Some(response) = response {
@@ -200,17 +201,26 @@ impl Component for RobotsList {
                 }
             }
             RobotsListMessage::RobotAdded(robot_id) => {
-                let group_id = ctx.props().group_id;
-
-                if let (Some(robot_id), Some(user_id)) = (robot_id, ctx.props().user_id) {
-
-                    ctx.link().navigator().unwrap().push(&AppRoute::Robot { robot_id, group_id, user_id })
-
+                if let Some(robot_id) = robot_id {
+                    self.robot_list.push(RobotProfile { 
+                            name: String::from(""), 
+                            path: String::from(""), 
+                            timestamp: String::from(""), 
+                            robot_id, 
+                            enabled: false, 
+                            robot_type: robots_list_by_group::RoboxRobotTypeEnum::Different 
+                        }
+                    );
+                } else {
+                    should_update = true;
                 }
             }
             RobotsListMessage::RobotRemoved(robot_id) => {
-                info!("Remove Robot {:?}", robot_id);
-
+                if let Some(robot_id) = robot_id {
+                    self.robot_list.retain(|u| u.robot_id != robot_id);
+                } else {
+                    should_update = true;
+                }
             }
             RobotsListMessage::ShowDropdown => {
                 self.show_dropdown_filter = !self.show_dropdown_filter;
@@ -218,22 +228,7 @@ impl Component for RobotsList {
             RobotsListMessage::ChangeFilter(filter) => {
                 self.filter = filter;
                 self.show_dropdown_filter = false;
-
-                let lessons_clone = self.robot_list.clone();
-
-                let robots: Vec<RobotProfile> = lessons_clone.iter().filter(|filter| {
-                    self.filter == RobotFilter::Alls && {filter.enabled == true || filter.enabled == false} ||
-            
-                    self.filter == RobotFilter::Enabled && filter.enabled == true ||
-    
-                    self.filter == RobotFilter::Disabled && filter.enabled == false
-                })
-                .cloned()
-                .collect();
-
-                info!("FILTER {:?} <-----> ROBOTS - VIEW {:?} ", self.filter, robots);
-
-                self.robot_list_view = robots;
+                self.link.send_message(RobotsListMessage::FetchRobotsByGroupId);
             }
             RobotsListMessage::UpdateRobotIdList(robot_id, enabled) => {
                 for robot in self.robot_list.iter_mut() {
@@ -246,19 +241,25 @@ impl Component for RobotsList {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        // info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        let mut should_render = false;
+
+        if self.props != props {
+            self.props = props;
+            should_render = true
+        } 
         
-        ctx.props() != old_props
+        should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_alls = ctx.link().callback(|_| RobotsListMessage::ChangeFilter(RobotFilter::Alls));
-        let on_enabled = ctx.link().callback(|_| RobotsListMessage::ChangeFilter(RobotFilter::Enabled));
-        let on_disabled = ctx.link().callback(|_| RobotsListMessage::ChangeFilter(RobotFilter::Disabled));
-        let on_dropdown = ctx.link().callback(|_| RobotsListMessage::ShowDropdown);
-        let on_change_list = ctx.link().callback(|(robot_id, enabled)| RobotsListMessage::UpdateRobotIdList(robot_id, enabled));
-        let on_robot_delete = ctx.link().callback(|robot_id| RobotsListMessage::RemoveRobot(robot_id));
+    fn view(&self) -> Html {
+        let on_alls = self.link.callback(|_| RobotsListMessage::ChangeFilter(RobotFilter::Alls));
+        let on_enabled = self.link.callback(|_| RobotsListMessage::ChangeFilter(RobotFilter::Enabled));
+        let on_disabled = self.link.callback(|_| RobotsListMessage::ChangeFilter(RobotFilter::Disabled));
+        let on_dropdown = self.link.callback(|_| RobotsListMessage::ShowDropdown);
+        let on_change_list = self.link.callback(|(robot_id, enabled)| RobotsListMessage::UpdateRobotIdList(robot_id, enabled));
+        let on_robot_delete = self.link.callback(|robot_id| RobotsListMessage::RemoveRobot(robot_id));
         let maybe_option_seleted = match self.filter {
             RobotFilter::Alls => "Everyone",
             RobotFilter::Enabled => "Enabled",
@@ -274,33 +275,33 @@ impl Component for RobotsList {
         } else {
             "dropdown-menu dropdown-menu-degree"
         };
-        let maybe_dropdown_by_user = ctx
-            .props()
+        let maybe_dropdown_by_user = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|item|{
                 if item.user_staff.is_some() || item.user_teacher.is_some() {
                     Some(html! {
                         <div class="dropdown">
-                            <button class={class_dropdown} type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false" onclick={on_dropdown}>
+                            <button class=class_dropdown type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false" onclick=on_dropdown>
                                 <img src="/icons/filter.svg" style="height: 22px;" />
                                 <span class="universal-select-option text-secondary-purple noir-regular is-size-18 lh-22">{lang::dict(maybe_option_seleted)}</span>
                             </button>
-                            <ul class={class_dropdown_list} aria-labelledby="dropdownMenuButton2">
+                            <ul class=class_dropdown_list aria-labelledby="dropdownMenuButton2">
                                 <li>
-                                    <a class="dropdown-item d-flex flex-wrap align-items-center mt-1 pe-0" onclick={on_alls}>
+                                    <a class="dropdown-item d-flex flex-wrap align-items-center mt-1 pe-0" onclick=on_alls>
                                         <input class="bg-checkbox" type="checkbox" checked={if self.filter == RobotFilter::Alls {true} else {false}} />
                                         <span class={if self.filter == RobotFilter::Alls {"text-blue-purple noir-regular is-size-18 lh-22 ps-2"} else {"text-gray-purple noir-regular is-size-18 lh-22 ps-2"}}>{lang::dict("Everyone")}</span>
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item d-flex flex-wrap align-items-center pe-0" onclick={on_enabled}>
+                                    <a class="dropdown-item d-flex flex-wrap align-items-center pe-0" onclick=on_enabled>
                                         <input class="bg-checkbox" type="checkbox" checked={if self.filter == RobotFilter::Enabled {true} else {false}} />
                                         <span class={if self.filter == RobotFilter::Enabled {"text-blue-purple noir-regular is-size-18 lh-22 ps-2"} else {"text-gray-purple noir-regular is-size-18 lh-22 ps-2"}}>{lang::dict("Enabled")}{"s"}</span>
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item d-flex flex-wrap align-items-center pe-0" onclick={on_disabled}>
+                                    <a class="dropdown-item d-flex flex-wrap align-items-center pe-0" onclick=on_disabled>
                                     <input class="bg-checkbox" type="checkbox" checked={if self.filter == RobotFilter::Disabled {true} else {false}} />
                                     <span class={if self.filter == RobotFilter::Disabled {"text-blue-purple noir-regular is-size-18 lh-22 ps-2"} else {"text-gray-purple noir-regular is-size-18 lh-22 ps-2"}}>{lang::dict("Disabled")}{"s"}</span>
                                     </a>
@@ -315,82 +316,84 @@ impl Component for RobotsList {
             .unwrap_or(html! {});
 
         let robot_list = self
-            .robot_list_view
+            .robot_list
             .iter()
-            .filter(|data| data.robot_type != get_robot_list::RoboxRobotTypeEnum::Different)
+            .filter(|data| data.robot_type != robots_list_by_group::RoboxRobotTypeEnum::Different)
             .map(|item| {
             let robot_profile = item.clone();
             html! {
-                <RobotsCard user_profile={ctx.props().user_profile.clone()}
-                    user_id={ctx.props().user_id.clone()}
-                    robot_id={item.robot_id.clone()}
-                    group_id={ctx.props().group_id.clone()}
-                    on_robot_delete={Some(on_robot_delete.clone())}
-                    on_change_list={on_change_list.clone()}
+                <RobotsCard user_profile=self.props.user_profile.clone()
+                    user_id=self.props.user_id.clone()
+                    robot_id=item.robot_id.clone()
+                    group_id=self.props.group_id.clone()
+                    on_app_route={self.props.on_app_route.clone()}
+                    on_robot_delete=Some(on_robot_delete.clone())
+                    on_change_list=on_change_list.clone()
                     robot_profile={robot_profile} />
             }
         }).collect::<Html>();
 
         let other_robot_list = self
-            .robot_list_view
+            .robot_list
             .iter()
-            .filter(|data| data.robot_type == get_robot_list::RoboxRobotTypeEnum::Different)
+            .filter(|data| data.robot_type == robots_list_by_group::RoboxRobotTypeEnum::Different)
             .map(|item| {
             let robot_profile = item.clone();
             html! {
-                <RobotsCard user_profile={ctx.props().user_profile.clone()}
-                    user_id={ctx.props().user_id.clone()}
-                    robot_id={item.robot_id.clone()}
-                    group_id={ctx.props().group_id.clone()}
-                    on_robot_delete={Some(on_robot_delete.clone())}
-                    on_change_list={on_change_list.clone()}
+                <RobotsCard user_profile=self.props.user_profile.clone()
+                    user_id=self.props.user_id.clone()
+                    robot_id=item.robot_id.clone()
+                    group_id=self.props.group_id.clone()
+                    on_app_route={self.props.on_app_route.clone()}
+                    on_robot_delete=Some(on_robot_delete.clone())
+                    on_change_list=on_change_list.clone()
                     robot_profile={robot_profile} />
             }
         }).collect::<Html>();
 
-        let maybe_robot_search = ctx
-            .props()
+        let maybe_robot_search = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|item| {
-                let on_select = ctx.link().callback(|select_option| match select_option {
+                let on_select = self.link.callback(|select_option| match select_option {
                     RobotSelectOption::Robot(robot_id) => RobotsListMessage::AddRobot(robot_id),
                 });
                 if item.user_staff.is_some() || item.user_teacher.is_some() {
                     Some(html! {
-                        <RobotSelect on_select={on_select} 
-                            allow_create={true}
-                            group_id={ctx.props().group_id}
-                            user_profile={ctx.props().user_profile.clone()} />
+                        <RobotSelect on_select=on_select 
+                            allow_create=true
+                            group_id=self.props.group_id
+                            user_profile=self.props.user_profile.clone()
+                            on_app_route=self.props.on_app_route.clone() />
                     })
                 } else {
                     Some(html! {
-                        <SearchRobotdGroup group_id={ctx.props().group_id} user_id={None} />
+                        <SearchRobotdGroup on_app_route=self.props.on_app_route.clone()
+                            group_id=self.props.group_id
+                            user_id=None />
                     })
                 }
             })
             .unwrap_or(html! {});
-        let group_id = ctx.props().group_id; 
-
-        let navigator = ctx.link().navigator().unwrap();
-        let on_direct_meet = Callback::from(move |_| navigator.push(&AppRoute::MeetDirect{group_id}));
-
+        let group_id = self.props.group_id; 
+        let on_direct_meet = self.link.callback(move |_| RobotsListMessage::AppRoute(AppRoute::MeetDirect(group_id)));
         let maybe_meet = {
             html! {
-                <a class="btn btn-outline-light text-primary-blue-dark noir-regular is-size-18 lh-22" onclick={on_direct_meet}>
+                <a class="btn btn-outline-light text-primary-blue-dark noir-regular is-size-18 lh-22" onclick=on_direct_meet>
                        <img class="me-3" src="/icons/video-2.svg" style="height: 30px;" />
                     <span>{lang::dict("Meet up")}</span>
                 </a>
             }
         };
-        let maybe_user_profile_pic = ctx
-            .props()
+        let maybe_user_profile_pic = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|user_profile| Some(user_profile.pic_path.clone()))
             .and_then(|pic_path| {
                 Some(html! {
-                    <img class="img-card-72" src={pic_path.clone()} alt="photo of user" />
+                    <img class="img-card-72" src=pic_path.clone() alt="photo of user" />
                 })
             })
             .unwrap_or(html! {<img class="img-card-72" src="/static/avatar.png"/>
@@ -399,7 +402,7 @@ impl Component for RobotsList {
         let head_section = html! {
             <div class="d-flex flex-wrap align-items-lg-center justify-content-between mb-md-5 mb-lg-6">
                 <h1 class="text-primary-blue-dark text-uppercase noir-bold is-size-36 lh-43 mb-0">
-                    {ctx.props().class_name.clone()}
+                    {self.props.class_name.clone()}
                 </h1>
                 <div class="d-flex flex-wrap justify-content-between align-items-center col-12 col-xl-5 mb-4 mb-lg-0">
                     {maybe_meet}
@@ -411,13 +414,13 @@ impl Component for RobotsList {
         let maybe_dropdown = html! {
             <div class="d-flex flex-wrap align-items-center justify-content-between pb-4">
                 <span class="text-primary-blue-dark noir-bold is-size-24 lh-29 mb-3 mb-sm-3 mb-md-3 mb-lg-0">
-                    {lang::dict("Robots")} <span class="ps-1">{"("}{self.robot_list_view.iter().filter(|item | item.robot_type != get_robot_list::RoboxRobotTypeEnum::Different).count()}{")"}</span>
+                    {lang::dict("Robots")} <span class="ps-1">{"("}{self.robot_list.iter().filter(|item | item.robot_type != robots_list_by_group::RoboxRobotTypeEnum::Different).count()}{")"}</span>
                 </span>
                 {maybe_dropdown_by_user}
             </div>
         };
 
-        let maybe_option = if self.robot_list_view.iter().filter(|item | item.robot_type != get_robot_list::RoboxRobotTypeEnum::Different).count() > 0 {
+        let maybe_option = if self.robot_list.iter().filter(|item | item.robot_type != robots_list_by_group::RoboxRobotTypeEnum::Different).count() > 0 {
             html! {
                 <div class="d-flex flex-wrap mb-3">
                     {robot_list}
@@ -430,7 +433,7 @@ impl Component for RobotsList {
                 </div>
             }
         };
-        let maybe_option_two = if self.robot_list_view.iter().filter(|item | item.robot_type == get_robot_list::RoboxRobotTypeEnum::Different).count() > 0 {
+        let maybe_option_two = if self.robot_list.iter().filter(|item | item.robot_type == robots_list_by_group::RoboxRobotTypeEnum::Different).count() > 0 {
             html! {
                 <div class="d-flex flex-wrap pt-5">
                     {other_robot_list}
@@ -446,11 +449,11 @@ impl Component for RobotsList {
                 {maybe_dropdown}
                 {maybe_option}
                 {   
-                    if self.robot_list_view.iter().filter(|item | item.robot_type == get_robot_list::RoboxRobotTypeEnum::Different).count() > 0 {
+                    if self.robot_list.iter().filter(|item | item.robot_type == robots_list_by_group::RoboxRobotTypeEnum::Different).count() > 0 {
                         html! {
                             <>
                                 <span class="text-primary-blue-dark noir-bold is-size-24 lh-29 mb-3 mb-sm-3 mb-md-3 mb-lg-0">
-                                    {lang::dict("Other Robots")} <span class="ps-1">{"("}{self.robot_list_view.iter().filter(|item | item.robot_type == get_robot_list::RoboxRobotTypeEnum::Different).count()}{")"}</span>
+                                    {lang::dict("Other Robots")} <span class="ps-1">{"("}{self.robot_list.iter().filter(|item | item.robot_type == robots_list_by_group::RoboxRobotTypeEnum::Different).count()}{")"}</span>
                                 </span>
                                 {maybe_option_two}
                             </>

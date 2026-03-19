@@ -1,20 +1,19 @@
 use log::*;
-use roboxmaker_models::lesson_model::get_lesson_list;
 use uuid::Uuid;
 use yew::prelude::*;
 use serde::Serialize;
 use serde::Deserialize;
 use code_location::code_location;
-use yew::{html, Component, Html};
 use crate::lesson_card::LessonCard;
 use crate::lesson_select::LessonSelect;
-use yew_router::scope_ext::RouterScopeExt;
 use crate::lesson_select::LessonSelectOption;
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_main::lang;
-use roboxmaker_models::lesson_model;
-use roboxmaker_utils::functions::get_creation_date;
-use roboxmaker_models::lesson_model::lesson_class_and_group_create;
+use roboxmaker_utils::funtions::get_creation_date;
+use roboxmaker_models::{school_model, lesson_model};
+use roboxmaker_models::lesson_model::lesson_group_create;
+use roboxmaker_models::lesson_model::lessons_list_by_group;
 use roboxmaker_types::types::{GroupId, LessonId, AppRoute, SchoolId, MyUserProfile, UserId};
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Subscribe, SubscriptionTask, Request, RequestTask};
 
@@ -25,6 +24,7 @@ pub enum TypeLesson {
     Extra,
     None,
 }
+
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct LessonProfile {
@@ -40,11 +40,14 @@ pub struct LessonProfile {
     pub school_logo: String,
     pub content: String,
     pub on_dropdown_menu: bool,
-    pub lesson_type: get_lesson_list::RoboxLessonTypeEnum,
+    pub lesson_type: lessons_list_by_group::RoboxLessonTypeEnum,
+    pub order: Option<String>,
     // pub lesson_type: String,
 }
 
 pub struct LessonList {
+    link: ComponentLink<Self>,
+    props: LessonListProperties,
     graphql_task: Option<GraphQLTask>,
     lesson_sub: Option<SubscriptionTask>,
     lesson_delete_task: Option<RequestTask>,
@@ -52,9 +55,7 @@ pub struct LessonList {
     show_dropdown_filter: bool,
     filter: LessonFilter,
     lesson_list: Vec<LessonProfile>,
-    lesson_list_view: Vec<LessonProfile>,
     more_lessons: bool,
-    section_id: Option<Uuid>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -70,15 +71,18 @@ pub struct LessonListProperties {
     pub group_id: GroupId,
     pub school_id: SchoolId,
     pub user_profile: Option<MyUserProfile>,
-    #[prop_or(None)]
+    pub auth_school: Option<school_model::school_by_id::SchoolByIdSchoolByPk>,
+    pub on_app_route: Callback<AppRoute>,
+    pub on_list_change: Option<Callback<()>>,
     pub inventory_group: Option<Uuid>,
     pub class_name: String,
 }
 
 #[derive(Debug)]
 pub enum LessonListMessage {
+    AppRoute(AppRoute),
     FetchLessonsByGroupId,
-    Lessons(Option<lesson_model::get_lesson_list::ResponseData>),
+    Lessons(Option<lesson_model::lessons_list_by_group::ResponseData>),
     AddLesson(LessonId),
     RemoveLesson(LessonId),
     RemoveLessonEntirely(LessonId),
@@ -95,37 +99,39 @@ impl Component for LessonList {
     type Message = LessonListMessage;
     type Properties = LessonListProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(LessonListMessage::FetchLessonsByGroupId);
-
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(LessonListMessage::FetchLessonsByGroupId);
         LessonList {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             lesson_sub: None,
             lesson_delete_task: None,
             lesson_add_task: None,
             lesson_list: vec![],
-            lesson_list_view: vec![],
             show_dropdown_filter: false,
             filter: LessonFilter::Alls,
             more_lessons: false,
-            section_id: None,
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
-        let should_update = true;
+        let mut should_update = true;
         match msg {
+            LessonListMessage::AppRoute(route) => {
+                self.props.on_app_route.emit(route)
+            }
             LessonListMessage::FetchLessonsByGroupId => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
 
-                    let vars = lesson_model::get_lesson_list::Variables {
-                        group_id: ctx.props().group_id.0,
+                    let vars = lesson_model::lessons_list_by_group::Variables {
+                        group_id: self.props.group_id.0,
                     };
 
-                    let task = lesson_model::GetLessonList::subscribe(
+                    let task = lesson_model::LessonsListByGroup::subscribe(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             |response| {
                                 LessonListMessage::Lessons(response)
@@ -135,67 +141,67 @@ impl Component for LessonList {
                 }
             }
             LessonListMessage::Lessons(response) => { 
-                if let Some(class_group) = response.clone().and_then(|data| Some(data.class_group)) {
-
-                    
-                    for class_lesson in class_group.iter() {
-                        self.section_id = class_lesson.class_profile.clone().and_then(|data| Some(data.section_id));
-
-                        let lessons = class_lesson.class_profile.clone().and_then(|data| Some(data.class_lesson)).unwrap_or(vec![]);
-
-                        let school_name = class_lesson.school_group.clone().and_then(|data| data.school.school_profile).and_then(|school| Some(school.name)).unwrap_or(String::new());
-                        let school_logo = class_lesson.school_group.clone().and_then(|data| data.school.school_profile).and_then(|school| school.logo).unwrap_or(String::new());
-                        let lesson_list = lessons.iter().map(|item| {
-
-                            let timestamp = item.lesson_profile.timestamp;
-                            
-                            let time_fn = get_creation_date(timestamp);
-    
-                            let my_id = ctx.props().user_profile.clone().and_then(|user_by_pk| Some(user_by_pk.user_id)).unwrap_or(UserId(Uuid::default()));
-                            let author_id = if item.lesson_profile.author_id.clone() == my_id.0 {
-                                true
-                            } else {
-                                false
-                            };
-    
-                            let lesson_type = item.lesson_profile.lesson_type.clone().unwrap_or(get_lesson_list::RoboxLessonTypeEnum::Extra);
-
-                            LessonProfile {
-                                title: item.lesson_profile.title.clone(), 
-                                timestamp: time_fn, 
-                                lesson_id: LessonId(item.lesson_profile.lesson_id), 
-                                author_full_name: item.lesson_profile.author.user_profile.clone().and_then(|user_profile| Some(user_profile.full_name)).unwrap_or("".to_string()), 
-                                author_pic_path: item.lesson_profile.author.user_profile.clone().and_then(|user_profile| user_profile.pic_path).unwrap_or("".to_string()), 
-                                author_id,
-                                archived: item.lesson_profile.lesson_group.clone().and_then(|data| Some(data.archived)).unwrap_or(false), 
-                                send_to_degree: item.lesson_profile.lesson_group.clone().and_then(|data| Some(data.send_to_grade)).unwrap_or(false), 
-                                school_name: school_name.clone(), 
-                                school_logo: school_logo.clone(), 
-                                content: item.lesson_profile.lesson_content.clone().and_then(|data| Some(data.content)).unwrap_or("".to_string()),
-                                on_dropdown_menu: false,
-                                lesson_type,
-                            }
-                        }).collect();
+                info!("Lessons response: {:?}", response);
+                self.lesson_list = response
+                    .clone()
+                    .and_then(|data| Some(data.lesson_group))
+                    .unwrap_or(vec![])
+                    .iter()
+                    .filter(|data| {
                         
-                        self.lesson_list = lesson_list;
-                        
-                    }
+                        self.filter == LessonFilter::Alls && {data.archived == true || data.archived == false || data.send_to_grade == true || data.send_to_grade == false} ||
+    
+                        self.filter == LessonFilter::Published && data.send_to_grade == true && data.archived == false ||
+            
+                        self.filter == LessonFilter::Unpublished && data.archived == false && data.send_to_grade == false
 
-                    ctx.link().send_message(LessonListMessage::ChangeFilter(self.filter.clone()));
-                }
+                    })
+                    .map(|item| {
+                        let naive = chrono::NaiveDate::from_ymd_opt(2023, 01, 01).unwrap().and_hms_opt(23, 59, 59).unwrap();
+
+                        let timestamp = item.lesson_profile.clone().and_then(|data| Some(data.timestamp)).unwrap_or(naive);
+                        
+                        let time_fn = get_creation_date(timestamp);
+
+                        let my_id = self.props.user_profile.clone().and_then(|user_by_pk| Some(user_by_pk.user_id)).unwrap_or(UserId(Uuid::default()));
+                        let author_id = if item.lesson_profile.clone().and_then(|data| Some(data.author_id)).unwrap_or(Uuid::default()) == my_id.0 {
+                            true
+                        } else {
+                            false
+                        };
+
+                        let lesson_type = item.lesson_profile.clone().and_then(|data| data.lesson_type).unwrap_or(lessons_list_by_group::RoboxLessonTypeEnum::Extra);
+
+                        LessonProfile { 
+                            title: item.lesson_profile.clone().and_then(|data| Some(data.title)).unwrap_or("".to_string()), 
+                            timestamp: time_fn, 
+                            lesson_id: LessonId(item.lesson_id), 
+                            author_full_name: item.lesson_profile.clone().and_then(|data| Some(data.author)).clone().and_then(|author| author.user_profile).clone().and_then(|user_profile| Some(user_profile.full_name)).unwrap_or("".to_string()), 
+                            author_pic_path: item.lesson_profile.clone().and_then(|data| Some(data.author)).clone().and_then(|author| author.user_profile).clone().and_then(|user_profile| user_profile.pic_path).unwrap_or("".to_string()), 
+                            author_id,
+                            archived: item.archived, 
+                            send_to_degree: item.send_to_grade, 
+                            school_name: item.school_group.clone().and_then(|data| Some(data.school)).clone().and_then(|school| school.school_profile).clone().and_then(|school_profile| Some(school_profile.name)).unwrap_or("".to_string()), 
+                            school_logo: item.school_group.clone().and_then(|data| Some(data.school)).clone().and_then(|school| school.school_profile).clone().and_then(|school_profile| school_profile.logo).unwrap_or("".to_string()), 
+                            content: item.lesson_content.clone().and_then(|data| Some(data.content)).unwrap_or("".to_string()),
+                            on_dropdown_menu: false,
+                            lesson_type,
+                            order: item.lesson_profile.clone().and_then(|data| data.order),
+                        }
+                    }).collect();
+
             }
             LessonListMessage::AddLesson(lesson_id) => {
-                if let (Some(section_id), Some(graphql_task)) = (self.section_id, self.graphql_task.as_mut()) {
-                    
-                    let vars = lesson_model::lesson_class_and_group_add::Variables { 
-                        group_id: ctx.props().group_id.0,
+                if let Some(graphql_task) = self.graphql_task.as_mut() {
+                        
+                    let vars = lesson_model::lesson_group_add::Variables { 
+                        group_id: self.props.group_id.0,
                         lesson_id: lesson_id.0,
-                        section_id
                     };
 
-                    let task = lesson_model::LessonClassAndGroupAdd::request(
+                    let task = lesson_model::LessonGroupAdd::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             let lesson_id = if let Some(lesson) = response {
@@ -213,13 +219,13 @@ impl Component for LessonList {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
 
                     let vars = lesson_model::lesson_group_delete::Variables { 
-                        group_id: ctx.props().group_id.0,
+                        group_id: self.props.group_id.0,
                         lesson_id: lesson_id.0,
                     };
 
                     let task = lesson_model::LessonGroupDelete::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             let lesson_id = if let Some(response) = response {
@@ -240,13 +246,13 @@ impl Component for LessonList {
             LessonListMessage::RemoveLessonEntirely(lesson_id) => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
 
-                    let vars = lesson_model::delete_lesson::Variables { 
+                    let vars = lesson_model::delete_lesson_by_id::Variables { 
                         lesson_id: lesson_id.0,
                     };
 
-                    let task = lesson_model::DeleteLesson::request(
+                    let task = lesson_model::DeleteLessonById::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             let lesson_id = if let Some(response) = response {
@@ -266,50 +272,72 @@ impl Component for LessonList {
                 }
             }
             LessonListMessage::CreateLesson => {
-                if let (Some(section_id), Some(inventory_group_id), Some(graphql_task)) = (self.section_id, ctx.props().inventory_group, self.graphql_task.as_mut()) {
-
+                if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let local = chrono::Local::now().naive_local();
 
-                    let type_lesson = lesson_class_and_group_create::RoboxLessonTypeEnum::Extra;
+                    let type_lesson = lesson_group_create::RoboxLessonTypeEnum::Extra;
 
-                    let vars = lesson_model::lesson_class_and_group_create::Variables { 
-                        title: String::from(lang::dict("~ New Lesson ~")),
-                        content: String::from(""),
-                        group_id: ctx.props().group_id.0,
-                        inventory_group_id,
-                        lesson_id: Uuid::new_v4(),
-                        timestamp: local,
-                        lesson_type: type_lesson,
-                        section_id
-                    };
-
-                    let task = lesson_model::LessonClassAndGroupCreate::request(
-                        graphql_task,
-                        &ctx,
-                        vars,
-                        |response| {
-                            let lesson_id = if let Some(lesson) = response {
-                                lesson.insert_lesson_group_one.and_then(|data| Some(LessonId(data.lesson_id)))
-                            } else {
-                                None
-                            };
-                            LessonListMessage::LessonAdded(lesson_id)
-                        },
-                    );
-                    self.lesson_add_task = Some(task);
+                    if let Some(inventory_group_id) = self.props.inventory_group {
+                        let vars = lesson_model::lesson_group_create::Variables { 
+                            title: String::from(lang::dict("~ New Lesson ~")),
+                            summary: String::from(""),
+                            content: String::from(""),
+                            group_id: self.props.group_id.0,
+                            inventory_group_id,
+                            lesson_id: Uuid::new_v4(),
+                            timestamp: local,
+                            lesson_type: type_lesson,
+                        };
+    
+                        let task = lesson_model::LessonGroupCreate::request(
+                            graphql_task,
+                            &self.link,
+                            vars,
+                            |response| {
+                                let lesson_id = if let Some(lesson) = response {
+                                    lesson.insert_lesson_group_one.and_then(|data| Some(LessonId(data.lesson_id)))
+                                } else {
+                                    None
+                                };
+                                LessonListMessage::LessonAdded(lesson_id)
+                            },
+                        );
+                        self.lesson_add_task = Some(task);
+                        self.link.send_message(LessonListMessage::FetchLessonsByGroupId);
+                    }
                 }
             }
             LessonListMessage::LessonAdded(lesson_id) => {
-                let group_id = ctx.props().group_id;
-                let school_id = ctx.props().school_id;
+                let group_id = self.props.group_id;
+                let school_id = self.props.school_id;
+                let lesson_type = lessons_list_by_group::RoboxLessonTypeEnum::Extra;
+
 
                 if let Some(lesson_id) = lesson_id {
-                    ctx.link().navigator().unwrap().push(&AppRoute::Lesson{school_id, group_id, lesson_id});
+                    self.lesson_list.push(LessonProfile { 
+                        title: String::from(""), timestamp: String::from(""), 
+                        lesson_id, 
+                        author_full_name: String::from(""), 
+                        author_pic_path: String::from(""), 
+                        author_id: false, 
+                        archived: false, send_to_degree: false, 
+                        school_name: String::from(""), school_logo: String::from(""), 
+                        content: String::from(""),
+                        on_dropdown_menu: false, 
+                        lesson_type: lesson_type,
+                        order: None,
+                    });
+                    self.link.send_message(LessonListMessage::AppRoute(AppRoute::Lesson(school_id, group_id, lesson_id)));
+                } else {
+                    should_update = true;
                 }
             }
             LessonListMessage::LessonRemoved(lesson_id) => {
-                info!("Remove Lesson {:?}", lesson_id);
-
+                if let Some(lesson_id) = lesson_id {
+                    self.lesson_list.retain(|u| u.lesson_id != lesson_id);
+                } else {
+                    should_update = true;
+                }
             }
             LessonListMessage::ShowDropdown => {
                 self.show_dropdown_filter = !self.show_dropdown_filter;
@@ -317,23 +345,7 @@ impl Component for LessonList {
             LessonListMessage::ChangeFilter(filter) => {
                 self.filter = filter;
                 self.show_dropdown_filter = false;
-
-                let lessons_clone = self.lesson_list.clone();
-
-                let lessons: Vec<LessonProfile> = lessons_clone.iter().filter(|filter| {
-                    self.filter == LessonFilter::Alls && {filter.archived == true || filter.archived == false || filter.send_to_degree == true || filter.send_to_degree == false} ||
-    
-                    self.filter == LessonFilter::Published && filter.send_to_degree == true && filter.archived == false ||
-    
-                    self.filter == LessonFilter::Unpublished && filter.archived == false && filter.send_to_degree == false
-                })
-                .cloned()
-                .collect();
-
-                info!("FILTER {:?} <-----> LESSONS - VIEW {:?} ", self.filter, lessons);
-
-                self.lesson_list_view = lessons;
-
+                self.link.send_message(LessonListMessage::FetchLessonsByGroupId);
             }
             LessonListMessage::ShowMoreLessons => {
                 self.more_lessons = !self.more_lessons;
@@ -350,29 +362,34 @@ impl Component for LessonList {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        let mut should_render = false;
+ 
+        if self.props != props {
+            self.props = props;
+            should_render = true;
+        } 
 
-        
-        ctx.props() != old_props
+        should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let group_id = ctx.props().group_id;
-        let on_alls = ctx.link().callback(|_| LessonListMessage::ChangeFilter(LessonFilter::Alls));
-        let on_published = ctx.link().callback(|_| LessonListMessage::ChangeFilter(LessonFilter::Published));
-        let on_unpublished = ctx.link().callback(|_| LessonListMessage::ChangeFilter(LessonFilter::Unpublished));
-        // let on_archived = ctx.link().callback(|_| LessonListMessage::ChangeFilter(LessonFilter::Archived));
-        let on_dropdown = ctx.link().callback(|_| LessonListMessage::ShowDropdown);
-        let on_more_lessons = ctx.link().callback(|_| LessonListMessage::ShowMoreLessons);
-        let on_change_list = ctx.link().callback(|(lesson_id, send_to_grade, archived)| LessonListMessage::UpdateLessonList(lesson_id, send_to_grade, archived));
-        let on_lesson_delete = ctx.link().callback(|lesson_id| LessonListMessage::RemoveLesson(lesson_id));
-        let on_del_lesson_entirely = ctx.link().callback(|lesson_id| LessonListMessage::RemoveLessonEntirely(lesson_id));
+    fn view(&self) -> Html {
+        let group_id = self.props.group_id;
+        let on_alls = self.link.callback(|_| LessonListMessage::ChangeFilter(LessonFilter::Alls));
+        let on_published = self.link.callback(|_| LessonListMessage::ChangeFilter(LessonFilter::Published));
+        let on_unpublished = self.link.callback(|_| LessonListMessage::ChangeFilter(LessonFilter::Unpublished));
+        // let on_archived = self.link.callback(|_| LessonListMessage::ChangeFilter(LessonFilter::Archived));
+        let on_dropdown = self.link.callback(|_| LessonListMessage::ShowDropdown);
+        let on_more_lessons = self.link.callback(|_| LessonListMessage::ShowMoreLessons);
+        let on_change_list = self.link.callback(|(lesson_id, send_to_grade, archived)| LessonListMessage::UpdateLessonList(lesson_id, send_to_grade, archived));
+        let on_lesson_delete = self.link.callback(|lesson_id| LessonListMessage::RemoveLesson(lesson_id));
+        let on_del_lesson_entirely = self.link.callback(|lesson_id| LessonListMessage::RemoveLessonEntirely(lesson_id));
 
-        let teaching_cards_count = self.lesson_list.iter().filter(|lesson| lesson.lesson_type == get_lesson_list::RoboxLessonTypeEnum::TeachingCards).count();
-        let lesson_electronics_count = self.lesson_list.iter().filter(|lesson| lesson.lesson_type == get_lesson_list::RoboxLessonTypeEnum::ElectronicsLessons).count();
-        let others_lessons = self.lesson_list.iter().filter(|item| item.author_id == true && item.lesson_type == get_lesson_list::RoboxLessonTypeEnum:: Extra).count();
-        let others_lessons_student = self.lesson_list.iter().filter(|item| item.lesson_type == get_lesson_list::RoboxLessonTypeEnum:: Extra).count();
+        let teaching_cards_count = self.lesson_list.iter().filter(|lesson| lesson.lesson_type == lessons_list_by_group::RoboxLessonTypeEnum::TeachingCards).count();
+        let lesson_electronics_count = self.lesson_list.iter().filter(|lesson| lesson.lesson_type == lessons_list_by_group::RoboxLessonTypeEnum::ElectronicsLessons).count();
+        let others_lessons = self.lesson_list.iter().filter(|item| item.lesson_type == lessons_list_by_group::RoboxLessonTypeEnum:: Extra).count();
+        let others_lessons_student = self.lesson_list.iter().filter(|item| item.lesson_type == lessons_list_by_group::RoboxLessonTypeEnum:: Extra).count();
 
         let maybe_option_seleted = match self.filter {
             LessonFilter::Alls => "Everyone",
@@ -390,33 +407,33 @@ impl Component for LessonList {
         } else {
             "dropdown-menu dropdown-menu-degree"
         };
-        let maybe_dropdown_by_user = ctx
-            .props()
+        let maybe_dropdown_by_user = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|user|{
                 if user.user_staff.is_some() || user.user_teacher.is_some() {
                     Some(html! {
                         <div class="dropdown me-5">
-                            <button class={class_dropdown} type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false" onclick={on_dropdown}>
+                            <button class=class_dropdown type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false" onclick=on_dropdown>
                                 <img src="/icons/filter.svg" style="height: 22px;" />
                                 <span class="universal-select-option text-secondary-purple noir-regular is-size-18 lh-22">{lang::dict(maybe_option_seleted)}</span>
                             </button>
-                            <ul class={class_dropdown_list} aria-labelledby="dropdownMenuButton2">
+                            <ul class=class_dropdown_list aria-labelledby="dropdownMenuButton2">
                                 <li>
-                                    <a class="dropdown-item d-flex flex-wrap align-items-center mt-1 pe-0" onclick={on_alls}>
+                                    <a class="dropdown-item d-flex flex-wrap align-items-center mt-1 pe-0" onclick=on_alls>
                                         <input class="bg-checkbox" type="checkbox" checked={if self.filter == LessonFilter::Alls {true} else {false}} />
                                         <span class={if self.filter == LessonFilter::Alls {"text-blue-purple noir-regular is-size-18 lh-22 ps-2"} else {"text-gray-purple noir-regular is-size-18 lh-22 ps-2"}}>{lang::dict("Everyone")}</span>
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item d-flex flex-wrap align-items-center pe-0" onclick={on_published}>
+                                    <a class="dropdown-item d-flex flex-wrap align-items-center pe-0" onclick=on_published>
                                         <input class="bg-checkbox" type="checkbox" checked={if self.filter == LessonFilter::Published {true} else {false}} />
                                         <span class={if self.filter == LessonFilter::Published {"text-blue-purple noir-regular is-size-18 lh-22 ps-2"} else {"text-gray-purple noir-regular is-size-18 lh-22 ps-2"}}>{lang::dict("Released")}</span>
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item d-flex flex-wrap align-items-center pe-0" onclick={on_unpublished}>
+                                    <a class="dropdown-item d-flex flex-wrap align-items-center pe-0" onclick=on_unpublished>
                                         <input class="bg-checkbox" type="checkbox" checked={if self.filter == LessonFilter::Unpublished {true} else {false}} />
                                         <span class={if self.filter == LessonFilter::Unpublished {"text-blue-purple noir-regular is-size-18 lh-22 ps-2"} else {"text-gray-purple noir-regular is-size-18 lh-22 ps-2"}}>{lang::dict("Unpublished")}</span>
                                     </a>
@@ -436,43 +453,63 @@ impl Component for LessonList {
             })
             .unwrap_or(html! {});
 
-        let maybe_lesson_staff = self.lesson_list_view.iter()
-            // .filter(| lessons | {
+        let mut maybe_lesson_staff_vec: Vec<_> = self.lesson_list.iter()
+            .filter(| lessons | {
 
-            // self.filter == LessonFilter::Alls && lessons.lesson_type == get_lesson_list::RoboxLessonTypeEnum::TeachingCards && {lessons.archived == true || lessons.archived == false || lessons.send_to_degree == true || lessons.send_to_degree == false} ||
+            self.filter == LessonFilter::Alls && lessons.lesson_type == lessons_list_by_group::RoboxLessonTypeEnum::TeachingCards && {lessons.archived == true || lessons.archived == false || lessons.send_to_degree == true || lessons.send_to_degree == false} ||
 
-            // self.filter == LessonFilter::Published && lessons.lesson_type == get_lesson_list::RoboxLessonTypeEnum::TeachingCards && lessons.send_to_degree == true && lessons.archived == false ||
+            self.filter == LessonFilter::Published && lessons.lesson_type == lessons_list_by_group::RoboxLessonTypeEnum::TeachingCards && lessons.send_to_degree == true && lessons.archived == false ||
 
-            // self.filter == LessonFilter::Unpublished && lessons.lesson_type == get_lesson_list::RoboxLessonTypeEnum::TeachingCards && lessons.archived == false && lessons.send_to_degree == false
+            self.filter == LessonFilter::Unpublished && lessons.lesson_type == lessons_list_by_group::RoboxLessonTypeEnum::TeachingCards && lessons.archived == false && lessons.send_to_degree == false
 
-            // })
+            })
+            .collect();
+
+        maybe_lesson_staff_vec.sort_by(|a, b| {
+            let extract_number = |order: &Option<String>| -> i32 {
+                order.as_ref()
+                    .and_then(|s| {
+                        // Extraer el número después de 'L' (ejemplo: "P1L10" -> 10)
+                        s.split('L').nth(1)
+                            .and_then(|num_str| num_str.parse::<i32>().ok())
+                    })
+                    .unwrap_or(i32::MAX)
+            };
+
+            let order_a = extract_number(&a.order);
+            let order_b = extract_number(&b.order);
+            order_a.cmp(&order_b)
+        });
+
+        let maybe_lesson_staff = maybe_lesson_staff_vec.iter()
             .map(|item| {
                 let lesson_profile = item.clone();
                 html! {
                 <>
-                    <LessonCard lesson_id={item.lesson_id.clone()}
-                        user_profile={ctx.props().user_profile.clone()}
-                        group_id={ctx.props().group_id}
-                        on_lesson_delete={on_lesson_delete.clone()}
+                    <LessonCard lesson_id=item.lesson_id.clone()
+                        user_profile=self.props.user_profile.clone()
+                        group_id=self.props.group_id
+                        on_app_route=self.props.on_app_route.clone()
+                        on_lesson_delete=on_lesson_delete.clone()
                         on_del_lesson_entirely={&on_del_lesson_entirely}
-                        on_change_list={on_change_list.clone()}
-                        lesson_profile={lesson_profile}
-                        archived={item.archived}
-                        send_to_grade={item.send_to_degree}
-                        school_id={ctx.props().school_id} />
+                        auth_school=self.props.auth_school.clone()
+                        on_change_list=on_change_list.clone()
+                        lesson_profile={lesson_profile.clone()}
+                        archived=item.archived
+                        send_to_grade=item.send_to_degree
+                        school_id=self.props.school_id />
                 </>
             }
         }).collect::<Html>();
 
-        let maybe_lesson_staff_electronic = self.lesson_list_view.iter()
+        let maybe_lesson_staff_electronic = self.lesson_list.iter()
             .filter(| lessons | {
 
-                lessons.lesson_type == get_lesson_list::RoboxLessonTypeEnum::ElectronicsLessons
-            // self.filter == LessonFilter::Alls && lessons.lesson_type == get_lesson_list::RoboxLessonTypeEnum::ElectronicsLessons && {lessons.archived == true || lessons.archived == false || lessons.send_to_degree == true || lessons.send_to_degree == false} ||
+            self.filter == LessonFilter::Alls && lessons.lesson_type == lessons_list_by_group::RoboxLessonTypeEnum::ElectronicsLessons && {lessons.archived == true || lessons.archived == false || lessons.send_to_degree == true || lessons.send_to_degree == false} ||
 
-            // self.filter == LessonFilter::Published && lessons.lesson_type == get_lesson_list::RoboxLessonTypeEnum::ElectronicsLessons && lessons.send_to_degree == true && lessons.archived == false ||
+            self.filter == LessonFilter::Published && lessons.lesson_type == lessons_list_by_group::RoboxLessonTypeEnum::ElectronicsLessons && lessons.send_to_degree == true && lessons.archived == false ||
 
-            // self.filter == LessonFilter::Unpublished && lessons.lesson_type == get_lesson_list::RoboxLessonTypeEnum::ElectronicsLessons && lessons.archived == false && lessons.send_to_degree == false
+            self.filter == LessonFilter::Unpublished && lessons.lesson_type == lessons_list_by_group::RoboxLessonTypeEnum::ElectronicsLessons && lessons.archived == false && lessons.send_to_degree == false
 
             })
             .map(|item| {
@@ -480,114 +517,122 @@ impl Component for LessonList {
 
                 html! {
                 <>
-                    <LessonCard lesson_id={item.lesson_id.clone()}
-                        user_profile={ctx.props().user_profile.clone()}
-                        group_id={ctx.props().group_id}
-                        on_lesson_delete={on_lesson_delete.clone()}
+                    <LessonCard lesson_id=item.lesson_id.clone()
+                        user_profile=self.props.user_profile.clone()
+                        group_id=self.props.group_id
+                        on_app_route=self.props.on_app_route.clone()
+                        on_lesson_delete=on_lesson_delete.clone()
                         on_del_lesson_entirely={&on_del_lesson_entirely}
-                        on_change_list={on_change_list.clone()}
+                        auth_school=self.props.auth_school.clone()
+                        on_change_list=on_change_list.clone()
                         lesson_profile={lesson_profile}
-                        archived={item.archived}
-                        send_to_grade={item.send_to_degree}
-                        school_id={ctx.props().school_id} />
+                        archived=item.archived
+                        send_to_grade=item.send_to_degree
+                        school_id=self.props.school_id />
                 </>
             }
         }).collect::<Html>();
 
 
         let maybe_your_lessons = self
-            .lesson_list_view
+            .lesson_list
             .iter()
             .filter(| lessons | {
 
-                lessons.lesson_type == get_lesson_list::RoboxLessonTypeEnum::Extra
-            //     self.filter == LessonFilter::Alls && lessons.lesson_type == get_lesson_list::RoboxLessonTypeEnum::Extra && {lessons.archived == true || lessons.archived == false || lessons.send_to_degree == true || lessons.send_to_degree == false} && {lessons.author_id == true} ||
+                self.filter == LessonFilter::Alls && lessons.lesson_type == lessons_list_by_group::RoboxLessonTypeEnum::Extra && {lessons.archived == true || lessons.archived == false || lessons.send_to_degree == true || lessons.send_to_degree == false} ||
 
-            //     self.filter == LessonFilter::Published && lessons.lesson_type == get_lesson_list::RoboxLessonTypeEnum::Extra && lessons.send_to_degree == true && lessons.archived == false && {lessons.author_id == true} ||
+                self.filter == LessonFilter::Published && lessons.lesson_type == lessons_list_by_group::RoboxLessonTypeEnum::Extra && lessons.send_to_degree == true && lessons.archived == false && {lessons.author_id == true} ||
 
-            //     self.filter == LessonFilter::Unpublished && lessons.lesson_type == get_lesson_list::RoboxLessonTypeEnum::Extra && lessons.archived == false && lessons.send_to_degree == false && {lessons.author_id == true}
+                self.filter == LessonFilter::Unpublished && lessons.lesson_type == lessons_list_by_group::RoboxLessonTypeEnum::Extra && lessons.archived == false && lessons.send_to_degree == false && {lessons.author_id == true}
 
             })
             .map(|item| {
             let lesson_profile = item.clone();
 
             html! {
-                <LessonCard lesson_id={item.lesson_id.clone()}
-                    user_profile={ctx.props().user_profile.clone()} 
+                <LessonCard lesson_id=item.lesson_id.clone()
+                    user_profile=self.props.user_profile.clone() 
                     group_id={group_id}
-                    on_lesson_delete={on_lesson_delete.clone()}
+                    on_app_route=self.props.on_app_route.clone()
+                    on_lesson_delete=on_lesson_delete.clone()
                     on_del_lesson_entirely={&on_del_lesson_entirely}
-                    on_change_list={on_change_list.clone()}
+                    auth_school=self.props.auth_school.clone()
+                    on_change_list=on_change_list.clone()
                     lesson_profile={lesson_profile}
-                    archived={item.archived}
-                    send_to_grade={item.send_to_degree}
-                    school_id={ctx.props().school_id} />
+                    archived=item.archived
+                    send_to_grade=item.send_to_degree
+                    school_id=self.props.school_id />
             }
         }).collect::<Html>();
 
-        let maybe_electronic_by_student = self.lesson_list_view.iter()
-            // .filter(| lessons | {
+        let maybe_electronic_by_student = self.lesson_list.iter()
+            .filter(| lessons | {
 
-            // self.filter == LessonFilter::Alls && lessons.lesson_type == get_lesson_list::RoboxLessonTypeEnum::ElectronicsLessons && lessons.send_to_degree == true && lessons.archived == false
+            self.filter == LessonFilter::Alls && lessons.lesson_type == lessons_list_by_group::RoboxLessonTypeEnum::ElectronicsLessons && lessons.send_to_degree == true && lessons.archived == false
 
-            // })
+            })
             .map(|item| {
                 let lesson_profile = item.clone();
 
                 html! {
                 <>
-                    <LessonCard lesson_id={item.lesson_id.clone()}
-                        user_profile={ctx.props().user_profile.clone()}
-                        group_id={ctx.props().group_id}
-                        on_lesson_delete={on_lesson_delete.clone()}
+                    <LessonCard lesson_id=item.lesson_id.clone()
+                        user_profile=self.props.user_profile.clone()
+                        group_id=self.props.group_id
+                        on_app_route=self.props.on_app_route.clone()
+                        on_lesson_delete=on_lesson_delete.clone()
                         on_del_lesson_entirely={&on_del_lesson_entirely}
-                        on_change_list={on_change_list.clone()}
+                        auth_school=self.props.auth_school.clone()
+                        on_change_list=on_change_list.clone()
                         lesson_profile={lesson_profile}
-                        archived={item.archived}
-                        send_to_grade={item.send_to_degree}
-                        school_id={ctx.props().school_id} />
+                        archived=item.archived
+                        send_to_grade=item.send_to_degree
+                        school_id=self.props.school_id />
                 </>
             }
         }).collect::<Html>();
 
-        let maybe_other_lessons_by_student = self.lesson_list_view.iter()
-            // .filter(| lessons | {
+        let maybe_other_lessons_by_student = self.lesson_list.iter()
+            .filter(| lessons | {
 
-            // self.filter == LessonFilter::Alls && lessons.lesson_type == get_lesson_list::RoboxLessonTypeEnum::Extra && lessons.send_to_degree == true && lessons.archived == false
+            self.filter == LessonFilter::Alls && lessons.lesson_type == lessons_list_by_group::RoboxLessonTypeEnum::Extra && lessons.send_to_degree == true && lessons.archived == false
 
-            // })
+            })
             .map(|item| {
                 let lesson_profile = item.clone();
 
                 html! {
                 <>
-                    <LessonCard lesson_id={item.lesson_id.clone()}
-                        user_profile={ctx.props().user_profile.clone()}
-                        group_id={ctx.props().group_id}
-                        on_lesson_delete={on_lesson_delete.clone()}
+                    <LessonCard lesson_id=item.lesson_id.clone()
+                        user_profile=self.props.user_profile.clone()
+                        group_id=self.props.group_id
+                        on_app_route=self.props.on_app_route.clone()
+                        on_lesson_delete=on_lesson_delete.clone()
                         on_del_lesson_entirely={&on_del_lesson_entirely}
-                        on_change_list={on_change_list.clone()}
+                        auth_school=self.props.auth_school.clone()
+                        on_change_list=on_change_list.clone()
                         lesson_profile={lesson_profile}
-                        archived={item.archived}
-                        send_to_grade={item.send_to_degree}
-                        school_id={ctx.props().school_id} />
+                        archived=item.archived
+                        send_to_grade=item.send_to_degree
+                        school_id=self.props.school_id />
                 </>
             }
         }).collect::<Html>();
 
-        let maybe_lesson_search = ctx
-            .props()
+        let maybe_lesson_search = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|item| {
-                let on_select = ctx.link().callback(|select_option| match select_option {
+                let on_select = self.link.callback(|select_option| match select_option {
                     LessonSelectOption::Lesson(lesson_id) => { LessonListMessage::AddLesson(lesson_id) }
                 });
                 if item.user_staff.is_some() || item.user_teacher.is_some() {
                     Some(html! {
-                        <LessonSelect on_select={on_select} 
-                            allow_create={true}
-                            school_id={ctx.props().school_id} />
+                        <LessonSelect on_select=on_select 
+                            allow_create=true
+                            on_app_route=self.props.on_app_route.clone()
+                            school_id=self.props.school_id />
                     })
                 } else {
                     None
@@ -595,7 +640,7 @@ impl Component for LessonList {
             })
             .unwrap_or(html! {});
 
-        let class_name = ctx.props().class_name.clone().to_uppercase();
+        let class_name = self.props.class_name.clone().to_uppercase();
 
         let arduino_electronic = if class_name.contains("RECURSOS EXTRA - ARDUINO") 
             || class_name.contains("RECURSOS EXTRA - ELECTRÓNICA") {
@@ -615,7 +660,7 @@ impl Component for LessonList {
             html! {
                 <>
                     <div class="d-flex justify-content-center">
-                        <a onclick={on_more_lessons}>
+                        <a onclick=on_more_lessons>
                             <span class="text-secondary-purple noir-bold is-size-18 lh-22 pt-5">{lang::dict("See All Electronics Lessons")}</span>
                         </a>
                     </div>
@@ -625,7 +670,7 @@ impl Component for LessonList {
             html! {
                 <>
                     <div class="d-flex justify-content-center">
-                        <a onclick={on_more_lessons}>
+                        <a onclick=on_more_lessons>
                             <span class="text-secondary-purple noir-bold is-size-18 lh-22 pt-5">{lang::dict("See All Teacher Resources")}</span>
                         </a>
                     </div>
@@ -634,28 +679,26 @@ impl Component for LessonList {
         };
 
 
-        let maybe_user_profile_pic = ctx
-            .props()
+        let maybe_user_profile_pic = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|user_profile| Some(user_profile.pic_path.clone()))
             .and_then(|pic_path| {
                 Some(html! {
-                    <img class="img-card-72" src={pic_path.clone()} alt="photo of user" />
+                    <img class="img-card-72" src=pic_path.clone() alt="photo of user" />
                 })
             })
             .unwrap_or(html! {<img class="img-card-72" src="/static/avatar.png"/>
             });
-
-        let navigator = ctx.link().navigator().unwrap();
-        let on_direct_meet = Callback::from(move |_| navigator.push(&AppRoute::MeetDirect{group_id}));
+        let on_direct_meet = self.link.callback(move |_| LessonListMessage::AppRoute(AppRoute::MeetDirect(group_id)));
 
         let head_section = html! {
             <div class="d-flex flex-wrap align-items-center justify-content-between mb-5">
                 <h1 class="text-primary-blue-dark text-uppercase noir-bold is-size-36 lh-43 mb-0">
-                    {ctx.props().class_name.clone()}
+                    {self.props.class_name.clone()}
                 </h1>
-                <a class="btn btn-outline-light text-primary-blue-dark noir-regular is-size-18 lh-22" onclick={on_direct_meet}>
+                <a class="btn btn-outline-light text-primary-blue-dark noir-regular is-size-18 lh-22" onclick=on_direct_meet>
                     <img class="me-3" src="/icons/video-2.svg" style="height: 30px;" />
                     <span>{lang::dict("Meet up")}</span>
                 </a>
@@ -664,15 +707,15 @@ impl Component for LessonList {
             </div>
         };
 
-        let maybe_new = ctx
-            .props()
+        let maybe_new = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|item| {
-                let on_select = ctx.link().callback(move |_| LessonListMessage::CreateLesson);
+                let on_select = self.link.callback(move |_| LessonListMessage::CreateLesson);
                 if item.user_staff.is_some() || item.user_teacher.is_some() {
                     Some(html! {
-                        <a class="button btn-create-card bg-primary-blue-dark d-flex align-items-center justify-content-center" onclick={on_select.clone()}>
+                        <a class="button btn-create-card bg-primary-blue-dark d-flex align-items-center justify-content-center" onclick=on_select.clone()>
                             <span class="text-white noir-bold is-size-16 lh-20 d-flex align-items-center">
                                 <i class="fas fa-plus me-2"></i>
                                 <span>{lang::dict("New Lesson")}</span>
@@ -683,6 +726,7 @@ impl Component for LessonList {
                     None
                 }
             }).unwrap_or(html! {});
+
 
         let title_lessons_option = if arduino_electronic {
             html! {
@@ -709,7 +753,7 @@ impl Component for LessonList {
         };
 
         // let maybe_option_staff = if self.lesson_list.iter().filter(|item| item.type_filter == false).count() > 0 {
-        let maybe_option_staff = if self.lesson_list_view.iter().count() > 0 {
+        let maybe_option_staff = if self.lesson_list.iter().count() > 0 {
             html! {
                 <>
                     <div class={lessons_class}>
@@ -726,7 +770,7 @@ impl Component for LessonList {
         };
 
         // let maybe_option_staff_electronic = if self.lesson_list.iter().filter(|item| item.type_filter == true).count() > 0 {
-        let maybe_option_staff_electronic = if self.lesson_list_view.iter().count() > 0 {
+        let maybe_option_staff_electronic = if self.lesson_list.iter().count() > 0 {
             let lessons_class = if self.more_lessons {
                 "d-flex flex-wrap pt-4"
             } else {
@@ -757,7 +801,8 @@ impl Component for LessonList {
             }
         };
 
-        let maybe_option_teacher = if self.lesson_list_view.iter().filter(|item| item.author_id == true && item.lesson_type == get_lesson_list::RoboxLessonTypeEnum:: Extra).count() > 0 {
+        // let maybe_option_teacher = if self.lesson_list.iter().filter(|item| item.author_id == true && item.lesson_type == lessons_list_by_group::RoboxLessonTypeEnum:: Extra).count() > 0 {
+        let maybe_option_teacher = if self.lesson_list.iter().filter(|item| item.lesson_type == lessons_list_by_group::RoboxLessonTypeEnum:: Extra).count() > 0 {
             html! {
                 <div class="d-flex flex-wrap mt-5 pb-9 mb-8">
                     {maybe_your_lessons}
@@ -796,8 +841,8 @@ impl Component for LessonList {
             false
         };
 
-        let by_user_profile_view = ctx
-            .props()
+        let by_user_profile_view = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|item| {

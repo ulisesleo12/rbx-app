@@ -2,26 +2,26 @@ use log::*;
 use yew::prelude::*;
 use crate::last_robots_card::UserStyle;
 use crate::last_robots_card::LastRobotCard;
-use yew::{html, Component, Html, Properties};
+use yew::{html, Component, ComponentLink, Html, ShouldRender, Properties};
 
 use roboxmaker_main::lang;
 use roboxmaker_models::school_model;
-use roboxmaker_types::types::{RobotId, UserId, GroupId, MyUserProfile};
+use roboxmaker_types::types::{RobotId, UserId, GroupId, AppRoute, MyUserProfile};
 
 
-pub struct RobotListByUser {}
+pub struct RobotListByUser {
+    props: RobotListByUserProperties,
+}
 
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct RobotListByUserProperties {
     pub robots: Vec<RobotId>,
     pub allow_edit: bool,
-    #[prop_or(None)]
     pub group_id: Option<GroupId>,
     pub user_profile: Option<MyUserProfile>,
-    #[prop_or(None)]
     pub auth_school: Option<school_model::school_by_id::SchoolByIdSchoolByPk>,
     pub user_id: Option<UserId>,
-    #[prop_or(None)]
+    pub on_app_route: Callback<AppRoute>,
     pub on_list_change: Option<Callback<()>>,
     pub maybe_style: UserStyle,
 }
@@ -34,13 +34,14 @@ impl Component for RobotListByUser {
     type Message = RobotListByUserMessage;
     type Properties = RobotListByUserProperties;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(props: Self::Properties, _link: ComponentLink<Self>) -> Self {
         RobotListByUser {
             // link,
+            props,
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         // match msg {
 
@@ -48,27 +49,27 @@ impl Component for RobotListByUser {
         true
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
-        let mut should_render = false;
-        
-        if ctx.props() != old_props {
-            should_render = true;
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        if self.props != props {
+            self.props = props;
+            true
+        } else {
+            false
         }
-        
-        should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let user_profile = ctx.props().user_profile.clone();
+    fn view(&self) -> Html {
+        let user_profile = self.props.user_profile.clone();
         let maybe_robot_space = |robot_id: &RobotId| {
             html! {
                 <div class="pb-4 pe-5">
-                    <LastRobotCard user_profile={user_profile.clone()}
-                        user_id={ctx.props().user_id.clone()}
-                        robot_id={robot_id.clone()}
-                        group_id={ctx.props().group_id.clone()}
-                        maybe_style={ctx.props().maybe_style.clone()}
+                    <LastRobotCard user_profile=user_profile.clone()
+                        user_id=self.props.user_id.clone()
+                        robot_id=robot_id.clone()
+                        group_id=self.props.group_id.clone()
+                        on_app_route={self.props.on_app_route.clone()}
+                        maybe_style=self.props.maybe_style.clone()
                         />
                 </div>
             }
@@ -76,25 +77,26 @@ impl Component for RobotListByUser {
         let maybe_robot_member = |robot_id: &RobotId| {
             html! {
                 <div class="pb-4">
-                    <LastRobotCard user_profile={user_profile.clone()}
-                        user_id={ctx.props().user_id.clone()}
-                        robot_id={robot_id.clone()}
-                        group_id={ctx.props().group_id.clone()}
-                        maybe_style={ctx.props().maybe_style.clone()}
+                    <LastRobotCard user_profile=user_profile.clone()
+                        user_id=self.props.user_id.clone()
+                        robot_id=robot_id.clone()
+                        group_id=self.props.group_id.clone()
+                        on_app_route={self.props.on_app_route.clone()}
+                        maybe_style=self.props.maybe_style.clone()
                         />
                 </div>
             }
         };
 
         let maybe_robots = {
-            if ctx.props().robots.len() > 0 {
+            if self.props.robots.len() > 0 {
                 let maybe_robot_style = {
-                    match ctx.props().maybe_style {
+                    match self.props.maybe_style {
                         UserStyle::MySpace => {
                             html! {
                                 <div class="d-flex flex-row">
                                     {
-                                        ctx.props().robots.iter().map(|robot_id| {
+                                        self.props.robots.iter().map(|robot_id| {
                                             maybe_robot_space(robot_id)
                                         }).collect::<Html>()
                                     }
@@ -105,7 +107,7 @@ impl Component for RobotListByUser {
                             html! {
                                 <div class="container-robots-card-class-2">
                                     {
-                                        ctx.props().robots.iter().map(|robot_id| {
+                                        self.props.robots.iter().map(|robot_id| {
                                             maybe_robot_member(robot_id)
                                         }).collect::<Html>()
                                     }
@@ -116,7 +118,7 @@ impl Component for RobotListByUser {
                             html! {
                                 <div class="container-robots-card-class mt-4">
                                     {
-                                        ctx.props().robots.iter().map(|robot_id| {
+                                        self.props.robots.iter().map(|robot_id| {
                                             maybe_robot_member(robot_id)
                                         }).collect::<Html>()
                                     }

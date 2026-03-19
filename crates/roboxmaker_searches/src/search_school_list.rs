@@ -1,16 +1,16 @@
 use log::*;
-use yew::prelude::*;
+use yew::{prelude::*, web_sys};
 use code_location::code_location;
-use yew::{html, Component, Html};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_main::lang;
 use roboxmaker_models::school_model;
-use roboxmaker_utils::functions::get_value_from_input_event;
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
 use roboxmaker_types::types::{SchoolId, AppRoute, LoadResponse, LoadResponseFound};
-use yew_router::scope_ext::RouterScopeExt;
 
 pub struct SearchSchoolList {
+    link: ComponentLink<Self>,
+    props: SearchSchoolListProps,
     graphql_task: Option<GraphQLTask>,
     search_school_task: Option<RequestTask>,
     search_node: NodeRef,
@@ -20,11 +20,13 @@ pub struct SearchSchoolList {
 }
 
 #[derive(Debug, Properties, Clone, PartialEq)]
-pub struct SearchSchoolListProps {}
+pub struct SearchSchoolListProps {
+    pub on_app_route: Callback<AppRoute>,
+}
 
 #[derive(Debug)]
 pub enum SearchSchoolListMessage {
-    // AppRoute(AppRoute),
+    AppRoute(AppRoute),
     FetchSchoolByName(String),
     School(Option<school_model::search_school_by_name::ResponseData>),
     OnFocus,
@@ -36,8 +38,10 @@ impl Component for SearchSchoolList {
     type Message = SearchSchoolListMessage;
     type Properties = SearchSchoolListProps;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         SearchSchoolList {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             search_school_task: None,
             search_node: NodeRef::default(),
@@ -47,23 +51,23 @@ impl Component for SearchSchoolList {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
-            // SearchSchoolListMessage::AppRoute(route) => {
-            //     ctx.props().on_app_route.emit(route);
-            // }
+            SearchSchoolListMessage::AppRoute(route) => {
+                self.props.on_app_route.emit(route);
+            }
             SearchSchoolListMessage::FetchSchoolByName(search) => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
 
                     let vars = school_model::search_school_by_name::Variables {
-                        search: format!("%{}%", search),
+                        search,
                     };
 
                     let task = school_model::SearchSchoolByName::request(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             |response| {
                                 SearchSchoolListMessage::School(response)
@@ -100,27 +104,37 @@ impl Component for SearchSchoolList {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
-        
-        true
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        let mut should_render = false;
+
+        if self.props != props {
+            self.props = props;
+            should_render = true;
+        }
+
+        should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_focus = ctx.link().callback(move |_| SearchSchoolListMessage::OnFocus);
-        let on_blur = ctx.link().callback(move |_| SearchSchoolListMessage::OnBlur);
-        let on_hidden_modal = ctx.link().callback(move |_| SearchSchoolListMessage::HiddenModal);
-
-        let on_search = ctx.link().callback(|search: InputEvent| SearchSchoolListMessage::FetchSchoolByName(get_value_from_input_event(search)));
-
+    fn view(&self) -> Html {
+        let on_focus = self.link.callback(move |_| SearchSchoolListMessage::OnFocus);
+        let on_blur = self.link.callback(move |_| SearchSchoolListMessage::OnBlur);
+        let on_hidden_modal = self.link.callback(move |_| SearchSchoolListMessage::HiddenModal);
+        let on_search = self.link.callback(|search: InputData| {
+            info!("search: {:?}", search);
+            let search = if search.value.len() > 0 {
+                format!("%{}%", search.value)
+            } else {
+                search.value
+            };
+            SearchSchoolListMessage::FetchSchoolByName(search)
+        });
         let search_school_data = self
             .school
             .iter()
             .map(|school| {
                 let school_id = SchoolId(school.id);
-                let navigator = ctx.link().navigator().unwrap();
-
-                let on_show_school = Callback::from(move |_| navigator.push(&AppRoute::GradesBySchoolId{school_id}));
+                let on_show_school = self.link.callback(move |_| SearchSchoolListMessage::AppRoute(AppRoute::GradesBySchoolId(school_id)));
 
                 let name = school.school_profile.clone().unwrap().name;
                 html! {
@@ -132,7 +146,7 @@ impl Component for SearchSchoolList {
                                 </span>
                             </div>
                             <div class="card-body border-top d-flex px-5 py-2">
-                                <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={&on_show_school}>
+                                <a class="btn btn-outline-secondary btn-sm mx-auto" onclick={&on_show_school}>
                                     <span>
                                         {lang::dict("View")}
                                     </span>
@@ -178,7 +192,7 @@ impl Component for SearchSchoolList {
 
         html! {
             <>
-                <a class="button-search-univeral mt-3 me-5" onclick={&on_hidden_modal}>
+                <a class="button-search-univeral mt-3 me-5" onclick=&on_hidden_modal>
                     <span class="icon-text-search-universal">
                         <span>{lang::dict("Search")}</span>
                         <span class="icon">
@@ -186,7 +200,7 @@ impl Component for SearchSchoolList {
                         </span>
                     </span>
                 </a>
-                <div class={class_search_modal} id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style={class_search_scroll} aria-modal="true" role="dialog">
+                <div class=class_search_modal id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style=class_search_scroll aria-modal="true" role="dialog">
                     <div class="modal-dialog modal-dialog-scrollable modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -194,10 +208,10 @@ impl Component for SearchSchoolList {
                                     <span class="input-group-text text-primary-blue-dark input-group-search">
                                         <i class="fas fa-search"></i>
                                     </span>
-                                    <input type="text" class="form-control input-style-class" ref={self.search_node.clone()}
-                                        oninput={on_search.clone()} onfocus={on_focus.clone()} onblur={on_blur.clone()} placeholder={lang::dict("Search")} />
+                                    <input type="text" class="form-control input-style-class" ref=self.search_node.clone()
+                                        oninput=on_search.clone() onfocus=on_focus.clone() onblur=on_blur.clone() placeholder=lang::dict("Search") />
                                 </div>
-                                <a class="btn bg-purple-on ms-5" onclick={&on_hidden_modal}>
+                                <a class="btn bg-purple-on ms-5" onclick=&on_hidden_modal>
                                     <span class="text-white">
                                         <i class="fas fa-times"></i>
                                     </span>

@@ -1,13 +1,16 @@
 use log::*;
 use uuid::Uuid;
 use yew::prelude::*;
-use yew::{html, Component, Html};
-use yew_router::scope_ext::RouterScopeExt;
+use code_location::code_location;
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_main::lang;
 use roboxmaker_main::config;
+use roboxmaker_models::{school_model, robot_model};
+use roboxmaker_utils::funtions::get_creation_date_robot;
+use roboxmaker_types::types::{GroupId, RobotId, UserId, AppRoute, MyUserProfile};
+use roboxmaker_graphql::{GraphQLService, GraphQLTask, Subscribe, SubscriptionTask};
 use roboxmaker_loaders::placeholders::card_robots_placeholder::CardRobotsPlaceholder;
-use roboxmaker_types::types::{GroupId, UserId, AppRoute, MyUserProfile, RobotProfile};
 
 #[derive(Debug, Clone)]
 enum LoadRobotsFound {
@@ -21,7 +24,19 @@ enum LoadRobots {
     Load(LoadRobotsFound),
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct RobotProfile {
+    pub name: String,
+    pub timestamp: String,
+    pub path: String,
+    pub robot_id: RobotId,
+}
+
 pub struct RobotListHome {
+    link: ComponentLink<Self>,
+    props: RobotListHomeProps,
+    graphql_task: Option<GraphQLTask>,
+    robots_list_task: Option<SubscriptionTask>,
     robot_list: Vec<RobotProfile>,
     list_robots_state: LoadRobots,
 }
@@ -29,61 +44,114 @@ pub struct RobotListHome {
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct RobotListHomeProps {
     pub group_id: GroupId,
+    pub on_app_route: Callback<AppRoute>,
+    pub auth_school: Option<school_model::school_by_id::SchoolByIdSchoolByPk>,
     pub user_profile: Option<MyUserProfile>,
-    #[prop_or(None)]
     pub user_id: Option<UserId>,
-    pub robot_list: Vec<RobotProfile>,
 }
 
 #[derive(Debug)]
 pub enum RobotListHomeMessage {
+    AppRoute(AppRoute),
     FetchRobotsByGroupId,
+    Robots(Option<robot_model::robots_by_group_id::ResponseData>),
 }
 
 impl Component for RobotListHome {
     type Message = RobotListHomeMessage;
     type Properties = RobotListHomeProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(RobotListHomeMessage::FetchRobotsByGroupId);
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(RobotListHomeMessage::FetchRobotsByGroupId);
         RobotListHome {
+            link,
+            props,
+            graphql_task: Some(GraphQLService::connect(&code_location!())),
+            robots_list_task: None,
             robot_list: vec![],
             list_robots_state: LoadRobots::Loading,
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_render = true;
         match msg {
+            RobotListHomeMessage::AppRoute(route) => {
+                self.props.on_app_route.emit(route);
+            }
             RobotListHomeMessage::FetchRobotsByGroupId => {
                 self.list_robots_state = LoadRobots::Loading;
+                if let Some(graphql_task) = self.graphql_task.as_mut() {
+                    let group_id = self.props.group_id;
 
-                self.robot_list = ctx.props().robot_list.clone();
+                    let vars = robot_model::robots_by_group_id::Variables {
+                        group_id: group_id.0,
+                        limit: 10,
+                    };
 
-                if !self.robot_list.is_empty() {
+                    let task = robot_model::RobotsByGroupId::subscribe(
+                            graphql_task,
+                            &self.link,
+                            vars,
+                            |response| {
+                                RobotListHomeMessage::Robots(response)
+                            },
+                    );
+                    self.robots_list_task = Some(task);
+                }
+            }
+            RobotListHomeMessage::Robots(response) => {
+                self.robot_list = response
+                    .clone()
+                    .and_then(|data| Some(data.robot_profile))
+                    .unwrap_or(vec![])
+                    .iter()
+                    .map(|robot_profile| {
+                        let name = robot_profile.name.clone();
+                        let path = robot_profile.path.clone();
+                        let robot_id = robot_profile.robot_id;
+
+                        let timestamp = robot_profile.timestamp;
+                        
+                        let time_fn = get_creation_date_robot(timestamp);
+
+                        RobotProfile {
+                            name: name,
+                            timestamp: time_fn,
+                            path: path,
+                            robot_id: RobotId(robot_id),
+                        }
+                    }).collect();
+                if !response.clone().and_then(|data| Some(data.robot_profile)).unwrap_or(vec![]).is_empty() {
                     self.list_robots_state = LoadRobots::Load(LoadRobotsFound::Found);
                 } else {
                     self.list_robots_state = LoadRobots::Load(LoadRobotsFound::NotFound);
                 }
-            }
+            },
         }
         should_render
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        // info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        let mut should_render = false;
 
-        if ctx.props().robot_list != old_props.robot_list {
-            ctx.link().send_message(RobotListHomeMessage::FetchRobotsByGroupId);
+        if self.props.group_id != props.group_id {
+            self.link.send_message(RobotListHomeMessage::FetchRobotsByGroupId);
         }
+
+        if self.props != props {
+            self.props = props;
+            should_render = true;
+        } 
         
-        ctx.props() != old_props
+        should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let group_id = ctx.props().group_id;
-        let user_id = if let Some(user_id) = ctx.props().user_id {
+    fn view(&self) -> Html {
+        let group_id = self.props.group_id;
+        let user_id = if let Some(user_id) = self.props.user_id {
             user_id
         } else {
             UserId(Uuid::default())
@@ -91,10 +159,9 @@ impl Component for RobotListHome {
 
         let card_robots_list = self.robot_list.iter().map(|item| {
             let robot_id = item.robot_id;
-
-            let navigator = ctx.link().navigator().unwrap();
-            let on_robot = Callback::from(move |_| navigator.push(&AppRoute::Robot{robot_id, group_id, user_id}));
-
+            let on_robot = self.link.callback(move |_| {
+                RobotListHomeMessage::AppRoute(AppRoute::Robot(robot_id, group_id, user_id))
+            });
             let robot_thumb = format!(
                 "{}/robots/{}_thumbnail.jpg",
                 config::AKER_FILES_URL,
@@ -103,30 +170,30 @@ impl Component for RobotListHome {
             html! {
                 <div class="card-robot-view d-flex d-align-items-center p-5 me-5">
                     <div class="d-flex align-items-center">
-                        <a onclick={&on_robot}>
-                            <img src={robot_thumb} class="img-card-64" />
+                        <a onclick=&on_robot>
+                            <img src=robot_thumb class="img-card-64" />
                         </a>
                         <div class="d-flex flex-column ms-2">
-                            <a onclick={&on_robot}>
+                            <a onclick=&on_robot>
                                 <span class="text-white noir-medium is-size-18 lh-22 ">{&item.name}</span>
                             </a>
-                            <span class="text-gray-blue noir-light is-size-14 lh-17 d-flex d-align-items-center"
-                                style="padding-top: 14px; padding-bottom: 14px;">
+                            <span class="text-gray-blue noir-light is-size-14 lh-17 text-nowrap"
+                                style="padding-top: 14px;">
                                 <span class="is-size-14">
                                     <i class="far fa-clock"></i>
                                 </span>
-                                <div class="d-flex flex-wrap">
-                                    <span class="px-2">{lang::dict("Added")}</span>
-                                    <span>{&item.timestamp}</span>
-                                </div>
+                                // <div class="d-flex flex-nowrap">
+                                    <span class="px-2">{lang::dict("Added")} { &item.timestamp}</span>
+                                    // <span></span>
+                                // </div>
                             </span>
-                            <div class="d-flex justify-content-between text-white noir-normal is-size-14 lh-17 mb-1">
-                                <span>{lang::dict("Progress")}</span>
-                                <span>{"25%"}</span>
-                            </div>
-                            <div class="progress progress-home">
-                                <div class="progress-bar" role="progressbar" style="width: 25%; height: 14px;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
+                            // <div class="d-flex justify-content-between text-white noir-normal is-size-14 lh-17 mb-1">
+                            //     <span>{lang::dict("Progress")}</span>
+                            //     <span>{"25%"}</span>
+                            // </div>
+                            // <div class="progress progress-home">
+                            //     <div class="progress-bar" role="progressbar" style="width: 25%; height: 14px;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            // </div>
                         </div>
                     </div>
                 </div>

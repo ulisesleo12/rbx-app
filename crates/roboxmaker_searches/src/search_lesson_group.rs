@@ -1,16 +1,16 @@
 use log::*;
-use yew::prelude::*;
+use yew::{prelude::*, web_sys};
 use code_location::code_location;
-use yew::{html, Component, Html};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_main::lang;
 use roboxmaker_models::lesson_model;
-use roboxmaker_utils::functions::get_value_from_input_event;
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
 use roboxmaker_types::types::{GroupId, LessonId, AppRoute, LoadSearch, LoadSearchFound, SchoolId};
-use yew_router::scope_ext::RouterScopeExt;
 
 pub struct SearchLessonGroup {
+    link: ComponentLink<Self>,
+    props: SearchLessonGroupProperties,
     graphql_task: Option<GraphQLTask>,
     task: Option<RequestTask>,
     lessons_by_grade: Option<lesson_model::search_by_lesson_grade_by_group_id::SearchByLessonGradeByGroupIdGroupByPk>,
@@ -21,7 +21,7 @@ pub struct SearchLessonGroup {
 
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct SearchLessonGroupProperties {
-    // pub on_app_route: Callback<AppRoute>,
+    pub on_app_route: Callback<AppRoute>,
     pub lesson_id: LessonId,
     pub group_id: GroupId,
     pub school_id: SchoolId,
@@ -29,7 +29,7 @@ pub struct SearchLessonGroupProperties {
 
 #[derive(Debug)]
 pub enum SearchLessonGroupMessage {
-    // AppRoute(AppRoute),
+    AppRoute(AppRoute),
     FetchLessonsByLessonsGrade(String),
     LessonsByGrade(Option<lesson_model::search_by_lesson_grade_by_group_id::ResponseData>),
     OnFocus,
@@ -41,8 +41,10 @@ impl Component for SearchLessonGroup {
     type Message = SearchLessonGroupMessage;
     type Properties = SearchLessonGroupProperties;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         SearchLessonGroup {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             task: None,
             lessons_by_grade: None,
@@ -52,25 +54,25 @@ impl Component for SearchLessonGroup {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let mut should_update = true;
         match msg {
-            // SearchLessonGroupMessage::AppRoute(route) => {
-            //     ctx.props().on_app_route.emit(route);
-            // }
+            SearchLessonGroupMessage::AppRoute(route) => {
+                self.props.on_app_route.emit(route);
+            }
             SearchLessonGroupMessage::FetchLessonsByLessonsGrade(search) => {
                 should_update = false;
-                let group_id = ctx.props().group_id;
+                let group_id = self.props.group_id;
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let vars = lesson_model::search_by_lesson_grade_by_group_id::Variables { 
-                        search: format!("%{}%", search), 
+                        search, 
                         group_id: group_id.0 
                     };
 
                     let task = lesson_model::SearchByLessonGradeByGroupId::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             SearchLessonGroupMessage::LessonsByGrade(response)
@@ -107,19 +109,32 @@ impl Component for SearchLessonGroup {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
-        
-        true
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        let mut should_render = false;
+
+        if self.props != props {
+            self.props = props;
+            should_render = true;
+        }
+
+        should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_focus = ctx.link().callback(move |_| SearchLessonGroupMessage::OnFocus);
-        let on_blur = ctx.link().callback(move |_| SearchLessonGroupMessage::OnBlur);
-        let on_hidden_modal = ctx.link().callback(move |_| SearchLessonGroupMessage::HiddenModal);
-        let group_id = ctx.props().group_id;
-
-        let on_search = ctx.link().callback(|search: InputEvent| SearchLessonGroupMessage::FetchLessonsByLessonsGrade(get_value_from_input_event(search)));
+    fn view(&self) -> Html {
+        let on_focus = self.link.callback(move |_| SearchLessonGroupMessage::OnFocus);
+        let on_blur = self.link.callback(move |_| SearchLessonGroupMessage::OnBlur);
+        let on_hidden_modal = self.link.callback(move |_| SearchLessonGroupMessage::HiddenModal);
+        let group_id = self.props.group_id;
+        let on_search = self.link.callback(|search: InputData| {
+            info!("search: {:?}", search);
+            let search = if search.value.len() > 0 {
+                format!("%{}%", search.value)
+            } else {
+                search.value
+            };
+            SearchLessonGroupMessage::FetchLessonsByLessonsGrade(search)
+        });
 
         let lessons_by_grade = self
             .lessons_by_grade.clone().and_then(|data| Some(data.lesson_groups))
@@ -132,21 +147,17 @@ impl Component for SearchLessonGroup {
                     .iter()
                     .map(|lesson_profile | {
                         let lesson_id = LessonId(lesson_profile.lesson_id);
-                        let school_id = ctx.props().school_id;
-
-                        let navigator = ctx.link().navigator().unwrap();
-                        let on_lessons_view = Callback::from(move |_| navigator.push(&AppRoute::LessonView{school_id, group_id, lesson_id}));  
-                        
-                        let navigator = ctx.link().navigator().unwrap();
-                        let on_lessons_edit = Callback::from(move |_| navigator.push(&AppRoute::Lesson{school_id, group_id, lesson_id}));  
+                        let school_id = self.props.school_id;
+                        let on_lessons_view = self.link.callback(move |_| SearchLessonGroupMessage::AppRoute(AppRoute::LessonView(school_id, group_id, lesson_id)));  
+                        let on_lessons_edit = self.link.callback(move |_| SearchLessonGroupMessage::AppRoute(AppRoute::Lesson(school_id, group_id, lesson_id)));  
                         html! {
                             <>
-                                <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={&on_lessons_edit}>
+                                <a class="btn btn-outline-secondary btn-sm mx-auto" onclick={&on_lessons_edit}>
                                     <span>
                                         {lang::dict("Edit")}
                                     </span>
                                 </a>
-                                <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={&on_lessons_view}>
+                                <a class="btn btn-outline-secondary btn-sm mx-auto" onclick={&on_lessons_view}>
                                     <span>
                                         {lang::dict("View")}
                                     </span>
@@ -205,7 +216,7 @@ impl Component for SearchLessonGroup {
         };
         html! {
             <>
-                <a class="button-search-univeral mt-3" onclick={&on_hidden_modal}>
+                <a class="button-search-univeral mt-3" onclick=&on_hidden_modal>
                     <span class="icon-text-search-universal">
                         <span>{lang::dict("Search")}</span>
                         <span class="icon">
@@ -213,7 +224,7 @@ impl Component for SearchLessonGroup {
                         </span>
                     </span>
                 </a>
-                <div class={class_search_modal} id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style={class_search_scroll} aria-modal="true" role="dialog">
+                <div class=class_search_modal id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style=class_search_scroll aria-modal="true" role="dialog">
                     <div class="modal-dialog modal-dialog-scrollable modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -221,10 +232,10 @@ impl Component for SearchLessonGroup {
                                     <span class="input-group-text text-primary-blue-dark input-group-search">
                                         <i class="fas fa-search"></i>
                                     </span>
-                                    <input type="text" class="form-control input-style-class" ref={self.search_node.clone()}
-                                        oninput={on_search.clone()} onfocus={on_focus.clone()} onblur={on_blur.clone()} placeholder={lang::dict("Search")} />
+                                    <input type="text" class="form-control input-style-class" ref=self.search_node.clone()
+                                        oninput=on_search.clone() onfocus=on_focus.clone() onblur=on_blur.clone() placeholder=lang::dict("Search") />
                                 </div>
-                                <a class="btn bg-purple-on ms-5" onclick={&on_hidden_modal}>
+                                <a class="btn bg-purple-on ms-5" onclick=&on_hidden_modal>
                                     <span class="text-white">
                                         <i class="fas fa-times"></i>
                                     </span>

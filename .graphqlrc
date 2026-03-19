@@ -1,10 +1,10 @@
-schema: "crates/roboxmaker_models/schema.graphql"
+schema: "schema.graphql"
 documents:
-  - crates/roboxmaker_models/query.graphql
+  - query.graphql
 extensions:
   endpoints:
     dev:
-      # url: https://api.roboxmaker.network/v1/graphql
+      # url: https://api.roboxmaker.com/v1/graphql
       url: https://api.roboxmaker.com/v1/graphql
       headers:
         x-hasura-access-key: a1k8e3r4

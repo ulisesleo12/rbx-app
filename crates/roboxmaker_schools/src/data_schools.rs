@@ -1,13 +1,15 @@
 use log::*;
 use yew::prelude::*;
 use code_location::code_location;
-use yew::{html, Component, Html};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_models::school_model;
-use roboxmaker_types::types::{SchoolId, MyUserProfile};
+use roboxmaker_types::types::{SchoolId, AppRoute, MyUserProfile};
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
 
 pub struct DataSchools {
+    link: ComponentLink<Self>,
+    props: DataSchoolsProps,
     graphql_task: Option<GraphQLTask>,
     staff_task: Option<RequestTask>,
     student_task: Option<RequestTask>,
@@ -21,6 +23,7 @@ pub struct DataSchools {
 
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct DataSchoolsProps {
+    pub on_app_route: Callback<AppRoute>,
     pub user_profile: Option<MyUserProfile>,
     pub school_id: SchoolId,
 }
@@ -41,13 +44,14 @@ impl Component for DataSchools {
     type Message = DataSchoolsMessage;
     type Properties = DataSchoolsProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(DataSchoolsMessage::FetchMembersData);
-        ctx.link().send_message(DataSchoolsMessage::FetchDataStaff);
-        ctx.link().send_message(DataSchoolsMessage::FetchDataStudent);
-        ctx.link().send_message(DataSchoolsMessage::FetchDataTeacher);
-
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(DataSchoolsMessage::FetchMembersData);
+        link.send_message(DataSchoolsMessage::FetchDataStaff);
+        link.send_message(DataSchoolsMessage::FetchDataStudent);
+        link.send_message(DataSchoolsMessage::FetchDataTeacher);
         DataSchools { 
+            link, 
+            props, 
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             staff_task: None,
             student_task: None,
@@ -60,12 +64,12 @@ impl Component for DataSchools {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
             DataSchoolsMessage::FetchMembersData => {
-                let school_id = ctx.props().school_id;
+                let school_id = self.props.school_id;
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
 
                     let vars = school_model::deggrees_by_school_by_id::Variables {
@@ -74,7 +78,7 @@ impl Component for DataSchools {
 
                     let task = school_model::DeggreesBySchoolById::request(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             |response| {
                                 DataSchoolsMessage::DataDeggrees(response)
@@ -87,7 +91,7 @@ impl Component for DataSchools {
                 self.list_of_deggrees = list_of_deggrees.clone().and_then(|data| Some(data.class_group)).unwrap_or(vec![]);
             }
             DataSchoolsMessage::FetchDataStaff => {
-                let school_id = ctx.props().school_id;
+                let school_id = self.props.school_id;
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
 
                     let vars = school_model::list_staff_by_school_id::Variables {
@@ -96,7 +100,7 @@ impl Component for DataSchools {
 
                     let task = school_model::ListStaffBySchoolId::request(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             |response| {
                                 DataSchoolsMessage::DataUserStaff(response)
@@ -109,7 +113,7 @@ impl Component for DataSchools {
                 self.staff = staff.clone().and_then(|data| Some(data.user)).unwrap_or(vec![]);
             }
             DataSchoolsMessage::FetchDataStudent => {
-                let school_id = ctx.props().school_id;
+                let school_id = self.props.school_id;
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
 
                     let vars = school_model::list_student_by_school_id::Variables {
@@ -118,7 +122,7 @@ impl Component for DataSchools {
 
                     let task = school_model::ListStudentBySchoolId::request(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             |response| {
                                 DataSchoolsMessage::DataUserStudent(response)
@@ -131,7 +135,7 @@ impl Component for DataSchools {
                 self.student = student.clone().and_then(|data| Some(data.user)).unwrap_or(vec![]);
             }
             DataSchoolsMessage::FetchDataTeacher => {
-                let school_id = ctx.props().school_id;
+                let school_id = self.props.school_id;
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
 
                     let vars = school_model::list_teacher_by_school_id::Variables {
@@ -140,7 +144,7 @@ impl Component for DataSchools {
 
                     let task = school_model::ListTeacherBySchoolId::request(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             |response| {
                                 DataSchoolsMessage::DataUserTeacher(response)
@@ -155,17 +159,18 @@ impl Component for DataSchools {
         }
         should_update
     }
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        trace!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        trace!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
         
-        if ctx.props() != old_props {
+        if self.props != props {
+            self.props = props;
             should_render = true;
         } 
 
         should_render
     }
-    fn view(&self, _ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
         let number_deggrees = self 
             .list_of_deggrees
             .iter()

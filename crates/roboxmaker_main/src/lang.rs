@@ -25,7 +25,7 @@ lazy_static! {
         "Add school biography" => "Agrega la biografía del colegio",
         "Add school website" => "Agrega el sitio web del colegio",
         "Address: " => "Dirección: ",
-        "Added" => "Agregado",
+        "Added" => "Agregado ",
         "All fields are required *" => "Todos los campos son requeridos *",
         "An email will be sent to the email registered on the platform" => "Se le enviará un correo electrónico al correo registrado en la plataforma",
         "Anonymous Guest" => "Invitado anónimo.",
@@ -235,6 +235,7 @@ lazy_static! {
         "Update Your Email and Username" => "Actualizar correo electrónico y usuario",
         "Upload File..." => "Subir Archivo...",
         "Upload File" => "Subir Archivo",
+        "Select File" => "Seleccionar Archivo",
         "Username" => "Usuario",
         "Username Incorrect" => "Usuario incorrecto",
         "Username o Email" => "Usuario o Correo Electrónico",
@@ -258,6 +259,7 @@ lazy_static! {
         "Your Files" => "Tus Archivos",
         "Your Lessons" => "Tus Lecciones",
         "Your username is less than {} characters" => "Tu usuario es menor a {} caracteres",
+        "Teacher resources" => "Recursos del docente",
     };
 }
 

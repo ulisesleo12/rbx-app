@@ -42,9 +42,9 @@ impl Component for UserFiles {
     type Message = UserFilesMessage;
     type Properties = UserFilesProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        link().send_message(UserFilesMessage::FetchFilesByAuthorId);
-        link().send_message(UserFilesMessage::FetchInventoryGroupId);
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(UserFilesMessage::FetchFilesByAuthorId);
+        link.send_message(UserFilesMessage::FetchInventoryGroupId);
         UserFiles {
             link,
             props,
@@ -56,12 +56,12 @@ impl Component for UserFiles {
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
             UserFilesMessage::FetchFilesByAuthorId => {
-                let user_id = ctx.props().auth_user.as_ref()
+                let user_id = self.props.auth_user.as_ref()
                     .and_then(|data| data.user_by_pk.as_ref())
                     .and_then(|data| Some(data.id));
 
@@ -97,9 +97,9 @@ impl Component for UserFiles {
             }
             UserFilesMessage::FetchInventoryGroupId => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
-                    if ctx.props().school_id.is_some() {
+                    if self.props.school_id.is_some() {
                         let vars = school_model::inventory_group_id_by_school_id::Variables {
-                            school_id: ctx.props().school_id.unwrap().0, 
+                            school_id: self.props.school_id.unwrap().0, 
                         };
     
                         let task = school_model::InventoryGroupIdBySchoolId::request(
@@ -121,8 +121,8 @@ impl Component for UserFiles {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
 
         if self.props != props {
@@ -133,17 +133,17 @@ impl Component for UserFiles {
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_list_change = ctx.link().callback(|_| UserFilesMessage::FetchFilesByAuthorId);
+    fn view(&self) -> Html {
+        let on_list_change = self.link.callback(|_| UserFilesMessage::FetchFilesByAuthorId);
         let files = self.files_list.iter().cloned().collect::<Vec<ClassGroupFiles>>();
         let files_list = self.inventory.iter().map(|inventory_group| {
             let inventory_group_id = inventory_group.inventory_group.clone().and_then(|data| Some(data.group_id)).unwrap_or(Uuid::default());
             html! {
                 <FilesUserList files=files.clone()
-                on_app_route=ctx.props().on_app_route.clone()
-                auth_user=ctx.props().auth_user.clone()
-                auth_school=ctx.props().auth_school.clone()
-                group_id=ctx.props().group_id.clone()
+                on_app_route=self.props.on_app_route.clone()
+                auth_user=self.props.auth_user.clone()
+                auth_school=self.props.auth_school.clone()
+                group_id=self.props.group_id.clone()
                 on_list_change=Some(on_list_change.clone())
                 inventory_group_id=inventory_group_id />
             }

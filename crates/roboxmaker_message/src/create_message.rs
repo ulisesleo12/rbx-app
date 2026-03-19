@@ -63,8 +63,8 @@ impl Component for MessageCard {
     type Message = MessageCardMessage;
     type Properties = MessageCardProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        link().send_message(MessageCardMessage::ContentUpdate);
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(MessageCardMessage::ContentUpdate);
         MessageCard {
             link,
             props,
@@ -80,7 +80,7 @@ impl Component for MessageCard {
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
 
         let should_update = true;
@@ -88,7 +88,7 @@ impl Component for MessageCard {
             MessageCardMessage::OnContent(content) => {
                 self.content = content;
             }
-            MessageCardMessage::Send => match ctx.props().group_category {
+            MessageCardMessage::Send => match self.props.group_category {
                 MessageGroupCategory::Lessons(group_id, lesson_id) => {
                     let content = self.content.clone();
                     if let Some(graphql_task) = self.graphql_task.as_mut() {
@@ -96,7 +96,7 @@ impl Component for MessageCard {
                             content,
                             group_id: group_id.0,
                             lesson_id: lesson_id.0,
-                            reply_id: ctx.props().replying_to.and_then(|reply_id| Some(reply_id.0)),
+                            reply_id: self.props.replying_to.and_then(|reply_id| Some(reply_id.0)),
                             replies_private: self.replies_private,
                         };
                         let task = message_model::MessageLessonGroupCreate::request(
@@ -117,7 +117,7 @@ impl Component for MessageCard {
                             content,
                             group_id: group_id.0,
                             post_id: post_id.0,
-                            reply_id: ctx.props().replying_to.and_then(|reply_id| Some(reply_id.0)),
+                            reply_id: self.props.replying_to.and_then(|reply_id| Some(reply_id.0)),
                             replies_private: self.replies_private,
                         };
                         let task = message_model::MessagePostGroupCreate::request(
@@ -138,7 +138,7 @@ impl Component for MessageCard {
                             content,
                             group_id: group_id.0,
                             robot_id: robot_id.0,
-                            reply_id: ctx.props().replying_to.and_then(|reply_id| Some(reply_id.0)),
+                            reply_id: self.props.replying_to.and_then(|reply_id| Some(reply_id.0)),
                             replies_private: self.replies_private,
                         };
                         let task = message_model::MessageRobotGroupCreate::request(
@@ -158,7 +158,7 @@ impl Component for MessageCard {
                         let vars = message_model::direct_message_group_create::Variables {
                             content,
                             group_id: group_id.0,
-                            reply_id: ctx.props().replying_to.and_then(|reply_id| Some(reply_id.0)),
+                            reply_id: self.props.replying_to.and_then(|reply_id| Some(reply_id.0)),
                             replies_private: self.replies_private,
                         };
                         let task = message_model::DirectMessageGroupCreate::request(
@@ -185,41 +185,41 @@ impl Component for MessageCard {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = true;
 
         if self.props != props {
             self.props = props;
-            self.link().send_message(MessageCardMessage::ContentUpdate);
+            self.link.send_message(MessageCardMessage::ContentUpdate);
             should_render = true;
         }
 
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
         let upload_url = format!("{}/upload.php", config::AKER_FILES_URL);
 
-        let message_class = if ctx.props().replying_to.is_some()
+        let message_class = if self.props.replying_to.is_some()
             && self
                 .props
                 .message_profile
                 .as_ref()
                 .and_then(|message_profile| Some(MessageId(message_profile.message_id)))
-                != ctx.props().replying_to
+                != self.props.replying_to
         {
             "message-frame reply-to has-background-light p-2 ms-6 mb-3"
         } else {
             "message-frame mb-3"
         };
 
-        if let Some(auth_user) = &ctx.props().auth_user {
+        if let Some(auth_user) = &self.props.auth_user {
             let on_replies_private_toggle = self
                 .link
                 .callback(|_: MouseEvent| MessageCardMessage::OnPrivateRepliesToggle);
             let maybe_replies = auth_user.user_by_pk.clone().and_then(|user| {
-                if user.user_teacher.is_some() || user.user_staff.is_some() && ctx.props().replying_to.is_none() {
+                if user.user_teacher.is_some() || user.user_staff.is_some() && self.props.replying_to.is_none() {
                     Some(html! {
                         <label class="checkbox d-flex align-items-center">
                             <input type="checkbox" checked=self.replies_private onclick=&on_replies_private_toggle />
@@ -234,7 +234,7 @@ impl Component for MessageCard {
                 .link
                 .callback(move |data| MessageCardMessage::OnContent(data));
 
-            let on_send = ctx.link().callback(move |_| MessageCardMessage::Send);
+            let on_send = self.link.callback(move |_| MessageCardMessage::Send);
 
             let on_replies_private_toggle = self
                 .link
@@ -246,7 +246,7 @@ impl Component for MessageCard {
                 html! {}
             };
             let maybe_replies_student = auth_user.user_by_pk.clone().and_then(|user| {
-                if user.user_student.is_some() && ctx.props().replying_to.is_some() {
+                if user.user_student.is_some() && self.props.replying_to.is_some() {
                     Some(html! {
                         <label class="checkbox d-flex align-items-center">
                             <input type="checkbox" checked=self.replies_private onclick=&on_replies_private_toggle />
@@ -288,13 +288,13 @@ impl Component for MessageCard {
                     </button>
                 }
             };
-            let message_class_create = if ctx.props().replying_to.is_some()
+            let message_class_create = if self.props.replying_to.is_some()
                 && self
                     .props
                     .message_profile
                     .as_ref()
                     .and_then(|message_profile| Some(MessageId(message_profile.message_id)))
-                    != ctx.props().replying_to
+                    != self.props.replying_to
             {
                 "box-message-to-post bg-white"
             } else {
@@ -303,7 +303,7 @@ impl Component for MessageCard {
             let maybe_created = html! {
                 <>
                     <div class=message_class_create>
-                        <ckeditor::CKEditor auth_user=ctx.props().auth_user.clone()
+                        <ckeditor::CKEditor auth_user=self.props.auth_user.clone()
                             content=self.content.clone()
                             upload_url=upload_url.clone()
                             on_data=on_data.clone() />
@@ -318,7 +318,7 @@ impl Component for MessageCard {
             let maybe_created_2 = html! {
                 <>
                     <div class="box-message-to-post bg-white">
-                        <ckeditor::CKEditor auth_user=ctx.props().auth_user.clone()
+                        <ckeditor::CKEditor auth_user=self.props.auth_user.clone()
                             content=self.content.clone()
                             upload_url=upload_url.clone()
                             on_data=on_data.clone() />
@@ -330,7 +330,7 @@ impl Component for MessageCard {
                 </>
             };
             let maybe_button_message = {
-                match ctx.props().group_category {
+                match self.props.group_category {
                     MessageGroupCategory::Lessons(_group_id, _lesson_id) => {
                         html! {
                             {maybe_created.clone()}

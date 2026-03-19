@@ -1,8 +1,8 @@
 use log::*;
 use yew::prelude::*;
 use code_location::code_location;
-use yew::{html, Component, Html};
 use crate::{meet_session::MeetSession};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_main::{lang, config};
 use roboxmaker_models::meetings_model;
@@ -10,6 +10,8 @@ use roboxmaker_types::types::{GroupId, MeetingsId, MyUserProfile};
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
 
 pub struct MeetPage {
+    link: ComponentLink<Self>,
+    props: MeetPageProperties,
     graphql_task: Option<GraphQLTask>,
     meet_title_task: Option<RequestTask>,
     whiteboard_on: bool,
@@ -35,12 +37,11 @@ impl Component for MeetPage {
     type Message = MeetPageMessage;
     type Properties = MeetPageProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(MeetPageMessage::FetchDataMeet);
-
-        roboxmaker_utils::functions::school_state();
-        
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(MeetPageMessage::FetchDataMeet);
         MeetPage {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             meet_title_task: None,
             whiteboard_on: false,
@@ -49,20 +50,20 @@ impl Component for MeetPage {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
             MeetPageMessage::FetchDataMeet => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let vars = meetings_model::class_name_and_meet_title::Variables { 
-                        group_id: ctx.props().group_id.0,
-                        meeting_id: ctx.props().meetings_id.0,
+                        group_id: self.props.group_id.0,
+                        meeting_id: self.props.meetings_id.0,
                     };
 
                     let task = meetings_model::ClassNameAndMeetTitle::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             MeetPageMessage::DataMeet(response)
@@ -89,20 +90,18 @@ impl Component for MeetPage {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
-        let mut should_render = false;
-
-        if ctx.props() != old_props {
-            should_render = true;
-        } 
-
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        let should_render = false;
+        if self.props != props {
+            self.props = props;
+        }
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_toggle_whiteboard = ctx
-            .link()
+    fn view(&self) -> Html {
+        let on_toggle_whiteboard = self
+            .link
             .callback(move |_| MeetPageMessage::ToggleWhiteboard);
         let data_meet = self.class_name.iter().zip(self.meet_title.clone()).map(|(class, meet)| {
             html! {
@@ -111,16 +110,16 @@ impl Component for MeetPage {
                 </h1>
             }
         }).collect::<Html>();
-        let maybe_whiteboard = ctx.props().user_profile.as_ref()
+        let maybe_whiteboard = self.props.user_profile.as_ref()
             .and_then(|item| {
                 let _display_name = item.full_name.clone();
                 let whiteboard_url = format!(
                     "{}/boards/{}",
                     config::AKER_WBO_URL,
-                    ctx.props().meetings_id.0
+                    self.props.meetings_id.0
                 );
                 let iframe = html!{
-                    <iframe allow="camera; microphone; fullscreen; display-capture" src={whiteboard_url}
+                    <iframe allow="camera; microphone; fullscreen; display-capture" src=whiteboard_url
                         style="min-height: 700px; width: 100%; border: 0px; padding: 0px, margin: 0px;"></iframe>
                 };
 
@@ -132,7 +131,7 @@ impl Component for MeetPage {
                 if self.whiteboard_on {
                     Some(html! {
                         <>
-                            <div class={maybe_class}>
+                            <div class=maybe_class>
                                 {iframe}
                             </div>
                         </>
@@ -147,7 +146,7 @@ impl Component for MeetPage {
             .unwrap_or_default();
         let toggle = html!{
             <div class="mt-5 mb-3">
-                <a onclick={&on_toggle_whiteboard} class="btn btn-outline-primary-blue-dark px-5 col-2">
+                <a onclick=&on_toggle_whiteboard class="btn btn-outline-primary-blue-dark px-5 col-2">
                     <i class="fas fa-chalkboard me-3"></i>
                     <span>{lang::dict("Whiteboard")}</span>
                 </a>
@@ -162,10 +161,10 @@ impl Component for MeetPage {
                     {toggle}
                     <div class="d-flex flex-wrap">
                         {maybe_whiteboard}
-                        <MeetSession user_profile={ctx.props().user_profile.clone()}
-                            domain={domain}
-                            group_id={ctx.props().group_id}
-                            meetings_id={ctx.props().meetings_id} />
+                        <MeetSession user_profile=self.props.user_profile.clone()
+                            domain=domain
+                            group_id=self.props.group_id
+                            meetings_id=self.props.meetings_id />
                     </div>
                 </div>
             </>

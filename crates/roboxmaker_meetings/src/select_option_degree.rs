@@ -2,15 +2,17 @@ use log::*;
 use uuid::Uuid;
 use yew::prelude::*;
 use code_location::code_location;
-use yew::{html, Component, Html};
 use crate::create_meet::ModalCreateMeet;
 use crate::{ClassGroupMeetData, ClassGroupMeetings};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_models::{school_model, meetings_model};
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
-use roboxmaker_types::types::{SchoolId, GroupId, MeetingsId, MyUserProfile};
+use roboxmaker_types::types::{SchoolId, GroupId, AppRoute, MeetingsId, MyUserProfile};
 
 pub struct SelectOptionDegree {
+    link: ComponentLink<Self>,
+    props: SelectOptionDegreeProps,
     graphql_task: Option<GraphQLTask>,
     degree_list_task: Option<RequestTask>,
     group_id_selected: Option<GroupId>,
@@ -20,6 +22,7 @@ pub struct SelectOptionDegree {
 
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct SelectOptionDegreeProps {
+    pub on_app_route: Callback<AppRoute>,
     pub school_id: SchoolId,
     pub inventory_group_id: Uuid,
     pub user_profile: Option<MyUserProfile>,
@@ -41,10 +44,11 @@ impl Component for SelectOptionDegree {
     type Message = SelectOptionDegreeMessage;
     type Properties = SelectOptionDegreeProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(SelectOptionDegreeMessage::FetchClassGroups);
-
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(SelectOptionDegreeMessage::FetchClassGroups);
         SelectOptionDegree { 
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             degree_list_task: None,
             group_id_selected: None,
@@ -53,19 +57,19 @@ impl Component for SelectOptionDegree {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
             SelectOptionDegreeMessage::FetchClassGroups => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let vars = meetings_model::class_groups_by_school_id_meetigns::Variables { 
-                        school_id: ctx.props().school_id.0,
+                        school_id: self.props.school_id.0,
                     };
 
                     let task = meetings_model::ClassGroupsBySchoolIdMeetigns::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             SelectOptionDegreeMessage::ClassGroups(response)
@@ -113,22 +117,21 @@ impl Component for SelectOptionDegree {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        trace!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
-
-        if ctx.props() != old_props {
+        if self.props != self.props {
+            self.props = props;
             should_render = true;
         } 
-
         should_render
     }
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_dropdown = ctx.link().callback(|_| SelectOptionDegreeMessage::ShowDropdown);
+    fn view(&self) -> Html {
+        let on_dropdown = self.link.callback(|_| SelectOptionDegreeMessage::ShowDropdown);
         let alls_class_groups = self.class_groups.iter().map(|class_group| {
             let group_id = class_group.group_id;
             let class_id_select = format!("{:?}", group_id);
-            let on_show_list_degrees = ctx.link().callback(move |_| SelectOptionDegreeMessage::SelectClassGroup(group_id));
+            let on_show_list_degrees = self.link.callback(move |_| SelectOptionDegreeMessage::SelectClassGroup(group_id));
             let class_group_selected = if self
                 .group_id_selected
                 .and_then(|id| Some(id.0))
@@ -149,8 +152,8 @@ impl Component for SelectOptionDegree {
                 };
             html! {
                 <li>
-                    <a class={class_selected} onclick={on_show_list_degrees}>
-                        <input class="bg-checkbox me-1 d-flex align-items-center" type="checkbox" value={class_id_select} checked={class_group_selected} />
+                    <a class=class_selected onclick=on_show_list_degrees>
+                        <input class="bg-checkbox me-1 d-flex align-items-center" type="checkbox" value=class_id_select checked=class_group_selected />
                         {&class_group.class_name}
                     </a>
                 </li>
@@ -185,19 +188,20 @@ impl Component for SelectOptionDegree {
                 let meetings = class_group.meetings.clone();
                 let class_name = class_group.class_name.clone();
                 let school_id =class_group.school_id;
-                let on_list_change = ctx.link().callback(move |_| SelectOptionDegreeMessage::FetchClassGroups);
+                let on_list_change = self.link.callback(move |_| SelectOptionDegreeMessage::FetchClassGroups);
                 html! {
                     <div class="d-flex flex-column align-items-center">
-                        <ModalCreateMeet meetings={meetings}
-                            allow_edit={true}
-                            class_name={class_name}
-                            school_id={school_id}
-                            group_id={class_group.group_id}
-                            close_modal_callback_failed={ctx.props().close_modal_callback_failed.clone()}
-                            close_modal_callback_meet={ctx.props().close_modal_callback_meet.clone()}
-                            inventory_group_id={ctx.props().inventory_group_id}
-                            auth_school={ctx.props().auth_school.clone()}
-                            on_list_change={Some(on_list_change)}   />
+                        <ModalCreateMeet meetings=meetings
+                            allow_edit=true
+                            class_name=class_name
+                            school_id=school_id
+                            group_id=class_group.group_id
+                            close_modal_callback_failed=self.props.close_modal_callback_failed.clone()
+                            close_modal_callback_meet=self.props.close_modal_callback_meet.clone()
+                            inventory_group_id=self.props.inventory_group_id
+                            auth_school=self.props.auth_school.clone()
+                            on_app_route=self.props.on_app_route.clone() 
+                            on_list_change=Some(on_list_change)   />
                     </div>
                 }
             } else {
@@ -216,11 +220,11 @@ impl Component for SelectOptionDegree {
         };
         let maybe_option_user = html! {
             <div class="dropdown dropdown-h">
-                <button class={class_dropdown} type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false" onclick={on_dropdown}>
+                <button class=class_dropdown type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false" onclick=on_dropdown>
                     <img src="/icons/graduation-4.svg" style="height: 18px;" />
                     {change_class_group}
                 </button>
-                <ul class={class_dropdown_list} aria-labelledby="dropdownMenuButton2">
+                <ul class=class_dropdown_list aria-labelledby="dropdownMenuButton2">
                     {alls_class_groups}
                 </ul>
             </div>

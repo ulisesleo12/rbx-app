@@ -1,3 +1,4 @@
+pub mod general_model;
 pub mod activity_model;
 pub mod classes_model;
 pub mod files_model;
@@ -12,3 +13,5 @@ pub mod school_model;
 pub mod user_model;
 pub mod auth;
 pub mod registration;
+pub mod teacher_resource;
+pub mod quiz_model;

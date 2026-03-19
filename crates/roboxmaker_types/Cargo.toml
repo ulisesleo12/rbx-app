@@ -7,8 +7,8 @@ edition = "2021"
 
 [dependencies]
 roboxmaker_models = {path = "../roboxmaker_models"}
-# yew-router = { version = "0.15.0", default-features = false }
-yew-router = { version = "0.18" }
-uuid = { version = "1.6.1", features = ["serde", "v4", "v5", "wasm-bindgen"] }
-serde = { version = "1", features = ["derive"] }
-
+yew-router = { version = "0.15.0", features = ["service", "web_sys"], default-features = false }
+# yew-router = { version = "0.17" }
+uuid = { version = "1.2.2", features = ["serde", "v4", "v5", "wasm-bindgen"] }
+serde = { version = "1.0.152", features = ["derive"] }
+chrono = { version = "0.4.40", features = ["serde"] }

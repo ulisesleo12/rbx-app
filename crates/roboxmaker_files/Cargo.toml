@@ -12,10 +12,10 @@ roboxmaker_models = { path = "../roboxmaker_models" }
 roboxmaker_loaders = { path = "../roboxmaker_loaders" }
 roboxmaker-graphql = { path = "../roboxmaker-graphql" }
 
-yew = "0.21"
-chrono = { version = "0.4", features = ["serde"] }
-serde = { version = "1", features = ["derive"] }
+yew = { version = "0.18", features = ["default", "toml"] }
+chrono = { version = "0.4.23", features = ["serde"] }
+serde = { version = "1.0.152", features = ["derive"] }
 
-uuid = { version = "1.6.1", features = ["serde", "v4", "v5", "wasm-bindgen"] }
+uuid = { version = "1.2.2", features = ["serde", "v4", "v5", "wasm-bindgen"] }
 log = "0.4"
 code_location = "1.1"

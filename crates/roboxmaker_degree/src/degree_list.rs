@@ -2,16 +2,15 @@ use log::*;
 use uuid::Uuid;
 use yew::prelude::*;
 use code_location::code_location;
-use yew::{html, Component, Html};
 use serde_derive::{Deserialize, Serialize};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_main::lang;
-use roboxmaker_models::grade_model;
+use roboxmaker_models::{school_model, grade_model};
 use roboxmaker_searches::search_degree_list::SearchDegreeList;
 use roboxmaker_loaders::fullscreen_loader_degree::FullScreenLoaderDegree;
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
 use roboxmaker_types::types::{GroupId, SchoolId, UserId, AppRoute, ClassGroupCategory, MyUserProfile};
-use yew_router::scope_ext::RouterScopeExt;
 
 
 #[derive(Debug, Clone)]
@@ -67,6 +66,8 @@ pub enum ListOfGradesFilter {
 }
 
 pub struct DegreeList {
+    link: ComponentLink<Self>,
+    props: DegreeListProps,
     graphql_task: Option<GraphQLTask>,
     degree_list_task: Option<RequestTask>,
     degree_delete_task: Option<RequestTask>,
@@ -79,15 +80,16 @@ pub struct DegreeList {
 
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct DegreeListProps {
-    // pub on_app_route: Callback<AppRoute>,
+    pub on_app_route: Callback<AppRoute>,
     pub user_profile: Option<MyUserProfile>,
+    pub auth_school: Option<school_model::school_by_id::SchoolByIdSchoolByPk>,
     pub school_id: SchoolId,
     pub filter: ListOfGradesFilter,
 }
 
 #[derive(Debug)]
 pub enum DegreeListMessage {
-    // AppRoute(AppRoute),
+    AppRoute(AppRoute),
     FetchGradesGroup(ListOfGradesFilter),
     GradesBySchoolId(Option<grade_model::list_of_grades_of_school_by_id::ResponseData>),
     GradesByUserId(Option<grade_model::list_of_grades_of_user_by_id::ResponseData>),
@@ -99,11 +101,11 @@ impl Component for DegreeList {
     type Message = DegreeListMessage;
     type Properties = DegreeListProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(DegreeListMessage::FetchGradesGroup(ctx.props().filter));
-        roboxmaker_utils::functions::school_state();
-
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(DegreeListMessage::FetchGradesGroup(props.filter));
         DegreeList { 
+            link, 
+            props, 
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             degree_list_task: None,
             degree_delete_task: None,
@@ -115,26 +117,25 @@ impl Component for DegreeList {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
-            // DegreeListMessage::AppRoute(route) => {
-            //     ctx.props().on_app_route.emit(route.clone());
-            // }
+            DegreeListMessage::AppRoute(route) => {
+                self.props.on_app_route.emit(route.clone());
+            }
             DegreeListMessage::FetchGradesGroup(filter) => match filter {
                 ListOfGradesFilter::UserGroups(user_id) => {
                     self.list_classes_state = LoadClasses::Loading;
-                    let school_id = ctx.props().school_id;
+                    let school_id = self.props.school_id;
                     if let Some(graphql_task) = self.graphql_task.as_mut() {
                         let vars = grade_model::list_of_grades_of_user_by_id::Variables {
                             user_id: user_id.0,
                             school_id: school_id.0,
                         };
-
                         let task = grade_model::ListOfGradesOfUserById::request(
                             graphql_task, 
-                            &ctx, 
+                            &self.link, 
                             vars, 
                             |response| {
                                 DegreeListMessage::GradesByUserId(response)
@@ -145,14 +146,14 @@ impl Component for DegreeList {
                 }
                 ListOfGradesFilter::SchoolGroups => {
                     self.list_classes_state = LoadClasses::Loading;
-                    let school_id = ctx.props().school_id;
+                    let school_id = self.props.school_id;
                     if let Some(graphql_task) = self.graphql_task.as_mut() {
                         let vars = grade_model::list_of_grades_of_school_by_id::Variables {
                             school_id: school_id.0, 
                         };
                         let task = grade_model::ListOfGradesOfSchoolById::request(
                             graphql_task, 
-                            &ctx, 
+                            &self.link, 
                             vars, 
                             |response| {
                                 DegreeListMessage::GradesBySchoolId(response)
@@ -251,10 +252,9 @@ impl Component for DegreeList {
                     let vars = grade_model::delete_class_group_by_id::Variables {
                         group_id: group_id.0, 
                     };
-
                     let task = grade_model::DeleteClassGroupById::request(
                         graphql_task, 
-                        &ctx, 
+                        &self.link, 
                         vars, 
                         |response| {
                             DegreeListMessage::Response(response)
@@ -267,20 +267,21 @@ impl Component for DegreeList {
         }
         should_update
     }
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        trace!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        trace!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
 
-        if ctx.props() != old_props {
+        if self.props != props {
+            self.props = props;
             should_render = true;
         }
 
         should_render
     }
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
 
-        let maybe_user_profile_name = ctx
-            .props()
+        let maybe_user_profile_name = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|item| {
@@ -327,32 +328,27 @@ impl Component for DegreeList {
                     </div>
                 }
             }).collect::<Html>();
-
-        let maybe_user_profile_pic = ctx
-            .props()
+        let maybe_user_profile_pic = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|user_profile| Some(user_profile.pic_path.clone()))
             .and_then(|pic_path| {
                 Some(html! {
-                    <img class="img-card-72" src={pic_path.clone()} alt="photo of user" />
+                    <img class="img-card-72" src=pic_path.clone() alt="photo of user" />
                 })
             })
             .unwrap_or(html! {<img class="img-card-72" src="/static/avatar.png"/>
             });
-
         let list_of_grades_by_school_id = self.degrees_by_school_id.iter().map(|class_group| {
-                let navigator = ctx.link().navigator().unwrap();
-
-                let group_id = GroupId(class_group.group_id);
-                let school_id = SchoolId(class_group.school_id);
-                let category = ClassGroupCategory::Posts;
-                let on_grade_view = Callback::from(move |_| {
-                    navigator.push(&AppRoute::SchoolGroupSection{
-                        school_id,
-                        group_id,
-                        category,
-                    })
+                let group_id = class_group.group_id;
+                let school_id = class_group.school_id;
+                let on_grade_view = self.link.callback(move |_| {
+                    DegreeListMessage::AppRoute(AppRoute::SchoolGroupSection(
+                        SchoolId(school_id.clone()),
+                        GroupId(group_id.clone()),
+                        ClassGroupCategory::Posts,
+                    ))
                 });
                 html! {
                     <div class="me-sm-2 me-md-2 me-lg-6 my-1 my-lg-4">
@@ -395,15 +391,15 @@ impl Component for DegreeList {
                                         <span class="noir-regular is-size-14 lh-18"><span
                                                 class="px-2">{&class_group.robots_group}</span>{lang::dict("Robots")}</span>
                                     </span>
-                                    <span class="text-purple-gray d-flex align-items-center">
-                                        <img src="/icons/folders.svg" style="height: 18px;" />
-                                        <span class="noir-regular is-size-14 lh-18"><span
-                                                class="px-2">{&class_group.classes_group}</span>{lang::dict("Classes")}</span>
-                                    </span>
+                                    // <span class="text-purple-gray d-flex align-items-center">
+                                    //     <img src="/icons/folders.svg" style="height: 18px;" />
+                                    //     <span class="noir-regular is-size-14 lh-18"><span
+                                    //             class="px-2">{&class_group.classes_group}</span>{lang::dict("Classes")}</span>
+                                    // </span>
                                 </div>
                             </div>
                             <div class="text-center mt-5">
-                                <a class="button bg-white" onclick={on_grade_view}>
+                                <a class="button bg-white" onmousedown=on_grade_view>
                                     <span class="text-secondary-purple noir-bold is-size-16 lh-20">{lang::dict("See Degree")}</span>
                                 </a>
                             </div>
@@ -412,19 +408,15 @@ impl Component for DegreeList {
                 }
             })
             .collect::<Html>();
-
         let list_of_grades_by_user_id = self.degrees_by_user_id.iter().map(|class_group| {
-                let navigator = ctx.link().navigator().unwrap();
-
-                let group_id = GroupId(class_group.group_id);
-                let school_id = SchoolId(class_group.school_id);
-                let category = ClassGroupCategory::Posts;
-                let on_grade_view = Callback::from(move |_| {
-                    navigator.push(&AppRoute::SchoolGroupSection{
-                        school_id,
-                        group_id,
-                        category,
-                    })
+                let group_id = class_group.group_id;
+                let school_id = class_group.school_id;
+                let on_grade_view = self.link.callback(move |_| {
+                    DegreeListMessage::AppRoute(AppRoute::SchoolGroupSection(
+                        SchoolId(school_id.clone()),
+                        GroupId(group_id.clone()),
+                        ClassGroupCategory::Posts,
+                    ))
                 });
                 html! {
                     <div class="me-sm-2 me-md-2 me-lg-6 my-1 my-lg-4">
@@ -469,17 +461,17 @@ impl Component for DegreeList {
                                             {lang::dict("Robots")}
                                         </span>
                                     </span>
-                                    <span class="text-purple-gray d-flex align-items-center">
-                                        <img src="/icons/folders.svg" style="height: 18px;" />
-                                        <span class="noir-regular is-size-14 lh-18">
-                                            <span class="px-2">{&class_group.classes_group}</span>
-                                            {lang::dict("Classes")}
-                                        </span>
-                                    </span>
+                                    // <span class="text-purple-gray d-flex align-items-center">
+                                    //     <img src="/icons/folders.svg" style="height: 18px;" />
+                                    //     <span class="noir-regular is-size-14 lh-18">
+                                    //         <span class="px-2">{&class_group.classes_group}</span>
+                                    //         {lang::dict("Classes")}
+                                    //     </span>
+                                    // </span>
                                 </div>
                             </div>
                             <div class="text-center mt-5">
-                                <a class="button bg-white" onclick={on_grade_view}>
+                                <a class="button bg-white" onmousedown=on_grade_view>
                                     <span class="text-secondary-purple noir-bold is-size-16 lh-20">{lang::dict("See Degree")}</span>
                                 </a>
                             </div>
@@ -489,13 +481,11 @@ impl Component for DegreeList {
             })
             .collect::<Html>();
 
-        let navigator = ctx.link().navigator().unwrap();
-
-        let on_schools_staff = Callback::from(move |_| navigator.push(&AppRoute::Schools));
-        let maybe_option = ctx.props().user_profile.as_ref().and_then(|item| {
+        let on_schools_staff = self.link.callback(move |_| DegreeListMessage::AppRoute(AppRoute::Schools));
+        let maybe_option = self.props.user_profile.as_ref().and_then(|item| {
             if item.user_staff.is_some() {
                 Some(html! {
-                    <a onclick={on_schools_staff}>
+                    <a onclick=on_schools_staff>
                         <span class="text-purple-gray noir-bold is-size-16 lh-19">
                             <i class="fas fa-arrow-left me-2"></i>
                             <span>{lang::dict("To Schools")}</span>
@@ -506,8 +496,8 @@ impl Component for DegreeList {
                 None
             }
         }).unwrap_or(html! {});
-        let option_list_grades_view = ctx
-            .props()
+        let option_list_grades_view = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|item| {
@@ -520,7 +510,8 @@ impl Component for DegreeList {
                                     {school_name}
                                 </div>
                                 <div class="d-flex flex-wrap align-items-center">
-                                    <SearchDegreeList school_id={ctx.props().school_id} />
+                                    <SearchDegreeList on_app_route=self.props.on_app_route.clone()
+                                        school_id=self.props.school_id />
                                     {maybe_user_profile_pic}
                                 </div>
                             </div>
@@ -535,7 +526,8 @@ impl Component for DegreeList {
                             <div class="d-flex flex-wrap justify-content-between">
                                 {school_name_user}
                                 <div class="d-flex flex-wrap align-items-center">
-                                    <SearchDegreeList school_id={ctx.props().school_id} />
+                                    <SearchDegreeList on_app_route=self.props.on_app_route.clone()
+                                        school_id=self.props.school_id />
                                     {maybe_user_profile_pic}
                                 </div>
                             </div>
@@ -580,13 +572,13 @@ impl Component for DegreeList {
             // .filter(|data| data.class_name.contains("Profesor"))
             .map(|item| {
 
-            let _group_id = item.group_id.clone().to_string();
-            // let on_delete_degree = ctx.link().callback(move |_| DegreeListMessage::DeleteClassGroup(GroupId(group_id)));
+            let _group_id = item.group_id.clone();
+            // let on_delete_degree = self.link.callback(move |_| DegreeListMessage::DeleteClassGroup(GroupId(group_id)));
             html! {
                 <div class="d-flex align-items-center justify-content-evenly mb-4">
                     <span class="text-primary-blue-light noir-bold is-size-18 lh-22">{&item.class_name}</span>
                     <span class="text-primary-blue-light noir-bold is-size-18 lh-22">{"<----------------------------->"}</span>
-                    <span class="text-primary-blue-light noir-bold is-size-14 lh-22">{_group_id}</span>
+                    <span class="text-primary-blue-light noir-bold is-size-14 lh-22">{&item.group_id}</span>
                     // <button type="button" class="btn btn-outline-danger" onclick={&on_delete_degree}>{"DELETE CLASS GROUP"}</button>
                 </div>
             }

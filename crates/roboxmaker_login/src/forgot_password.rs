@@ -1,15 +1,17 @@
 use log::*;
 use regex::Regex;
-use yew::prelude::*;
-use crate::login::PageMode;
-use yew::{html, Component, Html};
+use yew::{prelude::*, web_sys};
 use wasm_bindgen_futures::spawn_local;
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_main::lang;
-use roboxmaker_utils::functions::get_value_from_input_event;
 use roboxmaker_models::registration::{self, credential_reset};
 
+use crate::login::PageMode;
+
 pub struct ForgotPage {
+    link: ComponentLink<Self>,
+    props: Properties,
     page_mode: PageModeForgotPassword,
     reset_crendential_with: bool,
     validate_username: bool,
@@ -23,7 +25,7 @@ pub struct ForgotPage {
     forgot_action: bool, 
 }
 
-#[derive(Properties, Clone, PartialEq)]
+#[derive(Properties, Clone)]
 pub struct Properties {
     pub on_page_mode: Callback<PageMode>,
 }
@@ -50,8 +52,10 @@ impl Component for ForgotPage {
     type Message = Message;
     type Properties = Properties;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         ForgotPage {
+            link,
+            props,
             page_mode: PageModeForgotPassword::ForgotPassword,
             reset_crendential_with: false,
             validate_username: false,
@@ -61,7 +65,7 @@ impl Component for ForgotPage {
             password: "".to_string(),
             recover_password_status: 0,
             class_forgot: vec! [
-                (true, "Verficar Email".to_string()),
+                (true, "Verificar Email".to_string()),
                 (false, "Actualizar Contraseña".to_string()),
             ],
             node_options: NodeRef::default(),
@@ -69,12 +73,12 @@ impl Component for ForgotPage {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let mut should_render = false;
         match msg {
             Message::ChangePageMode(page_mode) => {
-                ctx.props().on_page_mode.emit(page_mode)
+                self.props.on_page_mode.emit(page_mode)
             }
             Message::PageMode(mode) => {
                 self.page_mode = mode;
@@ -133,7 +137,7 @@ impl Component for ForgotPage {
                     username: Some(self.username.clone()),
                     reset_action: action,
                 };
-                let link = ctx.link().clone();
+                let link = self.link.clone();
                 spawn_local(async move {
                     let response = credential_reset(vars).await;
                     match response {
@@ -164,77 +168,82 @@ impl Component for ForgotPage {
         }
         should_render
     }
-    fn changed(&mut self, _ctx: &Context<Self>, _old_props: &Self::Properties) -> bool {
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        self.props = props;
         true
     }
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_change_forgot_option = ctx.link().callback(move|_| Message::OptionChange);
-        let on_update_email_recover = ctx.link().callback(|e: InputEvent| Message::UpdateEmail(get_value_from_input_event(e)));
-        let on_update_username_recover = ctx.link().callback(|e: InputEvent| Message::UpdateUsername(get_value_from_input_event(e)));
-        let on_login_page_mode = ctx.link().callback(move |_| Message::ChangePageMode(PageMode::Login));
-        let on_change_forgot = ctx.link().callback(move|_| Message::ResetCredentialAction);
-        let on_recovery_password_user_name = ctx.link().callback(move|_| Message::ResetActionWith(false));
-        let on_recovery_password_email = ctx.link().callback(move|_| Message::ResetActionWith(true));
+    fn view(&self) -> Html {
+        let on_change_forgot_option = self.link.callback(|_: ChangeData| Message::OptionChange);
+        let on_update_email_recover = self.link.callback(|e: InputData| Message::UpdateEmail(e.value.trim().to_string()));
+        let on_update_username_recover = self.link.callback(|e: InputData| Message::UpdateUsername(e.value.trim().to_string()));
+        let on_login_page_mode = self.link.callback(move |_| Message::ChangePageMode(PageMode::Login));
+        let on_change_forgot = self.link.callback(|_: MouseEvent| Message::ResetCredentialAction);
+        let on_recovery_password_user_name = self.link.callback(|_: ChangeData| Message::ResetActionWith(false));
+        let on_recovery_password_email = self.link.callback(|_: ChangeData| Message::ResetActionWith(true));
         let forgot_list_options = self
             .class_forgot
             .iter()
             .map(|option| {
                 let option_id = format!("{:?}", option.0);
                 html! {
-                        <option value={option_id}>{&option.1}</option>
+                        <option value=option_id>{&option.1}</option>
                 }
             })
             .collect::<Html>();
 
         let notifications = match self.page_mode {
             PageModeForgotPassword::ForgotPassword => {
-                if self.recover_password_status == 404 && !self.reset_crendential_with {
-                    html! {
-                        <span class="text-danger bg-white w-100 rounded-3 p-3">
-                            {lang::dict("Username Incorrect")}
-                        </span>
+                html! {
+                    if self.recover_password_status == 404 && !self.reset_crendential_with {
+                        html! {
+                            <span class="text-danger bg-white w-100 rounded-3 p-3">
+                                {lang::dict("Username Incorrect")}
+                            </span>
+                        }
+                    } else if self.recover_password_status == 404 && self.reset_crendential_with {
+                        html! {
+                            <span class="text-danger bg-white w-100 rounded-3 p-3">
+                                {lang::dict("Email Incorrect")}
+                            </span>
+                        }
+                    } else if self.recover_password_status == 201 {
+                        html! {
+                            <span class="text-warning bg-white w-100 rounded-3 p-3">
+                                {lang::dict("Action Sent")}
+                                <br/>
+                                {lang::dict("Email to request action sent")}
+                            </span>
+                        }
+                    } else if self.recover_password_status == 102 {
+                        html! {
+                            <span class="text-warning bg-white w-100 rounded-3 p-3">
+                                {lang::dict("Processing...")}
+                            </span>
+                        }
+                    } else {
+                        html! {}
                     }
-                } else if self.recover_password_status == 404 && self.reset_crendential_with {
-                    html! {
-                        <span class="text-danger bg-white w-100 rounded-3 p-3">
-                            {lang::dict("Email Incorrect")}
-                        </span>
-                    }
-                } else if self.recover_password_status == 201 {
-                    html! {
-                        <span class="text-warning bg-white w-100 rounded-3 p-3">
-                            {lang::dict("Action Sent")}
-                            <br/>
-                            {lang::dict("Email to request action sent")}
-                        </span>
-                    }
-                } else if self.recover_password_status == 102 {
-                    html! {
-                        <span class="text-warning bg-white w-100 rounded-3 p-3">
-                            {lang::dict("Processing...")}
-                        </span>
-                    }
-                } else {
-                    html! {}
                 }
             }
             PageModeForgotPassword::ResendForgotPassword => {
-                if self.recover_password_status == 201 {
-                    html! {
-                        <span class="text-warning bg-white w-100 rounded-3 p-3">
-                            {lang::dict("Action Sent")}
-                            <br/>
-                            {lang::dict("Email to request action sent")}
-                        </span>
+                html! {
+                    if self.recover_password_status == 201 {
+                        html! {
+                            <span class="text-warning bg-white w-100 rounded-3 p-3">
+                                {lang::dict("Action Sent")}
+                                <br/>
+                                {lang::dict("Email to request action sent")}
+                            </span>
+                        }
+                    } else if self.recover_password_status == 102 {
+                        html! {
+                            <span class="text-warning bg-white w-100 rounded-3 p-3">
+                                {lang::dict("Processing...")}
+                            </span>
+                        }
+                    } else {
+                        html! {}
                     }
-                } else if self.recover_password_status == 102 {
-                    html! {
-                        <span class="text-warning bg-white w-100 rounded-3 p-3">
-                            {lang::dict("Processing...")}
-                        </span>
-                    }
-                } else {
-                    html! {}
                 }
             }
         };
@@ -244,7 +253,7 @@ impl Component for ForgotPage {
                 <label class="text-white noir-bold is-size-16 lh-20 my-2">{lang::dict("What do you want to do?")}</label>
                 <div class="control has-icons-left d-flex align-items-center">
                     <div class="select" style="width: 100%; height: 50px;">
-                        <select ref={self.node_options.clone()} onchange={on_change_forgot_option} class="input-style-l is-fullwidth" style="width: 100%; border-color: #DBDBFF; color: #BCBDFD; top: auto;">
+                        <select ref=self.node_options.clone() onchange=on_change_forgot_option class="input-style-l is-fullwidth" style="width: 100%; border-color: #DBDBFF; color: #BCBDFD; top: auto;">
                             {forgot_list_options}
                         </select>
                     </div>
@@ -259,7 +268,7 @@ impl Component for ForgotPage {
                         <span class="input-group-text">
                             <i class="far fa-user"></i>
                         </span>
-                        <input type="text" class="form-control input-style-l" placeholder="alexahrdz01" oninput={&on_update_username_recover} required=true />
+                        <input type="text" class="form-control input-style-l" placeholder="alexahrdz01" oninput=&on_update_username_recover required=true />
                     </div>
                 </div>
             }
@@ -271,7 +280,7 @@ impl Component for ForgotPage {
                         <span class="input-group-text">
                             <i class="far fa-envelope"></i>
                         </span>
-                        <input type="email" class="form-control input-style-l" placeholder="alexa@example.com" oninput={&on_update_email_recover} required=true />
+                        <input type="email" class="form-control input-style-l" placeholder="alexa@example.com" oninput=&on_update_email_recover required=true />
                     </div>
                 </div>
             }
@@ -280,14 +289,14 @@ impl Component for ForgotPage {
             PageModeForgotPassword::ForgotPassword => {
                 html! {
                     <div class="card bg-dark text-white h-100 w-100">
-                        <img src="/static/arte-1.png" class="card-img" alt="..." style="height: 100vh; width: 100vw; object-fit: cover;" />
+                        <img src="/static/new-arte.png" class="card-img" alt="..." style="height: 100vh; width: 100vw; object-fit: cover;" />
                         <div class="card-img-overlay">
                             <div class="col-sm-12 col-md-12 col-lg-6 col-xl-5 col-xxl-4 bg-section-login pd-sm-4 p-md-7 p-sm-6 p-4 d-flex flex-column justify-content-between h-85 h-sm-100">
                                 <div class="d-flex justify-content-between">
                                     <div class="col-4">
                                         <img src="/static/logo-robox-maker.png" class="img-fluid" />
                                     </div>
-                                    <a class="text-white noir-bold is-size-6 lh-19" onclick={&on_login_page_mode}>
+                                    <a class="text-white noir-bold is-size-6 lh-19" onclick=&on_login_page_mode>
                                         <i class="fas fa-arrow-left mx-2"></i>
                                         <span>{lang::dict("Behind")}</span>
                                     </a>
@@ -299,14 +308,14 @@ impl Component for ForgotPage {
                                     <div class="d-flex justify-content-between">
                                         <label class="radio">
                                             <input type="radio" id="radio-username" name="answer" value="username"
-                                                checked={!self.reset_crendential_with}
-                                                onchange={&on_recovery_password_user_name} />
+                                                checked=!self.reset_crendential_with
+                                                onchange=&on_recovery_password_user_name />
                                             <span class="text-white noir-light is-size-18 lh-22 ps-3 d-flex align-items-center p-0 mb-0">{lang::dict("Username")}</span>
                                         </label>
                                         <label class="radio">
                                             <input type="radio" id="radio-email" name="answer" value="email"
-                                                checked={self.reset_crendential_with}
-                                                onchange={&on_recovery_password_email} />
+                                                checked=self.reset_crendential_with
+                                                onchange=&on_recovery_password_email />
                                             <span class="text-white noir-light is-size-18 lh-22 ps-3 d-flex align-items-center p-0 mb-0">{lang::dict("Email")}</span>
                                         </label>
                                     </div>
@@ -314,7 +323,7 @@ impl Component for ForgotPage {
                                     {recover_password_field}
                                 </div>
                                 {notifications}
-                                <button onclick={&on_change_forgot} class="btn button-login w-100">
+                                <button onclick=&on_change_forgot class="btn button-login w-100">
                                     <span class="text-white">{lang::dict("Continue")}</span>
                                     <i class="fas fa-arrow-right mx-2"></i>
                                 </button>
@@ -326,14 +335,14 @@ impl Component for ForgotPage {
             PageModeForgotPassword::ResendForgotPassword => {
                 html! {
                     <div class="card bg-dark text-white h-100 w-100">
-                        <img src="/static/arte-1.png" class="card-img" alt="..." style="height: 100vh; width: 100vw; object-fit: cover;" />
+                        <img src="/static/new-arte.png" class="card-img" alt="..." style="height: 100vh; width: 100vw; object-fit: cover;" />
                         <div class="card-img-overlay">
                             <div class="col-sm-12 col-md-12 col-lg-6 col-xl-5 col-xxl-4 bg-section-login pd-sm-4 p-md-7 p-sm-6 p-4 d-flex flex-column justify-content-between h-85 h-sm-100">
                                 <div class="d-flex justify-content-between">
                                     <div class="col-4">
                                         <img src="/static/logo-robox-maker.png" class="img-fluid" />
                                     </div>
-                                    <a class="text-white noir-bold is-size-6 lh-19" onclick={&on_login_page_mode}>
+                                    <a class="text-white noir-bold is-size-6 lh-19" onclick=&on_login_page_mode>
                                         <i class="fas fa-arrow-left mx-2"></i>
                                         <span>{lang::dict("Behind")}</span>
                                     </a>
@@ -347,7 +356,7 @@ impl Component for ForgotPage {
                                     <img src="/static/resend-forgot.png" />
                                 </div>
                                 {notifications}
-                                <button onclick={&on_change_forgot} class="btn button-login w-100">
+                                <button onclick=&on_change_forgot class="btn button-login w-100">
                                     <span class="text-white">{lang::dict("Forward Email")}</span>
                                     <i class="fas fa-arrow-right mx-2"></i>
                                 </button>

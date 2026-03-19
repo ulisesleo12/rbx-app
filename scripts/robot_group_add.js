@@ -3,411 +3,6 @@ const {
 } = require("child_process");
 const fs = require('fs');
 
-
-// Robots IDs
-
-B1 = [
-    '82d274e9-a690-4b48-9174-233b2526039a',
-    'ce733ffa-5404-420c-aecc-5fccfa49ade3',
-    '25f952a9-8741-4636-a7d3-1de943a27dd1',
-    '1099ea61-18c1-4675-90d1-f42933d762f9',
-    '2133f8b4-5bb1-40f2-a762-8ae716d3c026',
-    'c581106b-dbed-4d6e-96b6-f65214350404',
-    '054374b3-0705-459c-b092-1bb9934fe7a4',
-    'f2888c2e-0470-41bc-a646-5eafe517899a',
-    '94418edf-1afc-4779-8fb3-eb30353c0387',
-    '6f98d412-30ad-40ff-ab04-b000a0d716aa',
-    '2fba3160-397c-4835-a3f4-2cd54ab9c3f5',
-    '2d8f8267-0d52-4b7a-9ee1-1bdc1575d9f7',
-    '857a12c2-4ab8-4ab7-897b-ba0aad0ec7a1',
-    '2e11f44e-5719-43db-bf55-8363895ea312',
-    'b792ba40-1411-4302-b40d-21bc84cfb860',
-    '7b7f3416-1734-4bb2-850e-2217b64b0bbf',
-    '664a3219-6c3e-43b9-87d8-07d247fda1a5',
-    '16e08105-e4ae-4418-983f-e100522203ef',
-    'b152e07c-af3b-45e6-9dc2-d1d2dd7734cf',
-    '71c87d61-9a29-41e6-afb3-0504a3cc96b6',
-    '23fd70ae-b10f-4a3b-8d9e-99209906dcf2',
-    '58689eb2-d8cb-4e7e-9744-fbaa990013ea',
-    '1a113ff7-9cf8-41be-8a75-09e506d37cfd',
-    'aa39f7b8-9964-4cb2-a9f4-c82f1b17c3c6',
-    'b5f86734-6986-4638-881a-6e9c37ae55fd',
-];
-
-B2 = [
-    'd6bc0869-5ebc-4c2f-9638-710a29c4e651',
-    '6a7f968e-90b8-43e2-a59c-e771db6311d1',
-    '05c51d1d-da71-40b6-a577-a59076c63f33',
-    '9cd62312-3f23-40d8-92dc-d77b62f49d12',
-    'c59f6e11-67e5-4445-a504-51130cbfb953',
-    '2839a2be-d1fd-4ecf-8a76-435cb19ba1ea',
-    'f4da7e93-54e4-4733-8576-0351b775d604',
-    'f34f7be8-4f43-43b8-8085-681f5bc3ca9e',
-    '81e7f282-8741-48c7-b7bf-c1076aa4b179',
-    '4a67b0cb-ca64-44ac-a6c2-998fc8309050',
-    '831e47e2-bc76-442c-92a1-ca48f0c165fc',
-    '001c9d09-e425-4f0d-b297-3a60b7e299a2',
-    '1225c8cc-a303-468b-8d18-ac8123b5c9be',
-    '71e7949f-a629-45cd-ae6b-1e6874035bf5',
-    '376561b4-3209-454f-9954-67ec1e489d23',
-    '9575122c-fe8e-44c1-a127-3feeccb28800',
-    '18f34c65-f216-48d2-82ec-ed2a3008c7f9',
-    '129cd076-b890-44bb-9084-9cbd73674d9f',
-    '05c0acfc-fa9f-4c2f-8082-eb52db71a2d1',
-    '2b37e1ec-f12b-4c97-a170-5b998b9a50bf',
-    '54bcbb3b-bd1e-4b73-a70d-80b541a0013f',
-    '917bc00f-87a8-44e5-b0fd-2a47d4fee999',
-    '9e7bcd35-7bab-4963-a830-69bc82ecaefa',
-    'cc4d7f33-2b62-4de9-b619-ed8db6b5f71f',
-    '7cde8d4d-d3be-4ffc-9c40-46bc4d3a185a',
-];
-
-K4 = [
-    "c059d5f2-0627-4607-a637-bdab7e5d8f04",
-    "0c7a09df-48b0-4e4a-bd0a-f57542ba5095",
-    "6655257c-059c-49e7-92e1-b21ae2ea5cb3",
-    "e96234ef-63c7-4b7b-bd2b-490f613a0a2c",
-    "5791e291-1468-4bf4-bc20-b187472f3713",
-    "d77a011f-bf2f-4753-b39c-e45402e3d2a4",
-    "f92f713b-89ff-4608-8aee-e20cd1ecf551",
-    "e49acf01-5dbf-4a47-87bd-379168cbbe4a",
-    "616b2bb7-4c8f-4b20-a993-0321474bf79e",
-    "838d66c7-67c2-49e7-ba1d-1ec8ee782b2d",
-    "12a7525e-9159-44bb-a2fd-b56ef2b138db",
-    "593acf29-be73-4627-862c-1899d72ab1c8",
-    "7d6900f3-dd85-4496-9bc3-b2700ad00352",
-    "6c06973b-fa27-47aa-9ac4-504fb863e1e6",
-    "933d3709-104c-4445-aacc-b6ff4ddea7b9",
-    "0e85ef09-4f7f-43e8-9aff-27ed2453fd49",
-    "60378930-8d1a-4f5a-89f8-b507fbe923f6",
-    "c70321e8-5b0b-4c9f-81c8-82b44eaff1ef",
-    "95a2656f-fabe-4814-b49b-294806c7c83f",
-    "f1c3489f-83b6-45e5-8709-e76c2a528462",
-    "db0977ec-13d0-4151-b788-29ef921280b7",
-    "4e451371-667e-43df-81f8-ff76534d5d63",
-    "fecffbd5-f24f-474c-baf3-8c12e7c7a838",
-];
-
-K5 = [
-    '609c71cd-f409-499b-9af7-9f0f272e4d10',
-    'a18d5bc8-33ea-4da6-9178-3662c88d1f5d',
-    'e3372c1e-320b-4227-94fc-df558377cdb7',
-    '1d6653ad-fb6f-4579-9b37-115d7cb0445d',
-    '0d353265-e254-4ecc-9243-7988288ae3af',
-    '62dde958-e0c1-4741-8206-6d2e8c8105b2',
-    '9a10acb6-0acf-4430-9c72-a2766d34cc00',
-    'f27a995b-5d82-4d9d-bb51-68db4b71ccff',
-    'a99521bd-a03d-4308-85e3-6addf2ffd377',
-    '4471e1ae-56d3-4a56-93dd-9f940f1b366f',
-    '4cf3a9b3-05ad-4efa-98a1-61ad70ad7600',
-    'f35cb4ec-6ac8-418c-95c9-abbe0d25f445',
-    '7be0fb8e-d492-4d69-833c-ed386cfcd27e',
-    '3aa03146-2ccf-4c4c-be35-b7925807aa2f',
-    'a0d56e0c-5db2-418e-aa31-e0704f7897c9',
-    '78803913-adcc-4c65-a297-0b0979c066ed',
-    'd2a0dfb0-e012-4af7-b412-3e9f9f7971ea',
-    'cd50a9de-8717-4a4c-a4cc-5786c34591d9',
-    '389d0cc4-44dc-4cb2-bd4f-42192f80bab9',
-    '5eaa7c5a-f1e6-468f-98d3-f6996b19cf79',
-    '7cda7e9d-4e5e-4dfa-b5df-873ac72dec03',
-    '57b80f65-ed05-441c-a9f2-2af9f644f7ec',
-    '65e5591b-26e9-428f-ac25-7699483660e9',
-    'ca308483-051e-49c5-a351-bc69f64f4177',
-]
-
-P1 = [
-    '9d19d2de-2a7a-4b6e-8fe8-03fc4ab7194a',
-    '4829889d-a336-4f06-a4f9-193e8615f770',
-    '23540a80-b423-4bc5-9c85-2b7c07d0d4a9',
-    '0d067e34-12dd-48fc-beaa-21a89a57eda7',
-    '18a449ef-9aa4-4802-9b4e-1122ec606733',
-    '1caf787e-1609-48af-8a6c-fa8230deb5d7',
-    '9949878d-8db1-470b-912f-0284312dd7e7',
-    'a0d66726-1f64-4f6d-96b5-c01494351028',
-    '9604718f-1544-40d3-babb-e18b268b7427',
-    '3a7e6686-f1a0-48d1-b874-c180e8f945c4',
-    '321d541b-3665-46f0-94fb-3125674ed7b1',
-    '4ca80a3f-0c6e-492f-92ca-efc5f6bb86af',
-    'd7469224-ba1d-4719-a9a7-64176bece1fd',
-    '31be9911-1caa-45ba-a1ce-c90173c1ec44',
-    'cf58bb24-fef1-4fb7-b735-d9d02613e09d',
-    '60976579-c19c-443a-b9a5-51eb2b548543',
-    'baf82f4d-a27f-44b4-98ff-df77a6533ff7',
-    '2f707d83-0399-46da-8436-5bd67eb57572',
-    'd7735a12-4141-4ab3-ab75-7c4dac74ed65',
-    '719a8f98-668b-4b19-86d9-43857d28ff82',
-    'c6455f55-ae33-474e-8398-5b1c0a52a50f',
-    '6b273a27-97d3-41af-88ff-6b4d86c76349',
-    '2f164c37-159d-4b29-8356-52eb348019b0',
-    '003d65f9-ff3f-47ea-bc54-fff553a84454',
-    'e1cfb397-aa05-41fb-bc9b-2c9416499c07',
-    '55e3f756-410c-49d8-acb4-42466b83eebd',
-    'a514cd55-1cb4-4cdd-8b3f-c9e0d2b9514d',
-    '37841fe3-900a-4e9a-bfe6-b78d17c29abb',
-    '2e01052b-ba84-46bd-a259-254336d2fc66',
-];
-
-P2 = [
-    "758b8cdb-1381-4f5b-9e79-3318aba82ed0",
-    "dea9555e-8c93-4f02-86e0-1fc0b6df5b32",
-    "52763b22-ed46-427b-ae33-fef2e1f55876",
-    "6b5ceda3-ead7-4660-bc9f-e4e75b557c86",
-    "526d29dd-6a0d-47b3-9fd5-306fd45c45e1",
-    "34d65819-1fca-4ed0-9c32-23e29a818da2",
-    "4bcc79ee-3220-413f-b97e-e35c4967738c",
-    "21b3ecf0-b5b3-4feb-b56b-6e1199186956",
-    "98f250e0-762c-429c-83c6-36e5ff8327f4",
-    "76ca4dfb-18f1-49d1-8547-af2aafe423f3",
-    "69e77550-c2a4-4908-8276-7fdd58e793d8",
-    "3de81e31-7049-47f9-aae4-490f397b6338",
-    "0f6cb78f-57de-4919-987d-22cc02e54627",
-    "b2ad77bb-9be3-42ef-af20-d4eff1a57ce0",
-    "3ee812d3-ace4-4970-9150-c97f62e68dde",
-    "a3b77537-de76-44ce-b5c8-8f8386bd116f",
-    "3f2bc1d3-9f18-4df9-8c78-af9c55bbbb3b",
-    "3024009c-4bde-46c9-89d2-dbb662b81c27",
-    "86e79ce4-8082-465a-8cbb-9f1e6bc052d2",
-    "9bbbbc8d-1d03-4673-bdc0-80f27e5e6cff",
-    "a0654035-32a5-43d7-8bee-ad2ef0e020b6",
-    "52b7a314-ac16-488c-a52a-99d0504a8c73",
-    "9c452c89-aec5-43f3-8616-38003c0a4b6e",
-    "b73a5dfa-4622-4815-8902-ceb71fe07ded",
-    "e1a68672-3607-425f-9d33-59cc14e39c82",
-    "76b04178-435a-4fa5-8149-d2b89f503a3d",
-    "bb730504-6b51-4df7-aabd-012b80f2b3d9",
-    "dcd3e273-b633-4155-b637-7acbc52743d3",
-];
-
-P3 = [
-    "53834f2c-58d1-4da6-9332-682cf49dc45e",
-    "b6237bd9-61a2-4fc2-9b14-2e56167723a7",
-    "c6bd22cd-7bf4-45c4-81a7-0778d0bbb661",
-    "094c4e5a-fd73-4f98-8802-ccb854ec6dc3",
-    "c1e9225b-db71-44e7-a1d8-1f0a95241582",
-    "31fcf11e-2590-4d72-8a68-c000055207ed",
-    "e73de0f2-d4b0-4510-baa0-8b2ef4ec19bc",
-    "11ff2bb2-eda5-4fe4-abdb-d3f5976fc854",
-    "7ad6d141-26be-4cc9-8fd8-48ab14c2e6de",
-    "4202032c-5e98-4851-b173-8aa4dcfc20fc",
-    "ced1c39b-b49e-49b0-a012-8a78daff008c",
-    "7037eed9-4dd4-4c3c-9b30-2c7b4d673503",
-    "902af02a-a17b-4e9b-8db6-7a913f6471b6",
-    "8787938f-69ac-43e8-b9dd-272631fd6ea2",
-    "45da7c95-7e58-401d-a6c0-7fe419eced74",
-    "22db2718-a117-4724-bda6-b78ea841cc7b",
-    "5c54b6d0-a08c-467d-989a-cc0e199be60c",
-    "f2da8d6f-6a3d-4725-ba73-39e5f1b0e210",
-    "ab2c2599-7851-47a9-abc5-45b3724efb3a",
-    "04742ef6-20a6-4db9-960a-3eb0cc2dd21b",
-    "1f18af94-4be9-40e9-b4fd-1245c68f73c0",
-    "64ed8b55-d95a-438f-ac38-8efd855dff5b",
-    "5f354528-5e4d-4b10-add8-4ea0d8fdf53a",
-    "2c366f2c-ea6f-43cf-9a27-6fa265f7aae9",
-    "fdc3fdfb-e117-4813-85f6-528de367c201",
-    "c0164ce7-6e64-4eec-a27d-064c0fb9666b",
-    "753b9233-81bd-47f8-ba4a-deb5b6520268",
-    "78ab7112-9cc0-4ecb-be07-a592c5271701",
-    "ef34aaaf-ee97-40e8-90ef-1fee2b00b6ac",
-];
-
-P4 = [
-    "16fa1b11-2f7c-4021-83c0-c07dac25f424",
-    "5e8a63a8-29c6-45c2-b64c-420a776e5298",
-    "45e32a65-fc10-4e7f-abfa-bcf209a8cf29",
-    "a3e63e76-ebe9-46bd-86d8-65da8104ae6f",
-    "30e58fe4-fa54-4727-bdfa-bc37311505a3",
-    "1ec47da0-98e4-47c3-95ab-ec99f152c028",
-    "e8d445f3-cc88-4faa-8329-8f553039a7f1",
-    "7ed175ee-e03c-4165-a803-1a7bfde40554",
-    "b829c74e-ba16-4a53-8526-267d0fb609ba",
-    "891d3519-b614-403e-8fff-586b171286db",
-    "44385e32-992d-415d-94f0-fdb550599a89",
-    "e0b9c157-eca2-4869-999c-5c92af8f116d",
-    "2d7d22f7-4769-4650-9aa2-4e1962074f24",
-    "fb3e723d-2525-48f0-81a4-acc0424f97e6",
-    "892ed7a7-ea80-46ba-bb09-df2f70687dd8",
-    "30437a88-79a1-4ce2-9819-0d1c1ef9a4d6",
-    "55927945-2511-4559-83d3-2e515a32e173",
-    "f7454185-ada9-41c1-95f6-7684710d6d5a",
-    "c69121b4-2188-45d4-a69e-26732e08871d",
-    "1e382c04-d6da-47da-a380-4cc98735a953",
-    "41ae1c15-d9e9-4843-9a48-8b3d6b7024d3",
-    "75b4bb6e-77d2-4982-a330-3eec5da85fe7",
-    "d82aeb41-5f1f-4713-8332-264269f75cd5",
-    "5d3b3fb2-cdee-427c-9724-f89f266a7511",
-    "1f2dd634-718e-4975-bad6-f305b1727398",
-];
-
-P5 = [
-    "23b8795e-a258-4ce4-8635-1106c096aeb0",
-    "7d961c5f-47fb-47fb-9e68-527412f864b0",
-    "28719203-7fa1-4acb-9ddf-f47ae1958605",
-    "a543590c-5fc5-4ea1-8a88-4e3874d5642c",
-    "0b6e6d74-6edb-4c0b-8520-453ab7cc99a9",
-    "07203d58-775d-4662-8f7a-f9f7620d1e6b",
-    "b3f16e11-cc5c-4d50-a989-2d6fc5b91440",
-    "68235f62-eeb9-4af8-b9d7-c3edc95e5bff",
-    "040cf365-e9fe-4cbb-ad8d-5a2f40740049",
-    "11c685a0-eadd-44d3-af7d-a654b4880b8f",
-    "9b8fa5ba-f955-41bb-9c10-9836ef578848",
-    "f864cf15-1623-4cde-8b6e-f072fa63f408",
-    "acd95a32-7f7d-4aa7-ac13-4e09102558e7",
-    "02742ec8-4787-434b-8f44-347e7c0bf5ff",
-    "359085f8-fdae-4c87-973b-9da2f4bb8a29",
-    "5de849f1-6e23-4b80-9c0a-9076f04dc308",
-    "37182e2c-e019-4c99-82e8-4e2f8c2e1ea0",
-    "ee0cb9e7-7c79-4a0e-88d0-419fef00d61a",
-    "a1e16d7c-9557-4aac-a346-65c4d6497367",
-    "c1eb54d1-8e0c-48a4-a7b6-49bd955ddfe4",
-    "03d4238b-6ed4-4ffb-bd55-84d3a941d66b",
-    "4524678f-0f0b-4742-b4e0-872d5cd70463",
-    "32e18a01-dfaf-4159-8170-56046485379d",
-    "3343e20d-c670-40bf-9258-97f0a1c90d51",
-    "394fc64a-f81b-4551-98c4-2010a7111ec6",
-];
-
-P6 = [
-    "d96a0401-3b6e-4ec3-9b5a-3b483b6a3a24",
-    "20d3611e-41e5-4854-b118-5176fb0a1be9",
-    "bd19beff-7ccc-40b3-aa9c-4a8a5c93070c",
-    "9e11ea9f-ee4e-4925-b2b9-c897bbb00618",
-    "f2bf64cb-7302-460b-8be7-8105c3cf625d",
-    "974aef1b-5b29-4e51-b232-dba4833b5829",
-    "a9c9153d-52c4-4a2a-92d1-1e8cd59fc56f",
-    "5861e9e9-88e0-4ad4-9f84-a74602d44d4b",
-    "d26ff09e-5298-4783-bc4a-4c0a2780c0dc",
-    "26870694-f9cf-4c5e-af69-e9b991eb28d3",
-    "29ac159e-9363-4ae0-877d-6bc6f1af0ed4",
-    "7821db9b-b1a2-497f-bbf5-742540a6d965",
-    "74d415c9-352a-4b5b-935e-7de2dc05a2e4",
-    "c0b7e4c0-e383-45d9-963b-5689e107ab0a",
-    "78824f6d-1ee5-413e-b46e-cbc892883c76",
-    "47fafa66-caa2-400b-8fad-ae82cb1c0cea",
-    "253a19a3-7fb6-4311-814b-dbc793f414b6",
-    "b4a30c5a-ad77-4d05-81e9-acea8d723547",
-    "d6b1484b-b494-43d4-8b83-4b973bd3284d",
-    "9961a295-137d-4575-81e9-e5b57bb96aad",
-    "652b8cdc-d582-4706-a41e-8ea6f8db6c29",
-    "a6357cdc-238b-4c8d-bebb-ae282f1a0c54",
-    "8fae351b-5439-46f5-8dcc-c235c6c96e35",
-    "3efae120-0d1c-4a8a-907d-108d08bd4570",
-    "04ed54fa-0c1e-4ee4-8565-0f197e2576a8",
-    "a4606677-7e80-4e95-ae2e-6da91596bb34",
-];
-
-S1 = [
-    "ea632f20-b399-43bf-a9b0-5da88eb12081",
-    "ee09e175-1f41-4930-8b27-cb0064d007e4",
-    "f42b55f2-6e39-4c06-80ed-e54097856013",
-    "d3c9896e-7993-4671-a72d-d0965ba9f554",
-    "f9ca3d20-327e-44a4-a99e-2ebd29195619",
-    "5274fe6b-f812-4a3c-9099-e5aed9d92e92",
-    "e4ae7b8e-4cc1-4e85-b742-dc395358ad51",
-    "16e8f8a0-647a-4700-b07d-fd40e6a14920",
-    "2cbf06ef-4ddb-4e88-a6a3-1055631edf0c",
-    "c4fe1d53-9061-443d-bcb2-51f5bf64d3ec",
-    "bef5ccc5-5a2d-4bd9-a46b-1b404182a4c5",
-    "b7cebb69-a0f7-4c0c-98df-bb6a148cc463",
-    "092ecb10-124c-433c-87d7-7c385955d487",
-    "674b3d5c-e89b-4d5c-a247-4a7410eab830",
-    "2fe35712-9250-49c8-a058-f133e63e85a7",
-    "f15d76b0-b35d-4fa2-9f85-6de523ace5cd",
-    "49b46e88-bd84-46dd-b604-5d4d650469bb",
-    "4b1aa74f-5456-46ef-8dcf-5b6c448f8bf7",
-    "c04c82e5-3b15-4f13-a8c5-3a1f5bfed874",
-    "0d5906bb-1006-404e-b537-6b55add27c4b",
-    "86fc4324-716a-4339-8b3c-7ac941acbff9",
-    "d41d9ce2-cccf-4583-9341-68b9d45509a0",
-    "dc532d9e-8955-4555-ae74-94dec1b4841b",
-    "23e0d350-35e9-4cfa-9514-49e085dca784",
-    "1d6d2c47-8356-4b4b-aecd-05e612b161a7",
-];
-
-S2 = [
-    "2e16c488-db99-41a7-84d7-38c70873ad19",
-    "b0a8f874-d4fb-4090-849a-55447c79d085",
-    "2466c274-33f7-433b-855a-aeea3fd16928",
-    "2b335e3e-179e-469c-89ae-b0bc713a9d9d",
-    "b011ee0f-9989-4c67-84c1-603550b9197e",
-    "c1215bea-90b1-4912-8c72-21a811e3276e",
-    "9f871da5-7d46-4da5-b6aa-92f4481ae6d4",
-    "47400ccb-56db-4072-b0c9-3fa41de0d474",
-    "457dd728-2d39-4eca-b938-67ff44b94d69",
-    "dc41c38b-6f3a-4c7f-a319-684979446c70",
-    "be963884-4a82-4416-9aa6-96c6c1f740c7",
-    "efdf6d02-6fc2-4be3-96cd-f27d8a895d23",
-    "ffdab87a-57d8-4738-8c87-d7470339073b",
-    "c3459cd5-e041-4310-98aa-5dbb7f2590e6",
-    "da0ed3fd-4d1b-4d12-a8a5-821d19087bd2",
-    "55bff982-b916-4c5d-9599-088e247cec19",
-    "f05d4cef-e25f-4926-9bb3-4eafc2e33e78",
-    "49d7b1a1-7009-4fb0-9170-7187afec00bf",
-    "4896f4f7-eccf-40df-8f66-cff4ee21ad1e",
-    "76597d29-4f47-44d7-a466-388e9a6a0833",
-    "e4432837-8a37-4e25-8557-e1fcbfdb41c6",
-    "1705899a-05f4-4d12-84bf-5a91380b4bbb",
-    "ade31e24-9ed4-4ae0-b4ea-196e33e05a49",
-    "39613fc1-3ac7-4d5c-91f7-3b7e047e79be",
-    "29c52e6f-be98-4846-be32-176f8471a4d8",
-];
-
-S3 = [
-    "18e611cf-3998-4d23-bbad-1e78de2c638e",
-    "edccf459-15a7-4f01-a86a-f5b8ea4280e3",
-    "f6002398-42ac-4fa2-b110-992e8ea7ab64",
-    "41d23e4e-f19a-4e4d-8064-38c528bdca44",
-    "549198f6-8658-4f9c-a8c4-02bf1f82e670",
-    "5f96ee01-3d60-454e-868f-7ce0b22a44f0",
-    "3a81dd66-0754-4a5d-804b-034ee7087cc3",
-    "e9392ea9-3f7d-4763-8bfb-08d3eae888d2",
-    "89a6cbb7-8733-4bb4-95ec-5a8e325daa07",
-    "c7519a45-9567-4a41-95b4-9e513141128e",
-    "623114d9-0513-4d1b-be0f-fdbae2b97de8",
-    "4a8811d8-5a8d-4a10-81e4-f6ec57ac538e",
-    "686d1a4b-6c2e-4b3c-900e-d2d65db4b9e2",
-    "202b3923-c82b-44ff-b7f7-1e8754248eb3",
-    "ac639106-84da-4982-8ad0-0cabce02c9b2",
-    "5fa6bf44-4518-4ba5-9637-abf9708ee10c",
-    "c5e7eb42-1e69-40c5-8c95-5a24963c1ade",
-    "eb3d4f1c-62b9-4e61-a020-8d3c1f411d8c",
-    "05a849bf-854a-4b81-bed3-818150637f5f",
-    "baa86e54-7f70-4455-b027-2a67ce6c5928",
-    "f4933bd3-95bc-41ea-9e89-29bb20fbdc80",
-    "48184540-2689-4966-8a5a-82721a380f09",
-    "e6c72832-1d4a-4e10-95e2-1bb1638f6356",
-    "924f46e0-7625-438a-985c-ecf575e7dea0",
-    "8045b8c6-f06e-48ba-962e-85adff159769",
-    "edd1b34c-d8a9-4a5b-b0c4-055fb9f683a6",
-];
-
-
-PP = [
-    "7cce8a22-95ea-4d27-9ba2-ad9305c441ae",
-    "f3e06bf6-c393-48cc-8e51-05b1917c91ca",
-    "ee7984fe-17a7-404f-b7fd-c5e9c628b441",
-    "47f56276-c929-436b-ad66-01a9e0f26b69",
-    "9f88caf6-17fb-4351-8e2c-bc3190c33373",
-    "868d8d0c-bdf5-4e7c-ac84-61429fe7d7b7",
-    "6c0b8d02-d2f2-41b3-ae13-b95498854047",
-    "e910767d-6233-49f8-a637-6bca6f8ea925",
-    "cff1ee24-d928-4692-8737-caff4ee35305",
-    "980c345d-8418-4b94-8855-0769e84b6e1c",
-    "155adf2d-5e1f-45ce-bf99-f14123f116e9",
-    "c87c9708-16ba-4380-a6f3-a60136bdbbe6",
-    "23f178ec-b25e-4320-ac0b-27a85386a711",
-    "04ad6f01-1b80-41a4-9f93-3f8528659c3f",
-    "f93e5535-20f6-4b58-9a67-7217dd8e5ed7",
-    "a9b4b964-76f3-4edf-a2bb-3d04b8c677c0",
-    "9a99e09c-8b16-4d14-a127-3686b590440e",
-    "ac2e3310-83e0-4177-8897-bed13aaa9acb",
-    "03c84a44-41c5-44cc-aaa9-03ebf25eb109",
-    "38260872-15c9-4583-8554-8b64cbafc043",
-    "8d42d64d-e336-404b-8c32-0ddcd16567aa",
-    "d73a9906-0069-41e4-afb5-5a82a1dddff9",
-    "e3637f3b-53a4-4748-be9a-fe8229735216",
-    "397923d0-c252-4ab2-8d12-8fc4315391b9",
-];
-
 /*
 SCHOOLS INVENTORY GROUP ID
 
@@ -422,22 +17,816 @@ NSP: "1c5244d3-d957-4a2c-9b60-270d48cf2c81"
 LBI: "ce5de171-e7dc-424e-a34e-c4873ab76cb3"
 */
 
+HP1 = [
+    {
+        "robot_id": "9d19d2de-2a7a-4b6e-8fe8-03fc4ab7194a",
+        "robot_profile": {
+            "name": "P1_L01_1"
+        }
+    },
+    {
+        "robot_id": "4829889d-a336-4f06-a4f9-193e8615f770",
+        "robot_profile": {
+            "name": "P1_L01_2"
+        }
+    },
+    {
+        "robot_id": "23540a80-b423-4bc5-9c85-2b7c07d0d4a9",
+        "robot_profile": {
+            "name": "P1_L01_3"
+        }
+    },
+    {
+        "robot_id": "0d067e34-12dd-48fc-beaa-21a89a57eda7",
+        "robot_profile": {
+            "name": "P1_L02_1"
+        }
+    },
+    {
+        "robot_id": "18a449ef-9aa4-4802-9b4e-1122ec606733",
+        "robot_profile": {
+            "name": "P1_L02_2"
+        }
+    },
+    {
+        "robot_id": "1caf787e-1609-48af-8a6c-fa8230deb5d7",
+        "robot_profile": {
+            "name": "P1_L03"
+        }
+    },
+    {
+        "robot_id": "9949878d-8db1-470b-912f-0284312dd7e7",
+        "robot_profile": {
+            "name": "P1_L04"
+        }
+    },
+    {
+        "robot_id": "a0d66726-1f64-4f6d-96b5-c01494351028",
+        "robot_profile": {
+            "name": "P1_L05"
+        }
+    },
+    {
+        "robot_id": "9604718f-1544-40d3-babb-e18b268b7427",
+        "robot_profile": {
+            "name": "P1_L06"
+        }
+    },
+    {
+        "robot_id": "3a7e6686-f1a0-48d1-b874-c180e8f945c4",
+        "robot_profile": {
+            "name": "P1_L07"
+        }
+    },
+    {
+        "robot_id": "321d541b-3665-46f0-94fb-3125674ed7b1",
+        "robot_profile": {
+            "name": "P1_L08"
+        }
+    },
+    {
+        "robot_id": "4ca80a3f-0c6e-492f-92ca-efc5f6bb86af",
+        "robot_profile": {
+            "name": "P1_L09"
+        }
+    },
+    {
+        "robot_id": "d7469224-ba1d-4719-a9a7-64176bece1fd",
+        "robot_profile": {
+            "name": "P1_L10"
+        }
+    },
+    {
+        "robot_id": "31be9911-1caa-45ba-a1ce-c90173c1ec44",
+        "robot_profile": {
+            "name": "P1_L11"
+        }
+    },
+    {
+        "robot_id": "cf58bb24-fef1-4fb7-b735-d9d02613e09d",
+        "robot_profile": {
+            "name": "P1_L12"
+        }
+    },
+    {
+        "robot_id": "60976579-c19c-443a-b9a5-51eb2b548543",
+        "robot_profile": {
+            "name": "P1_L13"
+        }
+    },
+    {
+        "robot_id": "baf82f4d-a27f-44b4-98ff-df77a6533ff7",
+        "robot_profile": {
+            "name": "P1_L14_1"
+        }
+    },
+    {
+        "robot_id": "2f707d83-0399-46da-8436-5bd67eb57572",
+        "robot_profile": {
+            "name": "P1_L14_2"
+        }
+    },
+    {
+        "robot_id": "d7735a12-4141-4ab3-ab75-7c4dac74ed65",
+        "robot_profile": {
+            "name": "P1_L15"
+        }
+    },
+    {
+        "robot_id": "719a8f98-668b-4b19-86d9-43857d28ff82",
+        "robot_profile": {
+            "name": "P1_L16"
+        }
+    },
+    {
+        "robot_id": "c6455f55-ae33-474e-8398-5b1c0a52a50f",
+        "robot_profile": {
+            "name": "P1_L17"
+        }
+    },
+    {
+        "robot_id": "6b273a27-97d3-41af-88ff-6b4d86c76349",
+        "robot_profile": {
+            "name": "P1_L18"
+        }
+    },
+    {
+        "robot_id": "2f164c37-159d-4b29-8356-52eb348019b0",
+        "robot_profile": {
+            "name": "P1_L19"
+        }
+    },
+    {
+        "robot_id": "003d65f9-ff3f-47ea-bc54-fff553a84454",
+        "robot_profile": {
+            "name": "P1_L20"
+        }
+    },
+    {
+        "robot_id": "e1cfb397-aa05-41fb-bc9b-2c9416499c07",
+        "robot_profile": {
+            "name": "P1_L21"
+        }
+    },
+    {
+        "robot_id": "55e3f756-410c-49d8-acb4-42466b83eebd",
+        "robot_profile": {
+            "name": "P1_L22"
+        }
+    },
+    {
+        "robot_id": "a514cd55-1cb4-4cdd-8b3f-c9e0d2b9514d",
+        "robot_profile": {
+            "name": "P1_L23"
+        }
+    },
+    {
+        "robot_id": "37841fe3-900a-4e9a-bfe6-b78d17c29abb",
+        "robot_profile": {
+            "name": "P1_L24"
+        }
+    },
+    {
+        "robot_id": "2e01052b-ba84-46bd-a259-254336d2fc66",
+        "robot_profile": {
+            "name": "P1_L25"
+        }
+    }
+];
 
-let group_id = "ce5de171-e7dc-424e-a34e-c4873ab76cb3";
+HS1 = [
+    {
+        "robot_id": "ea632f20-b399-43bf-a9b0-5da88eb12081",
+        "robot_profile": {
+            "name": "S1_L01"
+        }
+    },
+    {
+        "robot_id": "ee09e175-1f41-4930-8b27-cb0064d007e4",
+        "robot_profile": {
+            "name": "S1_L02"
+        }
+    },
+    {
+        "robot_id": "f42b55f2-6e39-4c06-80ed-e54097856013",
+        "robot_profile": {
+            "name": "S1_L03"
+        }
+    },
+    {
+        "robot_id": "d3c9896e-7993-4671-a72d-d0965ba9f554",
+        "robot_profile": {
+            "name": "S1_L04"
+        }
+    },
+    {
+        "robot_id": "f9ca3d20-327e-44a4-a99e-2ebd29195619",
+        "robot_profile": {
+            "name": "S1_L05"
+        }
+    },
+    {
+        "robot_id": "5274fe6b-f812-4a3c-9099-e5aed9d92e92",
+        "robot_profile": {
+            "name": "S1_L06"
+        }
+    },
+    {
+        "robot_id": "e4ae7b8e-4cc1-4e85-b742-dc395358ad51",
+        "robot_profile": {
+            "name": "S1_L07"
+        }
+    },
+    {
+        "robot_id": "16e8f8a0-647a-4700-b07d-fd40e6a14920",
+        "robot_profile": {
+            "name": "S1_L08"
+        }
+    },
+    {
+        "robot_id": "2cbf06ef-4ddb-4e88-a6a3-1055631edf0c",
+        "robot_profile": {
+            "name": "S1_L09"
+        }
+    },
+    {
+        "robot_id": "c4fe1d53-9061-443d-bcb2-51f5bf64d3ec",
+        "robot_profile": {
+            "name": "S1_L10"
+        }
+    },
+    {
+        "robot_id": "bef5ccc5-5a2d-4bd9-a46b-1b404182a4c5",
+        "robot_profile": {
+            "name": "S1_L11"
+        }
+    },
+    {
+        "robot_id": "b7cebb69-a0f7-4c0c-98df-bb6a148cc463",
+        "robot_profile": {
+            "name": "S1_L12"
+        }
+    },
+    {
+        "robot_id": "092ecb10-124c-433c-87d7-7c385955d487",
+        "robot_profile": {
+            "name": "S1_L13"
+        }
+    },
+    {
+        "robot_id": "674b3d5c-e89b-4d5c-a247-4a7410eab830",
+        "robot_profile": {
+            "name": "S1_L14"
+        }
+    },
+    {
+        "robot_id": "2fe35712-9250-49c8-a058-f133e63e85a7",
+        "robot_profile": {
+            "name": "S1_L15"
+        }
+    },
+    {
+        "robot_id": "f15d76b0-b35d-4fa2-9f85-6de523ace5cd",
+        "robot_profile": {
+            "name": "S1_L16"
+        }
+    },
+    {
+        "robot_id": "49b46e88-bd84-46dd-b604-5d4d650469bb",
+        "robot_profile": {
+            "name": "S1_L17"
+        }
+    },
+    {
+        "robot_id": "4b1aa74f-5456-46ef-8dcf-5b6c448f8bf7",
+        "robot_profile": {
+            "name": "S1_L18"
+        }
+    },
+    {
+        "robot_id": "c04c82e5-3b15-4f13-a8c5-3a1f5bfed874",
+        "robot_profile": {
+            "name": "S1_L19"
+        }
+    },
+    {
+        "robot_id": "0d5906bb-1006-404e-b537-6b55add27c4b",
+        "robot_profile": {
+            "name": "S1_L20"
+        }
+    },
+    {
+        "robot_id": "86fc4324-716a-4339-8b3c-7ac941acbff9",
+        "robot_profile": {
+            "name": "S1_L21"
+        }
+    },
+    {
+        "robot_id": "d41d9ce2-cccf-4583-9341-68b9d45509a0",
+        "robot_profile": {
+            "name": "S1_L22"
+        }
+    },
+    {
+        "robot_id": "dc532d9e-8955-4555-ae74-94dec1b4841b",
+        "robot_profile": {
+            "name": "S1_L23"
+        }
+    },
+    {
+        "robot_id": "23e0d350-35e9-4cfa-9514-49e085dca784",
+        "robot_profile": {
+            "name": "S1_L24"
+        }
+    },
+    {
+        "robot_id": "1d6d2c47-8356-4b4b-aecd-05e612b161a7",
+        "robot_profile": {
+            "name": "S1_L25"
+        }
+    }
+];
 
-P6.forEach(element => {
-  let cmd = `npm run aker-gql-op -- robot_group_add  --robot_id ${element} --group_id ${group_id}`;
-  console.log(cmd);
+HS2 = [
+    {
+        "robot_id": "2e16c488-db99-41a7-84d7-38c70873ad19",
+        "robot_profile": {
+            "name": "S2_L01"
+        }
+    },
+    {
+        "robot_id": "b0a8f874-d4fb-4090-849a-55447c79d085",
+        "robot_profile": {
+            "name": "S2_L02"
+        }
+    },
+    {
+        "robot_id": "2466c274-33f7-433b-855a-aeea3fd16928",
+        "robot_profile": {
+            "name": "S2_L03"
+        }
+    },
+    {
+        "robot_id": "2b335e3e-179e-469c-89ae-b0bc713a9d9d",
+        "robot_profile": {
+            "name": "S2_L04"
+        }
+    },
+    {
+        "robot_id": "b011ee0f-9989-4c67-84c1-603550b9197e",
+        "robot_profile": {
+            "name": "S2_L05"
+        }
+    },
+    {
+        "robot_id": "c1215bea-90b1-4912-8c72-21a811e3276e",
+        "robot_profile": {
+            "name": "S2_L06"
+        }
+    },
+    {
+        "robot_id": "9f871da5-7d46-4da5-b6aa-92f4481ae6d4",
+        "robot_profile": {
+            "name": "S2_L07"
+        }
+    },
+    {
+        "robot_id": "47400ccb-56db-4072-b0c9-3fa41de0d474",
+        "robot_profile": {
+            "name": "S2_L08"
+        }
+    },
+    {
+        "robot_id": "457dd728-2d39-4eca-b938-67ff44b94d69",
+        "robot_profile": {
+            "name": "S2_L09"
+        }
+    },
+    {
+        "robot_id": "dc41c38b-6f3a-4c7f-a319-684979446c70",
+        "robot_profile": {
+            "name": "S2_L10"
+        }
+    },
+    {
+        "robot_id": "be963884-4a82-4416-9aa6-96c6c1f740c7",
+        "robot_profile": {
+            "name": "S2_L11"
+        }
+    },
+    {
+        "robot_id": "efdf6d02-6fc2-4be3-96cd-f27d8a895d23",
+        "robot_profile": {
+            "name": "S2_L12"
+        }
+    },
+    {
+        "robot_id": "ffdab87a-57d8-4738-8c87-d7470339073b",
+        "robot_profile": {
+            "name": "S2_L13"
+        }
+    },
+    {
+        "robot_id": "c3459cd5-e041-4310-98aa-5dbb7f2590e6",
+        "robot_profile": {
+            "name": "S2_L14"
+        }
+    },
+    {
+        "robot_id": "da0ed3fd-4d1b-4d12-a8a5-821d19087bd2",
+        "robot_profile": {
+            "name": "S2_L15"
+        }
+    },
+    {
+        "robot_id": "55bff982-b916-4c5d-9599-088e247cec19",
+        "robot_profile": {
+            "name": "S2_L16"
+        }
+    },
+    {
+        "robot_id": "f05d4cef-e25f-4926-9bb3-4eafc2e33e78",
+        "robot_profile": {
+            "name": "S2_L17"
+        }
+    },
+    {
+        "robot_id": "49d7b1a1-7009-4fb0-9170-7187afec00bf",
+        "robot_profile": {
+            "name": "S2_L18"
+        }
+    },
+    {
+        "robot_id": "4896f4f7-eccf-40df-8f66-cff4ee21ad1e",
+        "robot_profile": {
+            "name": "S2_L19"
+        }
+    },
+    {
+        "robot_id": "76597d29-4f47-44d7-a466-388e9a6a0833",
+        "robot_profile": {
+            "name": "S2_L20"
+        }
+    },
+    {
+        "robot_id": "e4432837-8a37-4e25-8557-e1fcbfdb41c6",
+        "robot_profile": {
+            "name": "S2_L21"
+        }
+    },
+    {
+        "robot_id": "1705899a-05f4-4d12-84bf-5a91380b4bbb",
+        "robot_profile": {
+            "name": "S2_L22"
+        }
+    },
+    {
+        "robot_id": "ade31e24-9ed4-4ae0-b4ea-196e33e05a49",
+        "robot_profile": {
+            "name": "S2_L23"
+        }
+    },
+    {
+        "robot_id": "39613fc1-3ac7-4d5c-91f7-3b7e047e79be",
+        "robot_profile": {
+            "name": "S2_L24"
+        }
+    },
+    {
+        "robot_id": "29c52e6f-be98-4846-be32-176f8471a4d8",
+        "robot_profile": {
+            "name": "S2_L25"
+        }
+    }
+];
 
-//   exec(cmd, (error, stdout, stderr) => {
-//     if (error) {
-//       console.log(`error: ${error.message}`);
-//       return;
-//     }
-//     if (stderr) {
-//       console.log(`stderr: ${stderr}`);
-//       return;
-//     }
-//     console.log(`stdout: ${stdout}`);
-//   });
+HB1 = [
+    {
+        "robot_id": "82d274e9-a690-4b48-9174-233b2526039a",
+        "robot_profile": {
+            "name": "B1_L01"
+        }
+    },
+    {
+        "robot_id": "ce733ffa-5404-420c-aecc-5fccfa49ade3",
+        "robot_profile": {
+            "name": "B1_L02"
+        }
+    },
+    {
+        "robot_id": "25f952a9-8741-4636-a7d3-1de943a27dd1",
+        "robot_profile": {
+            "name": "B1_L03"
+        }
+    },
+    {
+        "robot_id": "1099ea61-18c1-4675-90d1-f42933d762f9",
+        "robot_profile": {
+            "name": "B1_L04"
+        }
+    },
+    {
+        "robot_id": "2133f8b4-5bb1-40f2-a762-8ae716d3c026",
+        "robot_profile": {
+            "name": "B1_L05"
+        }
+    },
+    {
+        "robot_id": "c581106b-dbed-4d6e-96b6-f65214350404",
+        "robot_profile": {
+            "name": "B1_L06"
+        }
+    },
+    {
+        "robot_id": "054374b3-0705-459c-b092-1bb9934fe7a4",
+        "robot_profile": {
+            "name": "B1_L07"
+        }
+    },
+    {
+        "robot_id": "f2888c2e-0470-41bc-a646-5eafe517899a",
+        "robot_profile": {
+            "name": "B1_L08"
+        }
+    },
+    {
+        "robot_id": "94418edf-1afc-4779-8fb3-eb30353c0387",
+        "robot_profile": {
+            "name": "B1_L09"
+        }
+    },
+    {
+        "robot_id": "6f98d412-30ad-40ff-ab04-b000a0d716aa",
+        "robot_profile": {
+            "name": "B1_L10"
+        }
+    },
+    {
+        "robot_id": "2fba3160-397c-4835-a3f4-2cd54ab9c3f5",
+        "robot_profile": {
+            "name": "B1_L11"
+        }
+    },
+    {
+        "robot_id": "2d8f8267-0d52-4b7a-9ee1-1bdc1575d9f7",
+        "robot_profile": {
+            "name": "B1_L12"
+        }
+    },
+    {
+        "robot_id": "857a12c2-4ab8-4ab7-897b-ba0aad0ec7a1",
+        "robot_profile": {
+            "name": "B1_L13"
+        }
+    },
+    {
+        "robot_id": "2e11f44e-5719-43db-bf55-8363895ea312",
+        "robot_profile": {
+            "name": "B1_L14"
+        }
+    },
+    {
+        "robot_id": "b792ba40-1411-4302-b40d-21bc84cfb860",
+        "robot_profile": {
+            "name": "B1_L15"
+        }
+    },
+    {
+        "robot_id": "7b7f3416-1734-4bb2-850e-2217b64b0bbf",
+        "robot_profile": {
+            "name": "B1_L16"
+        }
+    },
+    {
+        "robot_id": "664a3219-6c3e-43b9-87d8-07d247fda1a5",
+        "robot_profile": {
+            "name": "B1_L17"
+        }
+    },
+    {
+        "robot_id": "16e08105-e4ae-4418-983f-e100522203ef",
+        "robot_profile": {
+            "name": "B1_L18"
+        }
+    },
+    {
+        "robot_id": "b152e07c-af3b-45e6-9dc2-d1d2dd7734cf",
+        "robot_profile": {
+            "name": "B1_L19"
+        }
+    },
+    {
+        "robot_id": "71c87d61-9a29-41e6-afb3-0504a3cc96b6",
+        "robot_profile": {
+            "name": "B1_L20"
+        }
+    },
+    {
+        "robot_id": "23fd70ae-b10f-4a3b-8d9e-99209906dcf2",
+        "robot_profile": {
+            "name": "B1_L21"
+        }
+    },
+    {
+        "robot_id": "58689eb2-d8cb-4e7e-9744-fbaa990013ea",
+        "robot_profile": {
+            "name": "B1_L22"
+        }
+    },
+    {
+        "robot_id": "1a113ff7-9cf8-41be-8a75-09e506d37cfd",
+        "robot_profile": {
+            "name": "B1_L23"
+        }
+    },
+    {
+        "robot_id": "aa39f7b8-9964-4cb2-a9f4-c82f1b17c3c6",
+        "robot_profile": {
+            "name": "B1_L24"
+        }
+    },
+    {
+        "robot_id": "b5f86734-6986-4638-881a-6e9c37ae55fd",
+        "robot_profile": {
+            "name": "B1_L25"
+        }
+    }
+];
+
+HB2 = [
+    {
+        "robot_id": "d6bc0869-5ebc-4c2f-9638-710a29c4e651",
+        "robot_profile": {
+            "name": "B2_L01"
+        }
+    },
+    {
+        "robot_id": "6a7f968e-90b8-43e2-a59c-e771db6311d1",
+        "robot_profile": {
+            "name": "B2_L02"
+        }
+    },
+    {
+        "robot_id": "05c51d1d-da71-40b6-a577-a59076c63f33",
+        "robot_profile": {
+            "name": "B2_L03"
+        }
+    },
+    {
+        "robot_id": "9cd62312-3f23-40d8-92dc-d77b62f49d12",
+        "robot_profile": {
+            "name": "B2_L04"
+        }
+    },
+    {
+        "robot_id": "c59f6e11-67e5-4445-a504-51130cbfb953",
+        "robot_profile": {
+            "name": "B2_L05"
+        }
+    },
+    {
+        "robot_id": "2839a2be-d1fd-4ecf-8a76-435cb19ba1ea",
+        "robot_profile": {
+            "name": "B2_L06"
+        }
+    },
+    {
+        "robot_id": "f4da7e93-54e4-4733-8576-0351b775d604",
+        "robot_profile": {
+            "name": "B2_L07"
+        }
+    },
+    {
+        "robot_id": "f34f7be8-4f43-43b8-8085-681f5bc3ca9e",
+        "robot_profile": {
+            "name": "B2_L08"
+        }
+    },
+    {
+        "robot_id": "81e7f282-8741-48c7-b7bf-c1076aa4b179",
+        "robot_profile": {
+            "name": "B2_L09"
+        }
+    },
+    {
+        "robot_id": "4a67b0cb-ca64-44ac-a6c2-998fc8309050",
+        "robot_profile": {
+            "name": "B2_L10"
+        }
+    },
+    {
+        "robot_id": "831e47e2-bc76-442c-92a1-ca48f0c165fc",
+        "robot_profile": {
+            "name": "B2_L11"
+        }
+    },
+    {
+        "robot_id": "001c9d09-e425-4f0d-b297-3a60b7e299a2",
+        "robot_profile": {
+            "name": "B2_L12"
+        }
+    },
+    {
+        "robot_id": "1225c8cc-a303-468b-8d18-ac8123b5c9be",
+        "robot_profile": {
+            "name": "B2_L13"
+        }
+    },
+    {
+        "robot_id": "71e7949f-a629-45cd-ae6b-1e6874035bf5",
+        "robot_profile": {
+            "name": "B2_L14"
+        }
+    },
+    {
+        "robot_id": "376561b4-3209-454f-9954-67ec1e489d23",
+        "robot_profile": {
+            "name": "B2_L15"
+        }
+    },
+    {
+        "robot_id": "9575122c-fe8e-44c1-a127-3feeccb28800",
+        "robot_profile": {
+            "name": "B2_L16"
+        }
+    },
+    {
+        "robot_id": "18f34c65-f216-48d2-82ec-ed2a3008c7f9",
+        "robot_profile": {
+            "name": "B2_L17"
+        }
+    },
+    {
+        "robot_id": "129cd076-b890-44bb-9084-9cbd73674d9f",
+        "robot_profile": {
+            "name": "B2_L18"
+        }
+    },
+    {
+        "robot_id": "05c0acfc-fa9f-4c2f-8082-eb52db71a2d1",
+        "robot_profile": {
+            "name": "B2_L19"
+        }
+    },
+    {
+        "robot_id": "2b37e1ec-f12b-4c97-a170-5b998b9a50bf",
+        "robot_profile": {
+            "name": "B2_L20"
+        }
+    },
+    {
+        "robot_id": "54bcbb3b-bd1e-4b73-a70d-80b541a0013f",
+        "robot_profile": {
+            "name": "B2_L21"
+        }
+    },
+    {
+        "robot_id": "917bc00f-87a8-44e5-b0fd-2a47d4fee999",
+        "robot_profile": {
+            "name": "B2_L22"
+        }
+    },
+    {
+        "robot_id": "9e7bcd35-7bab-4963-a830-69bc82ecaefa",
+        "robot_profile": {
+            "name": "B2_L23"
+        }
+    },
+    {
+        "robot_id": "cc4d7f33-2b62-4de9-b619-ed8db6b5f71f",
+        "robot_profile": {
+            "name": "B2_L24"
+        }
+    },
+    {
+        "robot_id": "7cde8d4d-d3be-4ffc-9c40-46bc4d3a185a",
+        "robot_profile": {
+            "name": "B2_L25"
+        }
+    }
+];
+
+// let group_id = "ce5de171-e7dc-424e-a34e-c4873ab76cb3";
+// GROUP_ID = "3b4c4e2d-1487-48ca-9e34-76ef99b9ce85"; // PRIMARIA 1B 28-01-2025
+
+// GROUP_ID = "f09f151c-ec01-4c74-94dc-ec570377b5d6";    //Secundaria 1B 30-01-2025
+// GROUP_ID = "d747680e-4aa2-403b-9bb7-35018de5f9fd";    //Secundaria 2B 30-01-2025
+// GROUP_ID = "0816afbf-3d86-47b0-aa96-cc5cda4912c5";    //Bachillerato 1B 30-01-2025
+GROUP_ID = "d4d9047c-d2cf-40e6-97f9-71d873a7a337";    //Bachillerato 2B 30-01-2025
+
+HB2.forEach(robot => {
+    let cmd = `npm run aker-gql-op -- robot_group_add  --robot_id ${robot.robot_id} --group_id ${GROUP_ID} --robot_type B2`;
+    console.log(cmd);
+
+    exec(cmd, (error, stdout, stderr) => {
+        if (error) {
+            console.log(`error: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.log(`stderr: ${stderr}`);
+            return;
+        }
+        console.log(`stdout: ${stdout}`);
+    });
 });

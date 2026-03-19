@@ -3,9 +3,8 @@ use uuid::Uuid;
 use gloo_storage::Storage;
 use yew::prelude::*;
 use code_location::code_location;
-use yew::{html, Component, Html};
 use serde_derive::{Deserialize, Serialize};
-use yew_router::scope_ext::RouterScopeExt;
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 use crate::{data_schools::DataSchools, school_view::SchoolPage};
 
 use roboxmaker_main::lang;
@@ -32,23 +31,27 @@ pub struct SchoolProfile {
 }
 
 pub struct ListOfSchoolsView {
+    link: ComponentLink<Self>,
+    props: ListOfSchoolsProps,
     graphql_task: Option<GraphQLTask>,
     school_sub: Option<SubscriptionTask>,
     school_list: Vec<SchoolProfile>,
     list_schools_state: LoadResponse,
     school_selected: Option<SchoolProfile>,
-    saved_sidebar_state: bool,
 }
 
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct ListOfSchoolsProps {
-    // pub on_app_route: Callback<AppRoute>,
+    pub on_app_route: Callback<AppRoute>,
     pub user_profile: Option<MyUserProfile>,
+    pub auth_school: Option<school_model::school_by_id::SchoolByIdSchoolByPk>,
+    pub saved_sidebar_state: bool,
+    pub pic_path: String,
 }
 
 #[derive(Debug)]
 pub enum ListOfSchoolsMessage {
-    // AppRoute(AppRoute),
+    AppRoute(AppRoute),
     FetchSchools,
     Schools(Option<school_model::list_school_roboxmaker::ResponseData>),
     SchoolChangeData(Option<SchoolProfile>),
@@ -60,34 +63,32 @@ impl Component for ListOfSchoolsView {
     type Message = ListOfSchoolsMessage;
     type Properties = ListOfSchoolsProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(ListOfSchoolsMessage::FetchSchools);
+    fn create(mut props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(ListOfSchoolsMessage::FetchSchools);
 
-        let saved_sidebar_state = if let Ok(value) = gloo_storage::LocalStorage::get("saved_sidebar_state") {
+        props.saved_sidebar_state = if let Ok(value) = gloo_storage::LocalStorage::get("saved_sidebar_state") {
             value 
         } else {
             true
         };
-
-        roboxmaker_utils::functions::school_state();
-
         ListOfSchoolsView {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             school_sub: None,
             school_list: vec![],
             school_selected: None,
             list_schools_state: LoadResponse::Loading,
-            saved_sidebar_state,
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
-            // ListOfSchoolsMessage::AppRoute(route) => {
-            //     ctx.props().on_app_route.emit(route);
-            // }
+            ListOfSchoolsMessage::AppRoute(route) => {
+                self.props.on_app_route.emit(route);
+            }
             ListOfSchoolsMessage::FetchSchools => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
 
@@ -95,7 +96,7 @@ impl Component for ListOfSchoolsView {
 
                     let task = school_model::ListSchoolRoboxmaker::subscribe(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             |response| {
                                 ListOfSchoolsMessage::Schools(response)
@@ -142,20 +143,20 @@ impl Component for ListOfSchoolsView {
             ListOfSchoolsMessage::SchoolChangeData(school_selected) => {
                 self.school_selected = school_selected;
 
-                self.saved_sidebar_state = true;
+                self.props.saved_sidebar_state = true;
             }
             ListOfSchoolsMessage::HideSchoolProfile=> {
                 self.school_selected = None;
             }
             ListOfSchoolsMessage::ChangeSidebarState => {
                 if let Some(element) = gloo_utils::document().get_element_by_id("show-sidebar-right") {
-                    if self.saved_sidebar_state {
+                    if self.props.saved_sidebar_state {
                         let _ = gloo_storage::LocalStorage::set("saved_sidebar_state", false);
-                        self.saved_sidebar_state = false;
+                        self.props.saved_sidebar_state = false;
                         let _ = element.set_attribute("class", "fa-angle-double-left fa-w-14 fa-2x");
                     } else {
                         let _ = gloo_storage::LocalStorage::set("saved_sidebar_state", true);
-                        self.saved_sidebar_state = true;
+                        self.props.saved_sidebar_state = true;
                         let _ = element.set_attribute("class", "fa fa-angle-double-right fa-w-14 fa-2x");
                     }
                 }
@@ -164,35 +165,36 @@ impl Component for ListOfSchoolsView {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
 
-        if ctx.props() != old_props {
+        if self.props != props {
+            self.props = props;
             should_render = true;
         }
 
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_show_sidebar = ctx.link().callback(move |_| ListOfSchoolsMessage::ChangeSidebarState);
-        let btn_sidebar_show = if self.saved_sidebar_state {
+    fn view(&self) -> Html {
+        let on_show_sidebar = self.link.callback(move |_| ListOfSchoolsMessage::ChangeSidebarState);
+        let btn_sidebar_show = if self.props.saved_sidebar_state {
             html! {
-                <button type="button" class="btn btn-outline-primary-blue-dark rounded-start rounded-0" onclick={&on_show_sidebar}>
+                <button type="button" class="btn btn-outline-primary-blue-dark rounded-start rounded-0" onclick=&on_show_sidebar>
                     <i class="fas fa-angle-double-right fas fa-2x" id="show-sidebar-right"></i>
                 </button>
             }
         } else {
             html! {
-                <button type="button" class="btn btn-outline-primary-blue-dark rounded-start rounded-0" onclick={&on_show_sidebar}>
+                <button type="button" class="btn btn-outline-primary-blue-dark rounded-start rounded-0" onclick=&on_show_sidebar>
                     <i class="fas fa-angle-double-left fas fa-2x" id="show-sidebar-right"></i>
                 </button>
             }
         };
 
-        let maybe_user_profile_name = ctx
-            .props()
+        let maybe_user_profile_name = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|item| {
@@ -219,12 +221,10 @@ impl Component for ListOfSchoolsView {
             </div>
         };
         let all_schools = self.school_list.iter().map(|item| {
-            let navigator = ctx.link().navigator().unwrap();
-
             let school = Some(item.clone());
-            let school_id = SchoolId(item.school_id);
-            let on_show_school = Callback::from(move |_| navigator.push(&AppRoute::GradesBySchoolId{school_id}));
-            let on_show_info = ctx.link().callback(move |_| ListOfSchoolsMessage::SchoolChangeData(school.clone()));
+            let school_id = item.school_id;
+            let on_show_school = self.link.callback(move |_| ListOfSchoolsMessage::AppRoute(AppRoute::GradesBySchoolId(SchoolId(school_id))));
+            let on_show_info = self.link.callback(move |_| ListOfSchoolsMessage::SchoolChangeData(school.clone()));
             
             html! {
                 <div class="schools-card schools-card mb-2 mb-md-5 mb-lg-7 me-md-3 me-lg-5">
@@ -246,12 +246,13 @@ impl Component for ListOfSchoolsView {
                         </div>
                     </div>
                     <hr class="hr-schools" />
-                    <DataSchools user_profile={ctx.props().user_profile.clone()}
-                        school_id={school_id} />
+                    <DataSchools on_app_route=self.props.on_app_route.clone()
+                        user_profile=self.props.user_profile.clone()
+                        school_id=SchoolId(school_id) />
                     <div class="ps-5">
                         <div class="d-flex flex-wrap">
-                            <a class="see-info-school-btn text-purple-gray noir-bold is-size-16 lh-20 me-2" onclick={on_show_info.clone()}>{"Ver Info"}</a>
-                            <a class="open-school-btn bg-primary-blue-dark text-white noir-bold is-size-16 lh-20" onclick={on_show_school.clone()}>{"Abrir"}</a>
+                            <a class="see-info-school-btn text-purple-gray noir-bold is-size-16 lh-20 me-2" onclick=on_show_info.clone()>{"Ver Info"}</a>
+                            <a class="open-school-btn bg-primary-blue-dark text-white noir-bold is-size-16 lh-20" onclick=on_show_school.clone()>{"Abrir"}</a>
                         </div>
                     </div>
                 </div>
@@ -260,10 +261,10 @@ impl Component for ListOfSchoolsView {
 
         let select_on_school = self.school_selected.clone().and_then(|item| {
             let school_profile = item.clone();
-            let on_hidden_info = ctx.link().callback(move |_| ListOfSchoolsMessage::SchoolChangeData(None));
+            let on_hidden_info = self.link.callback(move |_| ListOfSchoolsMessage::SchoolChangeData(None));
 
             Some(html! {
-                <SchoolPage user_profile={ctx.props().user_profile.clone()}
+                <SchoolPage user_profile=self.props.user_profile.clone()
                     school_profile={school_profile}
                     close_school_profile={on_hidden_info} />  
             })
@@ -278,10 +279,10 @@ impl Component for ListOfSchoolsView {
 
         let select_on_school_mobile = self.school_selected.clone().and_then(|item| {
             let school_profile = item.clone();
-            let on_hidden_info = ctx.link().callback(move |_| ListOfSchoolsMessage::SchoolChangeData(None));
+            let on_hidden_info = self.link.callback(move |_| ListOfSchoolsMessage::SchoolChangeData(None));
 
             Some(html! {
-                <SchoolPage user_profile={ctx.props().user_profile.clone()}
+                <SchoolPage user_profile=self.props.user_profile.clone()
                     school_profile={school_profile}
                     close_school_profile={on_hidden_info} />  
             })
@@ -294,22 +295,22 @@ impl Component for ListOfSchoolsView {
             </div>
         });
 
-        let class_right_sidebar = if self.saved_sidebar_state {
+        let class_right_sidebar = if self.props.saved_sidebar_state {
             "bg-silver col col-sm-3 col-md-3 col-lg-5 col-xl-4 col-xxl-3 d-none d-sm-none d-md-none d-lg-block p-5"
         } else {
             "d-none"
         };
-        let class_sidebar_mobile = if self.saved_sidebar_state {
+        let class_sidebar_mobile = if self.props.saved_sidebar_state {
             "offcanvas offcanvas-end show bg-silver d-block d-sm-block d-md-block d-lg-none d-xl-none d-xxl-none"
         } else {
             "offcanvas offcanvas-end"
         };
-        let style_sidebar_mobile = if self.saved_sidebar_state {
+        let style_sidebar_mobile = if self.props.saved_sidebar_state {
             "visibility: visible;"
         } else {
             "display: none;"
         };
-        let pic_path = ctx.props().user_profile.clone().and_then(|d| Some(d.pic_path)).unwrap_or_default();
+        let pic_path = self.props.pic_path.clone();
         let maybe_select_school = html! {
             <div class="w-100 h-100 d-flex flex-row justify-content-between">
                 <div class="w-100 scroll-y pt-3 ps-3 pt-md-4 ps-md-4 pt-lg-7 ps-lg-7">
@@ -319,23 +320,23 @@ impl Component for ListOfSchoolsView {
                         {all_schools}
                     </div>
                 </div>
-                <div class={class_right_sidebar}>
+                <div class=class_right_sidebar>
                     <div class="d-flex align-items-center justify-content-between pb-4">
-                        <SearchSchoolList />
-                        <img class="img-card-72" src={pic_path.clone()} alt="photo of user" />
+                        <SearchSchoolList on_app_route=self.props.on_app_route.clone() />
+                        <img class="img-card-72" src=pic_path.clone() alt="photo of user" />
                     </div>
                     {select_on_school.clone()}
                 </div>
-                <div class={class_sidebar_mobile} data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel" aria-modal="true" role="dialog" style={style_sidebar_mobile}>
+                <div class=class_sidebar_mobile data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel" aria-modal="true" role="dialog" style=style_sidebar_mobile>
                     <div class="offcanvas-header d-flex justify-content-end">
-                        <button type="button" class="btn btn-outline-danger" data-bs-dismiss="offcanvas" onclick={&on_show_sidebar}>
+                        <button type="button" class="btn btn-outline-danger" data-bs-dismiss="offcanvas" onclick=&on_show_sidebar>
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
                     <div class="offcanvas-body pt-0">
                         <div class="d-flex align-items-center justify-content-between pb-4">
-                            <SearchSchoolList />
-                            <img class="img-card-72" src={pic_path.clone()} alt="photo of user" />
+                            <SearchSchoolList on_app_route=self.props.on_app_route.clone() />
+                            <img class="img-card-72" src=pic_path.clone() alt="photo of user" />
                         </div>
                         {select_on_school_mobile.clone()}
                     </div>

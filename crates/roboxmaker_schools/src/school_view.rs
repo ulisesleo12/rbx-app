@@ -1,31 +1,33 @@
 use log::*;
 use regex::Regex;
-// use std::io::Write;
+use std::io::Write;
 use yew::prelude::*;
+use yew::format::Json;
 use serde::Deserialize;
 use code_location::code_location;
-use yew::{html, Component, Html};
 use crate::list_schools::SchoolProfile;
-// use yew::services::{
-//     fetch::{FetchService, FetchTask, Request, Response},
-//     reader::{FileData, ReaderService, File, ReaderTask},
-// };
+use yew::services::{
+    fetch::{FetchService, FetchTask, Request, Response},
+    reader::{FileData, ReaderService, File, ReaderTask},
+};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
-use roboxmaker_main::lang;
 use roboxmaker_models::school_model;
+use roboxmaker_main::{config, lang};
 use roboxmaker_types::types::MyUserProfile;
-use roboxmaker_utils::functions::{get_value_from_input_event, get_value_from_textarea_event};
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request as OtherTask, RequestTask};
 
 
 pub struct SchoolPage {
+    link: ComponentLink<Self>,
+    props: Properties,
     graphql_task: Option<GraphQLTask>,
-    // reader_task: Vec<ReaderTask>,
+    reader_task: Vec<ReaderTask>,
     task_save: Option<RequestTask>,
-    // upload_task: Option<FetchTask>,
+    upload_task: Option<FetchTask>,
     edit: SchoolPageEdit,
     save_status: bool,
-    // url_photo: String,
+    url_photo: String,
     school_logo: String,
     school_name: String,
     school_motto: String,
@@ -51,13 +53,14 @@ pub enum SchoolPageEdit {
     None,
     EditProfile,
     SaveProfile,
-    // ChoosePic(Vec<File>),
+    ChoosePic(Vec<File>),
     SavePicture(String),
-    // ChangePic(FileData),
+    ChangePic(FileData),
 }
-
 #[derive(Debug)]
 pub enum Message {
+    // FetchShoolById(SchoolId),
+    // School(Option<school_model::school_by_id::ResponseData>),
     SchoolUpdate(Option<school_model::school_profile_by_id_update::ResponseData>),
     Edit(SchoolPageEdit),
     UpdateSchoolName(String),
@@ -79,27 +82,29 @@ impl Component for SchoolPage {
     type Message = Message;
     type Properties = Properties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        // link().send_message(Message::FetchShoolById(roboxmaker_types::types::SchoolId(props.school_profile.school_id)));
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        // link.send_message(Message::FetchShoolById(roboxmaker_types::types::SchoolId(props.school_profile.school_id)));
         // info!("DATASCHOOL {:?}", props.school_profile);
 
-        let school_logo = ctx.props().school_profile.logo.clone();
-        let school_name = ctx.props().school_profile.name.clone();
-        let school_motto = ctx.props().school_profile.motto.clone();
-        let school_address = ctx.props().school_profile.address.clone();
-        let school_telephone = ctx.props().school_profile.telephone.clone();
-        let school_biography = ctx.props().school_profile.web_site.clone();
-        let school_mission = ctx.props().school_profile.mission.clone();
-        let school_vision = ctx.props().school_profile.vision.clone();
-        let school_we_are = ctx.props().school_profile.we_are.clone();
+        let school_logo = props.school_profile.logo.clone();
+        let school_name = props.school_profile.name.clone();
+        let school_motto = props.school_profile.motto.clone();
+        let school_address = props.school_profile.address.clone();
+        let school_telephone = props.school_profile.telephone.clone();
+        let school_biography = props.school_profile.web_site.clone();
+        let school_mission = props.school_profile.mission.clone();
+        let school_vision = props.school_profile.vision.clone();
+        let school_we_are = props.school_profile.we_are.clone();
         SchoolPage {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             task_save: None,
-            // reader_task: vec![],
-            // upload_task: None,
+            reader_task: vec![],
+            upload_task: None,
             edit: SchoolPageEdit::None,
             save_status: true,
-            // url_photo: format!("{}/uploads/school.png", config::AKER_FILES_URL),
+            url_photo: format!("{}/uploads/school.png", config::AKER_FILES_URL),
             school_logo,
             school_name,
             school_motto,
@@ -113,7 +118,7 @@ impl Component for SchoolPage {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
@@ -155,6 +160,50 @@ impl Component for SchoolPage {
                 self.save_status = false;
                 self.school_we_are = school_we_are
             },
+            // Message::FetchShoolById(school_id) => {
+            //     if let Some(graphql_task) = self.graphql_task.as_mut() {
+            //         let vars = school_model::school_by_id::Variables {
+            //             school_id: school_id.0,
+            //         };
+            //         let task = school_model::SchoolById::request(
+            //             graphql_task,
+            //             &self.link, 
+            //             vars, 
+            //             |response| {
+            //                 Message::School(response)
+            //             },
+            //         );
+            //         self.school_task = Some(task);
+            //     }
+            // }
+            // Message::School(school) => {
+            //     school
+            //         .as_ref()
+            //         .and_then(|school| school.school_by_pk.as_ref())
+            //         .and_then(|school_by_pk| school_by_pk.school_profile.as_ref())
+            //         .and_then(|school_profile| school_profile.logo.as_ref())
+            //         .and_then(|logo| {
+            //             self.school_logo = logo.clone();
+            //             Some(())
+            //         });
+
+            //     self.school = school.clone().and_then(|data| data.school_by_pk);
+            //     if school.clone().and_then(|data| data.school_by_pk).is_some() {
+            //         self.edit = SchoolPageEdit::None;
+            //         self.save_status = true;
+            //         let school_profile = school.clone().and_then(|data| data.school_by_pk).unwrap().school_profile.unwrap();
+            //         self.school_name = school_profile.name.clone();
+            //         self.school_motto = school_profile.motto.clone().unwrap_or("".to_string());
+            //         self.school_address = school_profile.address.clone().unwrap_or("".to_string());
+            //         self.school_telephone =
+            //             school_profile.telephone.clone().unwrap_or("".to_string());
+            //         self.school_biography =
+            //             school_profile.biography.clone().unwrap_or("".to_string());
+            //         self.school_mission = school_profile.mission.clone().unwrap_or("".to_string());
+            //         self.school_vision = school_profile.vision.clone().unwrap_or("".to_string());
+            //         self.school_we_are = school_profile.we_are.clone().unwrap_or("".to_string());
+            //     }
+            // }
             Message::SchoolUpdate(response) => {
                 info!("DATASCHOOL {:?}", response);
             }
@@ -164,7 +213,7 @@ impl Component for SchoolPage {
                     SchoolPageEdit::Hidden => {}
                     SchoolPageEdit::EditProfile => {}
                     SchoolPageEdit::SaveProfile => {
-                        let school_id = ctx.props().school_profile.school_id;
+                        let school_id = self.props.school_profile.school_id;
                         if let Some(graphql_task) = self.graphql_task.as_mut() {
                             let vars = school_model::school_profile_by_id_update::Variables {
                                 school_id,
@@ -178,20 +227,18 @@ impl Component for SchoolPage {
                                 we_are: self.school_we_are.clone(),
                                 biography: self.school_biography.clone(),
                             };
-
                             let task = school_model::SchoolProfileByIdUpdate::request(
                                 graphql_task,
-                                &ctx, 
+                                &self.link, 
                                 vars, 
                                 |response| Message::SchoolUpdate(response),
                             );
-
                             self.task_save = Some(task);
                             self.edit = SchoolPageEdit::None;
                         }
                     }
                     SchoolPageEdit::SavePicture(pic_patch) => {
-                        let school_id = ctx.props().school_profile.school_id;
+                        let school_id = self.props.school_profile.school_id;
                         if let Some(graphql_task) = self.graphql_task.as_mut() {
                             let vars = school_model::school_profile_by_id_update::Variables {
                                 school_id,
@@ -205,137 +252,136 @@ impl Component for SchoolPage {
                                 we_are: self.school_we_are.clone(),
                                 biography: self.school_biography.clone(),
                             };
-
                             let task = school_model::SchoolProfileByIdUpdate::request(
                                 graphql_task,
-                                &ctx, 
+                                &self.link, 
                                 vars, 
                                 |response| Message::SchoolUpdate(response),
                             );
-
                             self.task_save = Some(task);
                         }
                     }
                     SchoolPageEdit::None => {}
-                    // SchoolPageEdit::ChoosePic(files) => {
-                    //     if let Some(file) = files.get(0) {
-                    //         info!("{:?}", file);
-                    //         let task = { 
-                    //             let callback =ctx.link().callback(move |file| {
-                    //                 Message::Edit(SchoolPageEdit::ChangePic(file))
-                    //             });
-                    //             ReaderService::read_file(
-                    //                 file.clone(),
-                    //                 callback
-                    //             )
-                    //             .unwrap()
-                    //         };
-                    //         self.reader_task.push(task);
-                    //     }
-                    // }
-                //     SchoolPageEdit::ChangePic(file) => {
-                //         let user_id = self
-                //             .props
-                //             .user_profile
-                //             .as_ref()
-                //             .and_then(|auth_user| Some(auth_user.user_id.to_string()));
+                    SchoolPageEdit::ChoosePic(files) => {
+                        if let Some(file) = files.get(0) {
+                            info!("{:?}", file);
+                            let task = { 
+                                let callback =self.link.callback(move |file| {
+                                    Message::Edit(SchoolPageEdit::ChangePic(file))
+                                });
+                                ReaderService::read_file(
+                                    file.clone(),
+                                    callback
+                                )
+                                .unwrap()
+                            };
+                            self.reader_task.push(task);
+                        }
+                    }
+                    SchoolPageEdit::ChangePic(file) => {
+                        let user_id = self
+                            .props
+                            .user_profile
+                            .as_ref()
+                            .and_then(|auth_user| Some(auth_user.user_id.to_string()));
 
-                //         const BOUNDARY: &'static str = "------------------------ea3bbcf87c101592";
+                        const BOUNDARY: &'static str = "------------------------ea3bbcf87c101592";
 
-                //         let image_data = |content: &[u8]| {
-                //             let mut data = Vec::new();
-                //             write!(data, "--{}\r\n", BOUNDARY)?;
-                //             write!(
-                //                     data,
-                //                     "Content-Disposition: form-data; name=\"upload\"; filename=\"{}\"\r\n",
-                //                     file.name)?;
-                //             write!(data, "\r\n")?;
-                //             data.extend_from_slice(content);
-                //             write!(data, "\r\n")?;
-                //             write!(data, "--{}--\r\n", BOUNDARY)?;
-                //             Ok(data)
-                //         };
+                        let image_data = |content: &[u8]| {
+                            let mut data = Vec::new();
+                            write!(data, "--{}\r\n", BOUNDARY)?;
+                            write!(
+                                    data,
+                                    "Content-Disposition: form-data; name=\"upload\"; filename=\"{}\"\r\n",
+                                    file.name)?;
+                            write!(data, "\r\n")?;
+                            data.extend_from_slice(content);
+                            write!(data, "\r\n")?;
+                            write!(data, "--{}--\r\n", BOUNDARY)?;
+                            Ok(data)
+                        };
 
-                //         let img_bytes = image_data(&file.content[..]);
+                        let img_bytes = image_data(&file.content[..]);
 
-                //         let upload_url = format!("{}/upload.php", config::AKER_FILES_URL);
+                        let upload_url = format!("{}/upload.php", config::AKER_FILES_URL);
 
-                //         let req = Request::post(upload_url)
-                //             .header("aker-user-id", user_id.unwrap_or_default())
-                //             .header(
-                //                 "Content-Type",
-                //                 format!("multipart/form-data; boundary={}", BOUNDARY),
-                //             )
-                //             .body(img_bytes)
-                //             .expect("Failed to build request.");
+                        let req = Request::post(upload_url)
+                            .header("aker-user-id", user_id.unwrap_or_default())
+                            .header(
+                                "Content-Type",
+                                format!("multipart/form-data; boundary={}", BOUNDARY),
+                            )
+                            .body(img_bytes)
+                            .expect("Failed to build request.");
 
-                //         let pic_path = self.url_photo.clone();
-                //         let callback = ctx.link().callback(
-                //             move |res: Response<
-                //                 Json<Result<UserPageFileUploadResponse, anyhow::Error>>,
-                //             >| {
-                //                 info!("{:?}", res);
-                //                 let url = if let (_meta, Json(Ok(file_upload))) = res.into_parts() {
-                //                     Some(file_upload.url)
-                //                 } else {
-                //                     None
-                //                 };
-                //                 Message::Edit(SchoolPageEdit::SavePicture(
-                //                     url.unwrap_or(pic_path.clone()),
-                //                 ))
-                //             },
-                //         );
-                //         self.upload_task = FetchService::fetch_binary(req, callback).ok();
-                //     }
+                        let pic_path = self.url_photo.clone();
+                        let callback = self.link.callback(
+                            move |res: Response<
+                                Json<Result<UserPageFileUploadResponse, anyhow::Error>>,
+                            >| {
+                                info!("{:?}", res);
+                                let url = if let (_meta, Json(Ok(file_upload))) = res.into_parts() {
+                                    Some(file_upload.url)
+                                } else {
+                                    None
+                                };
+                                Message::Edit(SchoolPageEdit::SavePicture(
+                                    url.unwrap_or(pic_path.clone()),
+                                ))
+                            },
+                        );
+                        self.upload_task = FetchService::fetch_binary(req, callback).ok();
+                    }
                 }
             }
         }
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
 
-        if ctx.props() != old_props {
-             self.school_logo = ctx.props().school_profile.logo.clone();
-             self.school_name = ctx.props().school_profile.name.clone();
-             self.school_motto = ctx.props().school_profile.motto.clone();
-             self.school_address = ctx.props().school_profile.address.clone();
-             self.school_telephone = ctx.props().school_profile.telephone.clone();
-             self.school_biography = ctx.props().school_profile.web_site.clone();
-             self.school_mission = ctx.props().school_profile.mission.clone();
-             self.school_vision = ctx.props().school_profile.vision.clone();
-             self.school_we_are = ctx.props().school_profile.we_are.clone();
+        if self.props != props {
+            self.props = props;
+            // info!("DATASCHOOL {:?}", self.props.school_profile);
+             self.school_logo = self.props.school_profile.logo.clone();
+             self.school_name = self.props.school_profile.name.clone();
+             self.school_motto = self.props.school_profile.motto.clone();
+             self.school_address = self.props.school_profile.address.clone();
+             self.school_telephone = self.props.school_profile.telephone.clone();
+             self.school_biography = self.props.school_profile.web_site.clone();
+             self.school_mission = self.props.school_profile.mission.clone();
+             self.school_vision = self.props.school_profile.vision.clone();
+             self.school_we_are = self.props.school_profile.we_are.clone();
             should_render = true;
         }
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_update_school_name = ctx.link().callback(|e: InputEvent| Message::UpdateSchoolName(get_value_from_input_event(e)));
-        let on_update_school_motto = ctx.link().callback(|e: InputEvent| Message::UpdateSchoolMotto(get_value_from_input_event(e)));
-        let on_update_school_address = ctx.link().callback(|e: InputEvent| Message::UpdateSchoolAddress(get_value_from_input_event(e)));
-        let on_update_school_telephone = ctx.link().callback(|e: InputEvent| Message::UpdateSchoolTelephone(get_value_from_input_event(e)));
-        let on_update_school_biography = ctx.link().callback(|e: InputEvent| Message::UpdateSchoolBiography(get_value_from_textarea_event(e)));
-        let on_update_school_mission = ctx.link().callback(|e: InputEvent| Message::UpdateSchoolMission(get_value_from_textarea_event(e)));
-        let on_update_school_vision = ctx.link().callback(|e: InputEvent| Message::UpdateSchoolVision(get_value_from_textarea_event(e)));
-        let on_update_school_we_are = ctx.link().callback(|e: InputEvent| Message::UpdateSchoolWeAre(get_value_from_textarea_event(e)));
-        
-        // let on_change = ctx.link().callback(move |data: ChangeData| {
-        //         let mut result = Vec::new();
-        //         if let ChangeData::Files(files) = data {
-        //             let files = js_sys::try_iter(&files)
-        //                 .unwrap()
-        //                 .unwrap()
-        //                 .map(|v| File::from(v.unwrap()));
-        //             result.extend(files);
-        //         }
-        //         Message::Edit(SchoolPageEdit::ChoosePic(result))
-        // });
+    fn view(&self) -> Html {
+        let on_update_school_name = self.link.callback(|e: InputData| Message::UpdateSchoolName(e.value));
+        let on_update_school_motto = self.link.callback(|e: InputData| Message::UpdateSchoolMotto(e.value));
+        let on_update_school_address = self.link.callback(|e: InputData| Message::UpdateSchoolAddress(e.value));
+        let on_update_school_telephone = self.link.callback(|e: InputData| Message::UpdateSchoolTelephone(e.value));
+        let on_update_school_biography = self.link.callback(|e: InputData| Message::UpdateSchoolBiography(e.value));
+        let on_update_school_mission = self.link.callback(|e: InputData| Message::UpdateSchoolMission(e.value));
+        let on_update_school_vision = self.link.callback(|e: InputData| Message::UpdateSchoolVision(e.value));
+        let on_update_school_we_are = self.link.callback(|e: InputData| Message::UpdateSchoolWeAre(e.value));
+        let on_change = self.link.callback(move |data: ChangeData| {
+                let mut result = Vec::new();
+                if let ChangeData::Files(files) = data {
+                    let files = js_sys::try_iter(&files)
+                        .unwrap()
+                        .unwrap()
+                        .map(|v| File::from(v.unwrap()));
+                    result.extend(files);
+                }
+                Message::Edit(SchoolPageEdit::ChoosePic(result))
+        });
 
-        let change_picture_school = ctx
-            .props()
+        let change_picture_school = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|item| {
@@ -346,8 +392,7 @@ impl Component for SchoolPage {
                             <label class="input-group-text" for="inputGroupFile02">
                                 <i class="fas fa-upload"></i>
                             </label>
-                            // <input type="file" class="form-control" id="inputGroupFile02" onchange={on_change} />
-                            <input type="file" class="form-control" id="inputGroupFile02" />
+                            <input type="file" class="form-control" id="inputGroupFile02" onchange=on_change />
                         </div>
                     }
                 )
@@ -358,13 +403,13 @@ impl Component for SchoolPage {
 
         let school_logo = {
             html! {
-                <img class="img-card-72" src={ctx.props().school_profile.logo.clone()} />
+                <img class="img-card-72" src={self.props.school_profile.logo.clone()} />
             }
         };
 
-        let on_edit = ctx.link().callback(move |_| Message::Edit(SchoolPageEdit::EditProfile));
-        let on_none = ctx.link().callback(move |_| Message::Edit(SchoolPageEdit::None));
-        let on_save = ctx.link().callback(move |_| Message::Edit(SchoolPageEdit::SaveProfile));
+        let on_edit = self.link.callback(move |_| Message::Edit(SchoolPageEdit::EditProfile));
+        let on_none = self.link.callback(move |_| Message::Edit(SchoolPageEdit::None));
+        let on_save = self.link.callback(move |_| Message::Edit(SchoolPageEdit::SaveProfile));
         let status_save = if self.save_status {
             html! {
                 <>{lang::dict("Saved")}</>
@@ -377,19 +422,19 @@ impl Component for SchoolPage {
 
         let buttons = html! {
             <div class="d-flex flex-wrap justify-content-between my-3">
-                <a class="btn btn-outline-purple-on" onclick={on_none}>
+                <a class="btn btn-outline-purple-on" onclick=on_none>
                     <i class="fas fa-times"></i>
                 </a>
                 {status_save}
-                <a class="btn btn-outline-primary-blue-dark" onclick={on_save}>
+                <a class="btn btn-outline-primary-blue-dark" onclick=on_save>
                     <i class="fas fa-check"></i>
                 </a>
             </div>
 
         };
 
-        let edit_button = ctx
-            .props()
+        let edit_button = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|item| {
@@ -397,7 +442,7 @@ impl Component for SchoolPage {
                     Some(html! {
                         <div class="level-right">
                             <div class="level-item">
-                                <a style="color: #A4A5E3;" onclick={on_edit}>
+                                <a style="color: #A4A5E3;" onclick=on_edit>
                                     <span class="icon">
                                         <i class="far fa-edit "></i>
                                     </span>
@@ -426,10 +471,10 @@ impl Component for SchoolPage {
             SchoolPageEdit::None => {
                 html! {
                     <>
-                        // <a class="btn bg-white text-gray p-1" style="width: 35px; height: 35px;" onclick=ctx.props().close_school_profile.clone()>
+                        // <a class="btn bg-white text-gray p-1" style="width: 35px; height: 35px;" onclick=self.props.close_school_profile.clone()>
                         //     <i class="fas fa-times"></i>
                         // </a>
-                        <a class="btn btn-outline-purple-on" onclick={ctx.props().close_school_profile.clone()}>
+                        <a class="btn btn-outline-purple-on" onclick={self.props.close_school_profile.clone()}>
                             <i class="fas fa-times"></i>
                         </a>
                         <div class="d-flex align-items-center justify-content-between mt-2">
@@ -438,21 +483,21 @@ impl Component for SchoolPage {
                         </div>
                         <div class="d-flex justify-content-center" style="margin-top: 30px;">{school_logo}</div>
                         <div class="d-flex flex-column">
-                            <div class="text-center pb-5 pt-2 mt-1"><span class="text-secondary-purple noir-bold is-size-18 lh-22">{&ctx.props().school_profile.name}</span></div>
-                            <span class="text-primary-blue-dark noir-bold is-size-20 lh-25 text-center">{ctx.props().school_profile.motto.clone()}</span>
+                            <div class="text-center pb-5 pt-2 mt-1"><span class="text-secondary-purple noir-bold is-size-18 lh-22">{&self.props.school_profile.name}</span></div>
+                            <span class="text-primary-blue-dark noir-bold is-size-20 lh-25 text-center">{self.props.school_profile.motto.clone()}</span>
                             <span class="text-purple-gray noir-regular is-size-14 lh-18 text-center mt-1 mb-7">{"Lema del colegio"}</span>
                             <span class="text-primary-blue-dark noir-bold is-size-14 lh-18 mb-1 ">{lang::dict("Address: ")}</span>
-                            <span class="text-brown noir-regular is-size-18 lh-22 mb-5">{ctx.props().school_profile.address.clone()}</span>
+                            <span class="text-brown noir-regular is-size-18 lh-22 mb-5">{self.props.school_profile.address.clone()}</span>
                             <span class="text-primary-blue-dark noir-bold is-size-14 lh-18 mb-1 ">{lang::dict("Telephone: ")}</span>
-                            <span class="text-brown noir-regular is-size-18 lh-22 mb-5">{ctx.props().school_profile.telephone.clone()}</span>
+                            <span class="text-brown noir-regular is-size-18 lh-22 mb-5">{self.props.school_profile.telephone.clone()}</span>
                             <span class="text-primary-blue-dark noir-bold is-size-14 lh-18 mb-1 ">{lang::dict("About us?")}</span>
-                            <span class="text-brown noir-regular is-size-18 lh-22 mb-5">{ctx.props().school_profile.we_are.clone()}</span>
+                            <span class="text-brown noir-regular is-size-18 lh-22 mb-5">{self.props.school_profile.we_are.clone()}</span>
                             <span class="text-primary-blue-dark noir-bold is-size-14 lh-18 mb-1 ">{lang::dict("Mission:")}</span>
-                            <span class="text-brown noir-regular is-size-18 lh-22 mb-5">{ctx.props().school_profile.mission.clone()}</span>
+                            <span class="text-brown noir-regular is-size-18 lh-22 mb-5">{self.props.school_profile.mission.clone()}</span>
                             <span class="text-primary-blue-dark noir-bold is-size-14 lh-18 mb-1 ">{lang::dict("Vision:")}</span>
-                            <span class="text-brown noir-regular is-size-18 lh-22 mb-5">{ctx.props().school_profile.vision.clone()}</span>
+                            <span class="text-brown noir-regular is-size-18 lh-22 mb-5">{self.props.school_profile.vision.clone()}</span>
                             <span class="text-primary-blue-dark noir-bold is-size-14 lh-18 mb-1 ">{lang::dict("Website:")}</span>
-                            <span class="text-brown noir-regular is-size-18 lh-22 mb-5">{ctx.props().school_profile.web_site.clone()}</span>
+                            <span class="text-brown noir-regular is-size-18 lh-22 mb-5">{self.props.school_profile.web_site.clone()}</span>
                         </div>
                     </>
                 }
@@ -465,45 +510,45 @@ impl Component for SchoolPage {
                         {buttons}
                         <div class="field">
                             <label for="" class="label text-primary-blue-dark noir-bold is-size-14 lh-18 mb-1 ">{lang::dict("School Name: ")}</label>
-                                <input type="text" value={self.school_name.clone()} class="input px-3 input-style-universal w-100"
-                                    oninput={on_update_school_name} required=true />
+                                <input type="text" value=self.school_name.clone() class="input px-3 input-style-universal w-100"
+                                    oninput=on_update_school_name required=true />
                         </div>
                         <div class="field">
                             <label for="" class="label text-primary-blue-dark noir-bold is-size-14 lh-18 mb-1 ">{lang::dict("School Motto: ")}</label>
-                            <input type="text" value={self.school_motto.clone()} class="input px-3 input-style-universal w-100"
-                                oninput={on_update_school_motto} required=true />
+                            <input type="text" value=self.school_motto.clone() class="input px-3 input-style-universal w-100"
+                                oninput=on_update_school_motto required=true />
                         </div>
                         <div class="field">
                             <label for="" class="label text-primary-blue-dark noir-bold is-size-14 lh-18 mb-1 ">{lang::dict("School Address: ")}</label>
-                            <input type="text" value={self.school_address.clone()} class="input px-3 input-style-universal w-100"
-                                oninput={on_update_school_address} required=true />
+                            <input type="text" value=self.school_address.clone() class="input px-3 input-style-universal w-100"
+                                oninput=on_update_school_address required=true />
                         </div>
                         <div class="field">
                             <label class="label text-primary-blue-dark noir-bold is-size-14 lh-18 mb-1 ">{lang::dict("School Telephone: ")}</label>
                             <div class="control">
-                                <input type="tel" value={self.school_telephone.clone()} class="input px-3 input-style-universal w-100" oninput={on_update_school_telephone} required=true />
+                                <input type="tel" value=self.school_telephone.clone() class="input px-3 input-style-universal w-100" oninput=on_update_school_telephone required=true />
                             </div>
                             {maybe_error_telephone}
                         </div>
                         <div class="field">
                             <label for="" class="label text-primary-blue-dark noir-bold is-size-14 lh-18 mb-1 ">{lang::dict("About us: ")}</label>
-                            <textarea class="textarea px-3 py-2 input-style-universal w-100" oninput={on_update_school_we_are}
-                                value={self.school_we_are.clone()}></textarea>
+                            <textarea class="textarea px-3 py-2 input-style-universal w-100" oninput=on_update_school_we_are
+                                value=self.school_we_are.clone()></textarea>
                         </div>
                         <div class="field">
                             <label for="" class="label text-primary-blue-dark noir-bold is-size-14 lh-18 mb-1 ">{lang::dict("School Vision: ")}</label>
-                            <textarea class="textarea px-3 py-2 input-style-universal w-100" oninput={on_update_school_vision}
-                                value={self.school_vision.clone()}></textarea>
+                            <textarea class="textarea px-3 py-2 input-style-universal w-100" oninput=on_update_school_vision
+                                value=self.school_vision.clone()></textarea>
                         </div>
                         <div class="field">
                             <label for="" class="label text-primary-blue-dark noir-bold is-size-14 lh-18 mb-1 ">{lang::dict("School Mission: ")}</label>
-                            <textarea class="textarea px-3 py-2 input-style-universal w-100" placeholder="" oninput={on_update_school_mission}
-                                value={self.school_mission.clone()}></textarea>
+                            <textarea class="textarea px-3 py-2 input-style-universal w-100" placeholder="" oninput=on_update_school_mission
+                                value=self.school_mission.clone()></textarea>
                         </div>
                         <div class="field">
                             <label for="" class="label text-primary-blue-dark noir-bold is-size-14 lh-18 mb-1 ">{lang::dict("College website: ")}</label>
                             <textarea class="textarea px-3 py-2 input-style-universal w-100" placeholder=""
-                                oninput={on_update_school_biography} value={self.school_biography.clone()}></textarea>
+                                oninput=on_update_school_biography value=self.school_biography.clone()></textarea>
                         </div>
                     </>
                 }
@@ -520,7 +565,7 @@ impl Component for SchoolPage {
                 <div class="scrool-container-scholl-profile">{maybe_view.clone()}</div>
             </>
         }
-        // if (school) = &ctx.props().school_profile {
+        // if (school) = &self.props.school_profile {
         //     let maybe_school_profile = if let Some(school_profile) = &school.school_profile {
 
 

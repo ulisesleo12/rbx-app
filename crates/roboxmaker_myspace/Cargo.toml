@@ -11,40 +11,13 @@ roboxmaker_types = { path = "../roboxmaker_types" }
 roboxmaker_models = { path = "../roboxmaker_models" }
 roboxmaker_message = { path = "../roboxmaker_message" }
 roboxmaker_user = { path = "../roboxmaker_user" }
-roboxmaker_utils = { path = "../roboxmaker_utils" }
 roboxmaker_files = { path = "../roboxmaker_files" }
 roboxmaker_searches = { path = "../roboxmaker_searches" }
 roboxmaker-graphql = { path = "../roboxmaker-graphql" }
 
 log = "0.4"
-uuid = { version = "1.6.1", features = ["serde", "v4", "v5", "wasm-bindgen"] }
-yew = "0.21"
+uuid = { version = "1.2.2", features = ["serde", "v4", "v5", "wasm-bindgen"] }
+yew = { version = "0.18", features = ["default", "toml"] }
 code_location = "1.1"
-gloo-utils = "0.2"
-gloo-storage = "0.3"
-
-[dependencies.web-sys]
-version = "0.3"
-features = [
-  "Document",
-  "Headers",
-  "Request",
-  "RequestInit",
-  "RequestMode",
-  "Response",
-  "Window",
-  "Element",
-  "DomTokenList",
-  "HtmlSelectElement",
-  "HtmlDocument",
-  "HtmlMediaElement",
-  "HtmlElement",
-  "Navigator",
-  "BinaryType",
-  "Blob",
-  "FileReader",
-  "ProgressEvent",
-  "FocusEvent",
-  "InputEvent",
-  "CssStyleDeclaration"
-]
+gloo-utils = "0.1.6"
+gloo-storage = "0.2.2"

@@ -39,8 +39,8 @@ impl Component for FilesUserCard {
     type Message = FilesUserCardMessage;
     type Properties = FilesUserCardProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        link().send_message(FilesUserCardMessage::FetchFilesById(props.files.files_id));
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(FilesUserCardMessage::FetchFilesById(props.files.files_id));
         FilesUserCard {
             link,
             props,
@@ -50,7 +50,7 @@ impl Component for FilesUserCard {
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
@@ -77,21 +77,21 @@ impl Component for FilesUserCard {
                 self.files = files.clone().and_then(|data| data.files_by_pk)
             }
             FilesUserCardMessage::DeleteFiles(files_id) => {
-                if let Some(on_files_delete) = &ctx.props().on_files_delete {
+                if let Some(on_files_delete) = &self.props.on_files_delete {
                     on_files_delete.emit(files_id);
-                    self.link().send_message(FilesUserCardMessage::FetchFilesById(ctx.props().files.files_id));
+                    self.link.send_message(FilesUserCardMessage::FetchFilesById(self.props.files.files_id));
                 }
             }
         }
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
 
-        if ctx.props().files.files_id != props.files.files_id {
-            self.link().send_message(FilesUserCardMessage::FetchFilesById(props.files.files_id));
+        if self.props.files.files_id != props.files.files_id {
+            self.link.send_message(FilesUserCardMessage::FetchFilesById(props.files.files_id));
         }
         if self.props != props {
             self.props = props;
@@ -101,9 +101,9 @@ impl Component for FilesUserCard {
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let files_id = ctx.props().files.files_id;
-        let on_delete_file = ctx.link().callback(move |_| FilesUserCardMessage::DeleteFiles(files_id));
+    fn view(&self) -> Html {
+        let files_id = self.props.files.files_id;
+        let on_delete_file = self.link.callback(move |_| FilesUserCardMessage::DeleteFiles(files_id));
         let files_profile = self
             .files
             .as_ref()

@@ -41,6 +41,28 @@ impl Request for SearchByRobotGradeByGroupId {}
 #[graphql(
     schema_path = "schema.graphql",
     query_path = "query.graphql",
+    response_derives = "Debug",
+    normalization = "rust"
+)]
+pub struct RobotGroupAdd;
+impl Request for RobotGroupAdd {}
+
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "schema.graphql",
+    query_path = "query.graphql",
+    response_derives = "Debug, Clone",
+    normalization = "rust"
+)]
+pub struct RobotGroupDelete;
+impl Request for RobotGroupDelete {}
+
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "schema.graphql",
+    query_path = "query.graphql",
     response_derives = "Debug, Clone",
     normalization = "rust"
 )]
@@ -59,48 +81,12 @@ pub struct RobotsByGroupId;
 impl Subscribe for RobotsByGroupId {}
 
 
-
-// <------------------------ NEW QUERY------------------------> //
-
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "schema.graphql",
-    query_path = "robot_sub.graphql",
+    query_path = "query.graphql",
     response_derives = "Clone, Debug, PartialEq",
     normalization = "rust"
 )]
-pub struct GetRobotList; 
-impl Subscribe for GetRobotList {}
-
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "schema.graphql",
-    query_path = "robot_mut.graphql",
-    response_derives = "Debug",
-    normalization = "rust"
-)]
-pub struct RobotGroupAdd;
-impl Request for RobotGroupAdd {}
-
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "schema.graphql",
-    query_path = "robot_mut.graphql",
-    response_derives = "Debug, Clone",
-    normalization = "rust"
-)]
-pub struct RobotGroupDelete;
-impl Request for RobotGroupDelete {}
-
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "schema.graphql",
-    query_path = "robot_mut.graphql",
-    response_derives = "Debug, Clone",
-    normalization = "rust"
-)]
-pub struct UpdateRobotType;
-impl Request for UpdateRobotType {}
+pub struct RobotsListByGroup; 
+impl Subscribe for RobotsListByGroup {}

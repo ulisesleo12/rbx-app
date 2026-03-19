@@ -1,426 +1,8 @@
 const {
   exec
 } = require("child_process");
+const { log } = require("console");
 const fs = require('fs');
-K4 = [
-  ['f7a6c4a3-3b42-47bb-b6f3-9a4552fa4aba', 'K4-L01-Tengo un nuevo kit para jugar y aprender.pdf'],
-  ['b22d57ad-29c6-4a61-bf23-694953d77e3a', 'K4-L02-¡Vamos al parque!.pdf'],
-  ['9ca8b0f8-acb7-4d00-81e3-5e2935c194d0', 'K4-L03-Cuéntame un cuento.pdf'],
-  ['2aac2612-12b8-418c-a204-5a3b41df95fa', 'K4-L04-Juguemos a ser exploradores.pdf'],
-  ['38235859-74d2-4b5b-bee9-86115569db3c', 'K4-L05-Nazco, crezco y.pdf'],
-  ['b97f1251-7c8c-468b-8fe7-f49f77b22283', 'K4-L06-Rojo significa alto.pdf'],
-  ['a7997617-fd6a-46c4-8c02-b1b896b3ea26', 'K4-L07-Son carros que vuelan.pdf'],
-  ['d5ef2d1b-3fad-43bb-9c8a-9b55e7e8fcec', 'K4-L08-Gira y gira la rueda.pdf'],
-  ['bd62eae4-84d8-4bd8-acf9-ce7b3b11ec5a', 'K4-L09-Con agua y con jabón.pdf'],
-  ['c5770adb-f0d2-42c7-8694-8fcdc40e05ac', 'K4-L10-Abejitas al panal.pdf'],
-  ['7586a86f-5ede-4df8-93e3-1f4afddd4dc3', 'K4-L11-Vamos al súper.pdf'],
-  ['74d4b95a-3bce-41fa-bb75-d452ea29bfee', 'K4-L12-Manitas creativas.pdf'],
-  ['c217dbfe-a0f5-437b-9f4a-3b87e2bd8db1', 'K4-L13-Cantemos el himno nacional.pdf'],
-  ['0c14eb8d-2efc-484c-95b6-00c0177c7a30', 'K4-L14-Exploremos otro país.pdf'],
-  ['6a6a2903-eb3f-4937-944d-d46c274b052f', 'K4-L15-No todos tienen patitas.pdf'],
-  ['150493c1-1718-4b33-91ba-bd9f59c4305e', 'K4-L16-Conozcamos más animalitos.pdf'],
-  ['ba2e94f9-f485-4102-b958-44f9bc3ed3a6', 'K4-L17-Una excursión por mi colegio.pdf'],
-  ['3a2e6513-5289-4c48-8e1d-6c60226f913c', 'K4-L18-Cuéntame lo que pasó.pdf'],
-  ['8cafc0d8-08dd-46d9-9c1a-dfdef133ed56', 'K4-L19-Juguemos a ser adultos.pdf'],
-  ['752d5c4d-65ef-498f-8ae9-db0a7c59b093', 'K4-L20-Dime cuál es esta figura.pdf'],
-  ['a8e3b667-8e8a-46f3-8108-785265635ff9', 'K4-L21-Trencito chucu, chucu, chú....pdf'],
-  ['7a719d83-67e3-473a-8c79-fe6275bb88b3', 'K4-L22-Ese extraño no.pdf']
-]
-
-K5 = [
-  ['835bf77d-7ca4-4910-ab9a-2decc8f80b48', 'K5-L01-¡Este es mi kit!.pdf'],
-  ['6837e519-dbfa-46d9-bd32-9921bef369ff', 'K5-L02-Juguemos a ser constructores.pdf'],
-  ['087ad365-9ba6-4c0f-b2e8-d723432b0f7e', 'K5-L03-Visitemos la ferretería.pdf'],
-  ['1652859c-ee08-4f2b-8875-669415008a6e', 'K5-L04-Así se ocupan las tijeras.pdf'],
-  ['25b96620-b251-48de-a31c-70bc70ab7d6c', 'K5-L05-Así viven las hormigas.pdf'],
-  ['2fd34e85-e552-48ba-823a-c39dac215bb9', 'K5-L06-Vamos al parque.pdf'],
-  ['d18d337d-2f2b-46a0-8610-13376fc0930f', 'K5-L07-Cuéntame lo sucedido.pdf'],
-  ['116a9f6c-8ec5-4c6a-8c10-c2bc8b7621bd', 'K5-L08-Qué hay en mi comunidad.pdf'],
-  ['ca304019-87f3-494c-8e9d-8f276ba95b20', 'K5-L09-Imitemos los sonidos.pdf'],
-  ['c30ab733-3460-4604-be75-cb33c3e0b104', 'K5-L10-Mi casa y lo que hay en ella.pdf'],
-  ['ee7ee7fd-6948-4da1-bdbe-367de3ba7a04', 'K5-L11-Había una vez.pdf'],
-  ['7bd4d9ef-9708-4a90-baad-0a29d4e17ddb', 'K5-L12-Juguemos a ser constructores.pdf'],
-  ['efafda26-6dd6-4d2f-8d82-081b144f964c', 'K5-L13-Cuido de las plantas.pdf'],
-  ['b8214a91-29b3-4252-b599-159641d5866d', 'K5-L14-Hace mucho frío.pdf'],
-  ['f23a5254-ad41-497d-b89e-697a6cdb8625', 'K5-L15-Este es mi hogar.pdf'],
-  ['cbc6d41a-ee39-49c6-bcb4-5ca056ebf539', 'K5-L16-Pido ayuda si estoy en problemas.pdf'],
-  ['555007e1-af0c-456f-936f-af56afe57782', 'K5-L17-La familia abeja.pdf'],
-  ['d8b6e8d9-e2ef-40d2-8232-b0ee3a72c4c3', 'K5-L18-Bajo el mar....pdf'],
-  ['7d3ac985-36fa-4d2d-87e0-325ae79a8866', 'K5-L19-Esto no me gusta.pdf'],
-  ['85aa5c78-6324-4ece-86eb-39fe8c31bab3', 'K5-L20-Este insecto no me gusta.pdf'],
-  ['6eb42734-b505-4350-9401-e88b7ab4307e', 'K5-L21-Conozcan mi mascota.pdf'],
-  ['c7e09c66-2e88-49a0-9aad-9dab4e9b8c8f', 'K5-L22-Se esconde y come queso.pdf']
-]
-
-PP = [
-  ['869169c8-da0d-497a-8366-c0c34dcbb663', 'PP-L01-A qué se parece.pdf'],
-  ['da107366-b1c8-441c-944c-c2430a72dee0', 'PP-L02-Conozcamos sobre el cuerpo humano.pdf'],
-  ['30f1916d-1a8f-486b-8f7f-14e9ec9c20e9', 'PP-L03-Posicionemos objetos.pdf'],
-  ['64423934-3ce6-4c04-ba84-965f21952a95', 'PP-L04-Aprendamos a ocupar la cinta métrica.pdf'],
-  ['c810c776-8c37-4b28-b3d4-b001493ef266', 'PP-L05-Ganamos la carrera.pdf'],
-  ['be2d346e-19ad-4455-8524-3563fa153855', 'PP-L06-Cuenta sus lados y adivina qué es.pdf'],
-  ['df634e6e-ab3e-4f88-8af9-b055b2f622c6', 'PP-L07-Visitemos el centro comercial.pdf'],
-  ['84a61120-f18b-4188-abba-c3fc9fb6f597', 'PP-L08-Seamos constructores por un día.pdf'],
-  ['4ed23fdd-0834-4140-89a8-98421295ae5f', 'PP-L09-Préstame tu caña de pescar.pdf'],
-  ['dd244812-b997-4a0d-81d6-c362fa566453', 'PP-L10-Vamos a la feria.pdf'],
-  ['c3611deb-ad55-4ef0-9dec-016d8ebbb8c0', 'PP-L11-Incendio en el bosque!.pdf'],
-  ['559d5402-265e-4058-8dde-f92c2f7f78f4', 'PP-L12-Volemos como las aves.pdf'],
-  ['effe40ad-8f94-44ee-ba13-55a7d94fd11f', 'PP-L13-Exploradores del desierto.pdf'],
-  ['7c55dbf5-2e52-4983-9bf7-a2be0ad3a7ae', 'PP-L14-La semilla mágica.pdf'],
-  ['256efedd-20ac-4930-be63-3d99110d6e0d', 'PP-L15-Nacemos, crecemos, ¿y luego.pdf'],
-  ['a9eeedee-16ff-41ce-af95-691b17cf30aa', 'PP-L16-Aprendo la canción.pdf'],
-  ['365f914e-7524-4bfb-ab94-06ac5b97dad1', 'PP-L17-Cuidado ¡Fuego!.pdf'],
-  ['834b187e-4792-4456-8084-5540546e8d2a', 'PP-L18-Todos somos investigadores.pdf'],
-  ['742dceb3-18bb-44fe-8c0e-c886fcd2d9e4', 'PP-L19-Experimentos divertidos.pdf'],
-  ['9af3abbc-e6b8-4a64-950a-0d7c3b6174bf', 'PP-L20-Vamos a la mar.pdf'],
-  ['dcdf5dab-7760-41f1-bba1-5f1e81fe5d03', 'PP-L21-Tiremos la basura en su lugar.pdf'],
-  ['6525e4cf-ad44-4026-921c-0ef2f6dba5b7', 'PP-L22-Cuidado con el viento.pdf']
-]
-
-P1 = [
-  ['660db88f-91b7-422b-8ad2-8b79e93975ba', 'P1-L01-¡Conozcamos nuestras piezas!.pdf'],
-  ['e616057f-0ed7-44af-bc18-47a9139c29db', 'P1-L02-Aprendamos a orientar y posicionar objetos.pdf'],
-  ['4a704e40-fc7a-4da9-ba41-1d4e6ad3ac84', 'P1-L03-Construyamos castillos.pdf'],
-  ['74b72416-511b-4593-91fe-fe500c6f64c8', 'P1-L04-Conozcamos las máquinas simples.pdf'],
-  ['2f673fcd-bb95-400a-8df0-9f84e5377f23', 'P1-L05-Conozcamos sobre el plano inclinado.pdf'],
-  ['2d8a71ef-3fe5-43fc-9060-c4e0b05f8ac3', 'P1-L06-Clasifiquemos y tracemos líneas.pdf'],
-  ['81f6c4e7-d432-4d02-8256-1561ba5dd810', 'P1-L07-Armemos pistas de carrera.pdf'],
-  ['8dc0282a-8965-46a1-9b88-91cacf68da48', 'P1-L08-Aprendamos sobre símbolos patrios.pdf'],
-  ['0150ffb0-48e9-4f66-9c00-27788476ba99', 'P1-L09-Conozcamos sobre poleas.pdf'],
-  ['c5c0dead-e548-406c-8a0a-15edad8df716', 'P1-L10-Juguemos a ser pescadores.pdf'],
-  ['67e8586a-8a51-4649-ab10-fcccc2c8cec7', 'P1-L11-Así funcionan las ruedas.pdf'],
-  ['fde8dc8f-c98c-4b6f-b67b-bd45adb03741', 'P1-L12-Manejemos helicópteros.pdf'],
-  ['0074cd94-ccd3-4ce3-97eb-62b7b1095b55', 'P1-L13-Adivina, adivinador.pdf'],
-  ['6931ce79-b566-42f9-abad-2f7339193656', 'P1-L14-Busquemos semejanzas y diferencias animales.pdf'],
-  ['7a04e34a-f66d-4e02-93a1-2a1c2a79a551', 'P1-L15-Ideemos y clasifiquemos estructuras.pdf'],
-  ['b8678d3b-4b54-4265-a0fb-d14959697580', 'P1-L16-Cómo funcionan los molinos de viento.pdf'],
-  ['ed6f208e-d1b9-4de4-8fec-4b226f9c8548', 'P1-L17-Encajemos los engranajes.pdf'],
-  ['26ff6991-3f7b-44d6-ae78-489f4dcdd178', 'P1-L18-Giremos la manivela.pdf'],
-  ['f9b4a321-4389-48dc-be6a-b98cb381fdda', 'P1-L19-Describamos nuestro hogar.pdf'],
-  ['7408e4af-15db-4b67-9c5e-1f47fef8bb16', 'P1-L20-Compitamos en una carrera de carros.pdf'],
-  ['53a21341-7874-4775-8a41-145b9ed4fab8', 'P1-L21-El trencito, chucu, chucu, chu….pdf'],
-  ['956bbb59-7100-484e-9a22-7a3f9b9ee695', 'P1-L22-Cuánta fuerza tiene el agua.pdf']
-]
-
-P2 = [
-  ['479dc116-91c9-49c2-843a-fe733f0f5893', 'P2-L01-Con qué piezas puedo jugar.pdf'],
-  ['368b8bb9-e8d8-42a1-9162-f47cd4af3884', 'P2-L02-¡Movámonos!.pdf'],
-  ['6b8526a6-5b7c-4c9f-bd11-2e6de3df0343', 'P2-L03-Qué es una mantis.pdf'],
-  ['0846d21c-ca28-4880-b8f3-6c4eb32f5e81', 'P2-L04-Qué son las palancas.pdf'],
-  ['01a9f1e2-2180-4258-9aec-f1afa76d9dd5', 'P2-L05-Juguemos con el tobogán.pdf'],
-  ['e33e3360-cf73-486f-8c98-a8147eab2d51', 'P2-L06-Aprendamos sobre gravedad.pdf'],
-  ['fb4696ab-764c-496e-912e-7af641314104', 'P2-L07-Pongámosle reglas al juego.pdf'],
-  ['7bcfa181-c41b-490f-ae38-52913cb3a199', 'P2-L08-Construyamos poleas.pdf'],
-  ['db11e294-a797-47d9-928a-05f0edd8f26b', 'P2-L09-Qué son los contrapesos.pdf'],
-  ['439379a9-531f-4cbd-9d0c-76623a2ab11f', 'P2-L10-Así funcionan las grúas.pdf'],
-  ['30fb2e42-8919-4e8c-b072-381300fe87b8', 'P2-L11-Avioncito, vuela.pdf'],
-  ['38607d14-bb9b-46e0-a375-d9a601d29bad', 'P2-L12-Armemos un montacargas.pdf'],
-  ['4c802698-b035-4cd2-83fe-6528a1cd9afc', 'P2-L13-Imaginemos el final del cuento.pdf'],
-  ['f1aaafdf-69b9-405b-90d1-b4bcf022caa8', 'P2-L14-Construyo medios de transporte terrestre.pdf'],
-  ['b51f2bb8-4481-4dd0-95d4-57a8a7ad4016', 'P2-L15-Castillos y fortalezas.pdf'],
-  ['45c12d70-1e00-4728-9188-3914e14f61f3', 'P2-L16-Y la moraleja de esta historia es....pdf'],
-  ['db4eb1d9-83c8-453f-941d-c214a913c43c', 'P2-L17-Qué son los engranajes.pdf'],
-  ['d279e7cf-9de5-40c6-9895-82879d5dfc9f', 'P2-L18-Calculemos el ángulo.pdf'],
-  ['5420632c-feaf-4cac-978f-ef04c72a6bb8', 'P2-L19-Conozcamos sobre industria y producción.pdf'],
-  ['a438a563-1828-4874-8647-28b8e5f2ec8d', 'P2-L20-Vamos a la mar....pdf'],
-  ['a77f6dca-d647-4d15-a340-53ea9fe85796', 'P2-L21-¿Se descargaron tus baterías.pdf'],
-  ['c21c803a-646f-45cb-8751-e14012f64644', 'P2-L22-Hagamos una competencia.pdf']
-]
-
-P3 = [
-  ['d0ddf4b6-0bdd-45cb-af90-322cd4b8804e', 'P3-L01-¡Conozcamos nuestro kit!.pdf'],
-  ['ccb8f3ef-9878-4c17-b580-a3efd47197b7', 'P3-L02-¡Busquemos ángulos!.pdf'],
-  ['6f96bedb-92ed-4e40-8fb3-9a086306ba97', 'P3-L03-Aprendamos a ocupar la balanza.pdf'],
-  ['e2d0e7f6-bbec-4789-b554-be4532949387', 'P3-L04-Construyamos palancas.pdf'],
-  ['5c87a349-7c6f-428e-84ab-6679110edda0', 'P3-L05-Describo mi vivienda familiar.pdf'],
-  ['0e5bbc7b-c268-4c18-b2e9-335039d4d7f8', 'P3-L06-Armemos un plano inclinado.pdf'],
-  ['1089e3c2-803f-49ef-ab4f-115a3f5b4990', 'P3-L07-Dejemos que nos enseñe Newton.pdf'],
-  ['c6921137-fb72-42e3-aff7-6dd09c87fcb0', 'P3-L08-Aprendo a armar poleas.pdf'],
-  ['d1e179b2-c438-40fc-b936-b698429afbeb', 'P3-L09-Aprendamos a ser constructores.pdf'],
-  ['c40a3412-6f1b-4ca2-ad19-3132d2b2b3f0', 'P3-L10-Conozco leyendas de mi país.pdf'],
-  ['190ed057-8fad-4a35-94a0-cde2f0557384', 'P3-L11-Vamos a la feria.pdf'],
-  ['16144f9f-f30a-4349-862f-9e6712391dca', 'P3-L12-Colaboro en el aseo y el arreglo de mi hogar - copia.pdf'],
-  ['295969af-bd42-4c85-99c1-886dd17fd6fc', 'P3-L13-Mecánico por un día.pdf'],
-  ['dddcad22-7234-49ee-8b68-7fd5261d3a95', 'P3-L14-Todos los vehículos son importantes.pdf'],
-  ['a1b72243-f6a9-484d-baa2-c566f422d677', 'P3-L15-Cuánta energía produce el viento.pdf'],
-  ['f6f4ad58-5ce0-4757-8823-bb16b3960421', 'P3-L16-Cuántas estructuras puedo armar.pdf'],
-  ['b0b16bec-7361-427f-bc8c-a299bf2b53c8', 'P3-L17-Juguemos con engranajes.pdf'],
-  ['ebea8941-7ce1-4c18-8ee8-887ab787eb93', 'P3-L18-Saquemos nuestra bicicleta.pdf'],
-  ['07fc7f38-56cd-4021-bd8e-cc31af69083e', 'P3-L19-Vamos de compras a la ferretería.pdf'],
-  ['189b997a-0777-4e8f-b19e-085b00f1961a', 'P3-L20-Robótica por todos lados.pdf'],
-  ['1bb9315e-9977-4bb6-8700-94bf5b6248ac', 'P3-L21-¿Y si le ponemos un motor.pdf'],
-  ['9bd1b16f-4666-470f-aae0-2643305678e7', 'P3-L22-De dónde viene la energía eléctrica.pdf']
-]
-
-P4 = [
-  ['dddcad22-7234-49ee-8b68-7fd5261d3a95', 'P3-L14-Todos los vehículos son importantes.pdf'],
-  ['a1b72243-f6a9-484d-baa2-c566f422d677', 'P3-L15-Cuánta energía produce el viento.pdf'],
-  ['f6f4ad58-5ce0-4757-8823-bb16b3960421', 'P3-L16-Cuántas estructuras puedo armar.pdf'],
-  ['b0b16bec-7361-427f-bc8c-a299bf2b53c8', 'P3-L17-Juguemos con engranajes.pdf'],
-  ['ebea8941-7ce1-4c18-8ee8-887ab787eb93', 'P3-L18-Saquemos nuestra bicicleta.pdf'],
-  ['07fc7f38-56cd-4021-bd8e-cc31af69083e', 'P3-L19-Vamos de compras a la ferretería.pdf'],
-  ['189b997a-0777-4e8f-b19e-085b00f1961a', 'P3-L20-Robótica por todos lados.pdf'],
-  ['c3ffda5c-6e9f-41de-9f1d-bae94b7a9dad', 'P4-L01-¡Este es nuestro kit!.pdf'],
-  ['57c68bb1-6ac8-4ef4-9149-ad22fe325230', 'P4-L02-Aprendamos de gravedad.pdf'],
-  ['cdb824e8-121c-408b-ad6b-dfa85f99a298', 'P4-L03-Construyamos máquinas medievales.pdf'],
-  ['adf5ffb1-72c9-4979-96db-3b646e5894a0', 'P4-L04-Así funcionan mis manos.pdf'],
-  ['159c8fc4-92d9-47e0-86d7-8edc2960d29a', 'P4-L05-Conozcamos sobre planos inclinados.pdf'],
-  ['caf28460-f006-4972-8265-7135d714f742', 'P4-L06-Es recta o perpendicular.pdf'],
-  ['7b4608be-1053-42b3-a719-d3b97341bb34', 'P4-L07-Fuerza a distancia.pdf'],
-  ['9c15a0cd-828c-40f5-af57-130fb35bb263', 'P4-L08-Cómo funcionan las poleas.pdf'],
-  ['b310f56c-ca64-430f-b509-be2ba0cbc09e', 'P4-L09-Juguemos a ser constructores.pdf'],
-  ['857b1080-97c0-4300-b28b-885ae398c896', 'P4-L10-Subes o bajas.pdf'],
-  ['29f2bab3-79dd-4633-bd90-97d9f972fec4', 'P4-L11-Armemos nuestro propio drone.pdf'],
-  ['ca74e01c-40b0-4af0-9325-fb5ae0fc9c04', 'P4-L12-Motocross.pdf'],
-  ['1326c682-9825-494d-aca3-d875fa5ef2c0', 'P4-L13-De dónde proviene la energía eléctrica.pdf'],
-  ['1d2c98af-a3ce-43f4-a198-55e0041db0f3', 'P4-L14-Identifiquemos y midamos ángulos.pdf'],
-  ['79e02997-d651-4a56-8e79-02a8c9604a9d', 'P4-L15-Clasifiquemos estructuras.pdf'],
-  ['c597b7a3-e6ba-4be1-805c-1d2a90f92b41', 'P4-L16-Conozcamos los medios de transporte terrestre.pdf'],
-  ['2d4c93f0-2326-4d08-b67f-76e27abcf8f5', 'P4-L17-Armemos una caja de velocidades.pdf'],
-  ['3bab66f4-c654-4778-b3ab-2a93464e53e4', 'P4-L18-Conozcamos sobre engranajes.pdf'],
-  ['06eaa084-ad30-47b0-809e-53c75026c168', 'P4-L19-Redacta un manual.pdf'],
-  ['279239cf-3800-45f2-bfe2-21312889d13b', 'P4-L20-Está temblando, pero qué hago.pdf'],
-  ['6bb42aad-f139-402c-82ff-7087fd087395', 'P4-L21-¡Ejercitémonos.pdf'],
-  ['63b11e01-8ce0-4a89-b229-a1867108fd63', 'P4-L22-Viajemos en tren.pdf']
-]
-
-P5 = [
-  ['9423ca6b-246b-40d9-8ecf-7d1bfca68794', 'P5-L01-¡Ayudemos al castor!.pdf'],
-  ['b0ea07a5-45de-487a-8e05-9cf26c9e5d4e', 'P5-L02-Sigamos manuales.pdf'],
-  ['f653bb04-8952-40d7-9fee-ea0eb803914e', 'P5-L03-Ideemos textos descriptivos.pdf'],
-  ['868703ee-d438-4e7f-87f6-9e28a4eea43c', 'P5-L04-Busquemos palancas dentro de las maquinarias.pdf'],
-  ['6efbec91-8648-4125-881f-dbe5d019e5b5', 'P5-L05-Hagamos un manual.pdf'],
-  ['1b8ba719-e80f-4b99-a8be-5f401e458c5f', 'P5-L06-Es o no un círculo.pdf'],
-  ['7885ca1f-4577-49d9-b3c8-f94008335220', 'P5-L07-Aprendamos a medir ángulos.pdf'],
-  ['206f4078-7bd3-422a-be2a-a0eff2b84ca9', 'P5-L08-Iniciemos la costrucción.pdf'],
-  ['9646e9e3-f09e-42b1-a715-8e94e6f075a2', 'P5-L09-Peso para bajar y contrapeso para subir.pdf'],
-  ['8172aa90-7fe7-4ee5-95bc-8ec1dd6a6883', 'P5-L10-Construyamos poleas.pdf'],
-  ['0d5cbecf-c1e7-440f-903c-df720e9a6fa3', 'P5-L11-Construyamos con ruedas.pdf'],
-  ['9e0ae4bf-769d-4aae-8522-6e6898093cbb', 'P5-L12-Organicemos una competencia.pdf'],
-  ['da8b6499-afcd-4b1d-87c6-4f72f31feeaf', 'P5-L13-Bajo el mar.pdf'],
-  ['1dd6606f-1f3c-4276-86bf-4a1c3244deb9', 'P5-L14-Construyo medios de transporte terrestre.pdf'],
-  ['30c43abe-10a0-41da-bf32-0eafb541457a', 'P5-L15-Castillos y fortalezas.pdf'],
-  ['80492890-0e64-4911-8dae-b6dae5bed45d', 'P5-L16-Y la moraleja de esta historia es....pdf'],
-  ['da77fb15-e7c0-467f-8489-5fbf5219f5ea', 'P5-L17-Aprendo sobre engranajes.pdf'],
-  ['eadf3179-4b05-4595-afb7-be3d95ebcca1', 'P5-L18-Qué hacer cuando está temblando.pdf'],
-  ['0a130d05-411b-40a3-bb4a-02b238421894', 'P5-L19-Ensamblo máquinas compuestas.pdf'],
-  ['73864a51-54c0-4549-aefe-a7f38e1b989d', 'P5-L20-Cuánto conozco sobre energía.pdf'],
-  ['1b1a188b-70de-4333-9942-c6d2374d296b', 'P5-L21-Costumbres griegas.pdf'],
-  ['a47b694b-9e79-428b-905e-9de74761d731', 'P5-L22-Describamos una época.pdf']
-]
-
-P6 = [
-  ['3df7166e-69f6-4c46-aad3-142d27fcc500', 'P6-L01-Aprendamos sobre redes viales.pdf'],
-  ['ba52bfb8-d890-46a1-9163-380a3563f140', 'P6-L02-Ejes de simetría.pdf'],
-  ['cfcf4e44-847b-4ab0-ba52-7ff076f48c33', 'P6-L03-Cómo funcionan las palancas en mi armado.pdf'],
-  ['fba91b68-14a9-4b68-a136-6c6001228a53', 'P6-L04-Organicemos una competencia.pdf'],
-  ['e2341ea6-f001-494a-b9b8-6b860f81fee8', 'P6-L05-Armemos planos inclinados.pdf'],
-  ['d4a21386-f4d8-42e0-928b-d23042265e33', 'P6-L06-Acaso este es un tornillo.pdf'],
-  ['02acff60-14e9-42da-ba0c-0731785100b2', 'P6-L07-Aquí es donde deposito la basura.pdf'],
-  ['eb290c9e-cf04-4e1b-816d-2429c3fe3202', 'P6-L08-Quién será el ganador.pdf'],
-  ['4c8a87b4-d9ac-48d6-ac0e-06ca499f4b38', 'P6-L09-Construyamos con poleas.pdf'],
-  ['8a1baa9a-f228-409f-add9-e1517a27e3d7', 'P6-L10-Teleférico o funicular.pdf'],
-  ['49faf23c-30b3-4587-bee2-26e6887a8f21', 'P6-L11-La robótica del ahora y del mañana.pdf'],
-  ['ee0b9cc4-08a4-4086-9411-978384d762dc', 'P6-L12-Conozcamos figuras geométricas.pdf'],
-  ['76d4c4f5-301d-4a64-bc75-da592ab251f3', 'P6-L13-Cómo se almacena la energía.pdf'],
-  ['05c75225-accb-45ff-b7c1-74e75ad5b38e', 'P6-L14-Todos los vehículos son importantes.pdf'],
-  ['2f22e410-5399-4727-9f36-8fcc687c132d', 'P6-L15-Cuánta energía produce el viento.pdf'],
-  ['6a4960aa-8dc7-4cf1-8b93-2e673b1ba05c', 'P6-L16-Cuántas estructuras puedo armar.pdf'],
-  ['b4691b3b-0200-4b43-b10e-065f1d0a681f', 'P6-L17-¡Movámonos!.pdf'],
-  ['f1756ff5-480a-4f3b-93d8-0d8afc6dd804', 'P6-L18-¿Simple o compuesta.pdf'],
-  ['52ab1521-34d1-4992-8555-3cfe3865a07e', 'P6-L19-Construyamos con engranajes.pdf'],
-  ['25e10024-0d4a-4ccf-b9c0-9cda3167082f', 'P6-L20-Hablemos sobre medios de transporte.pdf'],
-  ['cf924145-9141-4806-98c9-764dcb98b112', 'P6-L21-La energía que mueve mi cuerpo.pdf'],
-  ['9902323a-19c7-49fc-9a0f-eb262fd44d19', 'P6-L22-¿Conoces este insecto.pdf']
-]
-
-S1 = [
-  ['bc5afb4d-280b-49aa-b253-f25e1501ad77', 'S1-L01-Qué armados puedo realizar.pdf'],
-  ['127d0cdc-7036-4c6f-926a-49bde4e22c56', 'S1-L02-Recordemos el principio de gravedad.pdf'],
-  ['af002381-6545-442f-ba46-e191f7d2daba', 'S1-L03-Para qué sirven las balanzas.pdf'],
-  ['916b3f08-e1a8-4628-8eaa-fff2c2346cc1', 'S1-L04-Aprendamos de máquinas simples.pdf'],
-  ['5fb31404-6aed-4956-a93c-17419e0f3b77', 'S1-L05-Tiremos la basura en su lugar.pdf'],
-  ['afcf27ef-56c2-47ff-adb4-01e511715a56', 'S1-L06-Creemos nuestros propios manuales.pdf'],
-  ['1e0458cd-c802-4a9b-9b3e-409b5e00e6b0', 'S1-L07-Dejemos que Newton nos enseñe.pdf'],
-  ['7d6f97e6-c379-4d5f-921b-50991802f685', 'S1-L08-Conozcamos sobre poleas.pdf'],
-  ['35cf8472-9232-483e-9be0-067d2eddffec', 'S1-L09-Diseñemos con contrapesos.pdf'],
-  ['4e12c6db-42ab-4a04-adcc-643deca121e8', 'S1-L10-Qué necesito para ser constructor.pdf'],
-  ['c176350e-d58e-454e-bb79-afa116a6dbae', 'S1-L11-Aprendamos de mecánica.pdf'],
-  ['b00fc35f-8f58-4a4d-b0f8-597960ce9f1d', 'S1-L12-Qué hacen los policías.pdf'],
-  ['7e0bd1f3-ad94-46b0-b6d4-589104a631e5', 'S1-L13-Así se produce la energía eléctrica.pdf'],
-  ['248f615d-d6ea-45b4-b6da-a2be116c0ec0', 'S1-L14-Conozcamos sobre la energía eólica.pdf'],
-  ['e5025eae-7132-4d21-a11e-18b3d6c5fc1b', 'S1-L15- Ideemos y clasifiquemos estructuras.pdf'],
-  ['a614438d-ee08-4f12-a664-de1f2121f993', 'S1-L16-Redactemos noticias.pdf'],
-  ['1c14a231-5421-457e-9355-e0d7ba4b22b6', 'S1-L17-Cómo funcionan los engranajes.pdf'],
-  ['674ca304-51d6-406e-b62a-514c900ca1ba', 'S1-L18-Conozcamos sobre energía potencial.pdf'],
-  ['21b5bb57-82d1-4ec3-9676-c5f459cbb1e0', 'S1-L19-Por qué se necesita una caja de velocidades.pdf'],
-  ['0745ccb6-89b6-4888-9151-0d8462e34330', 'S1-L20-El agua también produce energía.pdf'],
-  ['a0f67962-e0e9-4b2a-9899-1b5261e94154', 'S1-L21-Inventemos una película.pdf'],
-  ['9ae5f51c-cbfb-4ac6-90c1-826f61d5ee0e', 'S1-L22-Todos subamos al tren.pdf']
-]
-
-S2 = [
-  ['3e1fbda1-b26d-4dc8-8e57-7eb13f0da1cd', 'S2-L01-Identifiquemos ejes de simetría.pdf'],
-  ['1ca708d3-8f67-48ca-ad8e-1d49d81fe7c0', 'S2-L02-Conozcamos sobre insectos.pdf'],
-  ['c8f1258e-7e3e-42cf-a443-b2b62ca23de4', 'S2-L03-Hagamos un torneo de básquetbol.pdf'],
-  ['309584f1-29d1-4996-af6b-102155d8c9b8', 'S2-L04-Aprendamos sobre la Edad Media.pdf'],
-  ['ec2b6fb7-ea0d-45d0-b8e5-1e12049f767b', 'S2-L05-Primera Ley de Newton.pdf'],
-  ['70e628d6-2871-4abb-9cde-403c72de09bb', 'S2-L06-Para qué sirven los planos inclinados.pdf'],
-  ['e003d178-d40d-4a5c-98ce-f5d0aa4083ee', 'S2-L07-Si cae es porque hay gravedad.pdf'],
-  ['c699f55d-c9c6-4273-b99d-abc025a0c755', 'S2-L08-Estas son las poleas.pdf'],
-  ['19b0b190-5af2-40c7-a44f-0156b223dd90', 'S2-L09-Aplico los principios de robótica.pdf'],
-  ['11fc7684-c7c2-463c-ba24-02eea69b93f5', 'S2-L10-Prevención en carretera.pdf'],
-  ['a093631f-b959-4cf9-afd4-193cc2116623', 'S2-L11-Principio mecánico de ruedas y ejes.pdf'],
-  ['6c99ea75-7c21-4653-b607-8a73cd46589d', 'S2-L12-Mira cómo se mueve.pdf'],
-  ['ef996652-68ec-4eb2-9f4a-0270ba712672', 'S2-L13-Empuja con fuerza.pdf'],
-  ['78753f93-ae45-4574-963a-57e423b00bdf', 'S2-L14-Qué tipo de energía es esta.pdf'],
-  ['c2e754e1-a715-4c84-8c90-6ed4c6472500', 'S2-L15-De dónde vienen los productos.pdf'],
-  ['b20833e4-8946-4b56-a60c-5827f287630f', 'S2-L16-Grandes estructuras.pdf'],
-  ['b4162da0-8ba0-445c-b284-c64fee803be9', 'S2-L17-Estos son los engranajes.pdf'],
-  ['c6cdee23-63cf-4714-875c-328749de236b', 'S2-L18-Ejercitémonos.pdf'],
-  ['533b665f-72b7-4f9a-82b0-b068da999c13', 'S2-L19-Simple o compuesta.pdf'],
-  ['d3498949-2ac2-47ec-bc50-5c682ccc75dd', 'S2-L20-Cómo ocupamos los combustibles fósiles.pdf'],
-  ['aa5b73ab-721c-4e3d-ba2d-1720e2d2dc58', 'S2-L21-La energía que el agua produce.pdf'],
-  ['e8d7971c-47c9-4957-83da-837a56c61b28', 'S2-L22-Desenterremos los fósiles.pdf']
-]
-
-S3 = [
-  ['1847b5a9-333b-4627-bd50-01bce915cd94', 'S3-L01-Hablemos de las grandes ciudades.pdf'],
-  ['60250418-d82c-4e63-aee3-af38aa2af6be', 'S3-L02-Cómo funcionan mis manos.pdf'],
-  ['9693da55-3945-4c6b-a88d-3b5cf7a9c137', 'S3-L03-Máquinas simples en vehículos de carga.pdf'],
-  ['5c5ec81f-fab1-4828-9861-1ed91be617de', 'S3-L04-Aprendamos a redactar una noticia.pdf'],
-  ['54e13267-7861-4a11-b4c8-2cba38cfd961', 'S3-L05-Qué es el tornillo de Arquímedes.pdf'],
-  ['6ea33120-fbd4-40a4-8938-65753ece4167', 'S3-L06-Máquinas compuestas.pdf'],
-  ['26e96fa9-2fc0-482a-9d8e-62d698f2d142', 'S3-L07-Usos del plano inclinado.pdf'],
-  ['0b98712e-d623-446e-aa71-4896c4bc6412', 'S3-L08-Pesos y contrapesos.pdf'],
-  ['2034a203-00ab-42c5-b422-0b0dd060a779', 'S3-L09-Así funcionan las poleas.pdf'],
-  ['fcfa19a0-87af-417e-aebe-6b00e40de6c0', 'S3-L10-Otro medio de transporte.pdf'],
-  ['6e5c935f-c569-4c42-bff5-62aadf2631b0', 'S3-L11-Drones-Una apuesta a la tecnología.pdf'],
-  ['08af1a3c-00e3-437e-9157-c029ef7b92ec', 'S3-L12-Ejes y ruedas.pdf'],
-  ['8a23b119-0bed-4d52-8767-078839fb735b', 'S3-L13-Organicemos una competencia.pdf'],
-  ['a0331e88-5e7e-4c6d-a9c1-0a9d15bee15b', 'S3-L14-Estructuras de diferentes tamaños.pdf'],
-  ['bc60ff96-2c07-4be4-83d4-d52531cb6de9', 'S3-L15-Armemos diseños más complejos.pdf'],
-  ['dff41063-d524-4a0a-9bd8-758927f268e2', 'S3-L16-Los fósiles vuelven a la vida.pdf'],
-  ['625581f5-4eee-4d5d-bdc9-0d1a9e69b389', 'S3-L17-Tipos de engranajes.pdf'],
-  ['b3f6b488-71a0-4fa4-909e-27e68f4139a2', 'S3-L18-Terremotos y sismos.pdf'],
-  ['36d425e1-5f7a-4d6e-89e6-93574cf9f03b', 'S3-L19-Reloj mundial.pdf'],
-  ['2bd786b9-560f-4e55-9e3b-f2f6590f5b80', 'S3-L20-La marea alta.pdf'],
-  ['0ef8f3c0-890b-4d80-ab86-6639cd98d86d', 'S3-L21-Grecia antigua.pdf'],
-  ['e29bd7d3-18a3-4402-8dbd-f5adecad80fd', 'S3-L22-Ejercitémonos.pdf']
-]
-
-B1 = [
-  ['d643a38e-ce92-48ac-8cc4-4167426592cb', 'B1-L01-Conozcamos sobre mitología grecolatina.pdf'],
-  ['616b7db5-a204-4e99-992d-24e40ba7b54f', 'B1-L02-Maquinaria y modernización.pdf'],
-  ['a097a78d-f262-4026-81b1-4e6f4f4ce393', 'B1-L03-Aprendamos de robótica.pdf'],
-  ['b2815b85-a391-449c-8b1f-0415b547a38a', 'B1-L04-Máquinas simples_La palanca.pdf'],
-  ['20bc8969-a4ae-4d32-9628-5018b6a87963', 'B1-L05-Uso planos inclinados.pdf'],
-  ['2096ba1c-4bbb-4858-8cfd-bcd43d172a9c', 'B1-L06-Fuerzas paralelas.pdf'],
-  ['cb212f5c-2340-4790-a4f3-4190ff5f056f', 'B1-L07-Aprendamos sobre gravedad.pdf'],
-  ['caa597d6-811a-46ad-be63-c3a6b5b4ff1e', 'B1-L08-Participemos en la competencia.pdf'],
-  ['bf5e3db3-edcf-45e1-b809-fdffae2b2055', 'B1-L09-Pesos y contrapesos.pdf'],
-  ['0a152a8f-f2df-4f48-be4c-7d6e8965cd78', 'B1-L10-Armado y uso de poleas.pdf'],
-  ['87275d78-6a0c-4403-860e-c9078fbd01ca', 'B1-L11-Calculemos la energía.pdf'],
-  ['cc509c19-b6ce-437a-ad8b-370953595fb8', 'B1-L12-Las velocidades son relativas.pdf'],
-  ['a173e015-4230-4c82-9e40-b21bd296ed5a', 'B1-L14-La evolución.pdf'],
-  ['00f24182-8ce3-441e-b063-58c261090cd4', 'B1-L15-Estructuras.pdf'],
-  ['2e5e8779-cc0d-49db-9e3b-3e0621fb0ded', 'B1-L16-Estructura de las moléculas.pdf'],
-  ['edbe8db7-6426-43d4-ba38-643a16a08222', 'B1-L17-Tipos de engranajes.pdf'],
-  ['1422ee0a-da7e-4775-af06-c3edd80009a0', 'B1-L18-Ensamblo máquinas compuestas.pdf'],
-  ['a1680864-445a-4fc8-a4ca-574b1f927b71', 'B1-L19-Máquinas de producción.pdf'],
-  ['2600dc6c-53d9-43a1-af33-e52347bd40d1', 'B1-L20-Segunda Ley de Newton.pdf'],
-  ['b773fd58-ff3c-4a8f-98f5-3e87a2ed4be5', 'B1-L21-Esta es la energía hidráulica.pdf'],
-  ['daa2b784-8170-47e1-a03f-753857e842b7', 'B1-L22-Una energía amigable con el medio ambiente.pdf']
-]
-
-B2 = [
-  ['f4316e10-5a71-4986-9af9-f485f94b3060', 'B2-L01-Organicemos una competencia.pdf'],
-  ['6403e049-b149-4cd0-ba2f-8f1bf01419a5', 'B2-L02-Qué tipo de palanca es esta.pdf'],
-  ['26a10f52-21d1-487a-a3f7-620caa700751', 'B2-L03-Apliquemos la Ley de la palanca.pdf'],
-  ['4fe6cc30-176a-440b-8717-c9196eccce71', 'B2-L04-Conozcamos el funcionamiento de nuestras manos.pdf'],
-  ['ee3ac821-51d3-4224-8806-70767abe2431', 'B2-L05-Tornillo de Arquímedes.pdf'],
-  ['20260d90-1ede-48cc-bf33-9fa7c3e9e26f', 'B2-L06-El plano inclinado y la fricción.pdf'],
-  ['452b69e3-9c35-4912-902a-bfe48a061c32', 'B2-L07-De una simple a una compuesta.pdf'],
-  ['1ed723f1-04f9-4fc4-b994-ac2b6a601b23', 'B2-L08-Usos y ventajas de las poleas.pdf'],
-  ['bb92c818-83ad-4e71-8770-9ab35aca1324', 'B2-L09-Medios de transporte optativos.pdf'],
-  ['3743b3dc-c036-42dd-b1f6-0563814e2b28', 'B2-L10-Aprendamos de mecánica automotriz.pdf'],
-  ['ae70084d-d8d3-418f-b6de-a28f46120eca', 'B2-L11-Argumento sobre nuestras costumbres.pdf'],
-  ['a0d603eb-1a3f-4fb2-a14b-c2ea745b0636', 'B2-L12-Ruedas y ejes.pdf'],
-  ['855ffc3e-cc6a-4f43-9558-b3a3340a0cd4', 'B2-L13-Tecnología y desarrollo sostenible.pdf'],
-  ['16a32864-9875-42e7-8d1f-7a7821fc4cc2', 'B2-L14-Observando ecosistemas imperceptibles.pdf'],
-  ['b294681e-d324-445a-af07-819fda820077', 'B2-L15-Conozcamos de historia.pdf'],
-  ['4bc92ec7-8f63-4c29-942c-de7ef5c05523', 'B2-L16-Usos de las estructuras.pdf'],
-  ['02071909-7892-4d74-bdb6-8b00c5fe1abc', 'B2-L18-Viaje a la luna.pdf'],
-  ['59c3ddfe-5ee4-4144-b238-858fcc013f52', 'B2-L19-Las construcciones, ¿perjudican el medio ambiente¿.pdf'],
-  ['01ee0020-87e9-4227-a6d9-b544e934b8c5', 'B2-L20-Fuerza de fricción.pdf'],
-  ['4281d866-cd00-4230-a50f-1060bbf7b211', 'B2-L21-Energía amigable con el medio ambiente.pdf'],
-  ['3ec25aeb-ca61-4c96-b788-1b7312198456', 'B2-L22-De la Edad Antigua a la contemporaneidad.pdf']
-]
-
-A = [
-  ['8d668666-9f8e-487c-9ff7-e5d5d6ea5531', 'EB1_L01-Fotorresistencia'],
-  ['93d3c567-25c8-44d2-b163-6f072db1b785', 'EB1_L02-Control LED'],
-  ['47f91c2b-9c40-447e-9c56-02a11139c6cf', 'EB1_L03-Luces con NeoPixels'],
-  ['f1a7f157-99ba-44e7-a3c6-9074feba9454', 'EB1_L04-Control vehicular'],
-  ['7fd69612-88f7-4712-a758-1383aa5cec94', 'EB1_L05-Color musical'],
-  ['049048f5-3cb5-44a6-8ffd-f878a107d9d7', 'EB1_L06-Temporizador'],
-  ['d57c52b6-4c57-493a-ab34-e0a4d1cd164c', 'EB1_L07-Ohmímetro'],
-  ['eef2d120-2366-4ac3-a972-5b12eeb08873', 'EB1_L08-Sistema de enfriamiento'],
-  ['ec46e47a-049c-4d6e-96f3-d10788a810d7', 'EB1_L09-Luces de aceleración'],
-  ['d8d5bbd8-9ff1-4a80-889d-6ce09779d566', 'EB1_L10-Viaje seguro'],
-  ['a168fc63-35a4-4740-8cf9-06246e7703d0', 'EB2_L01-Relé electromagnético'],
-  ['fdd5d53a-768c-4a42-812a-b8ff7f3a0846', 'EB2_L02-Luces aceleradas'],
-  ['55e51b77-26a7-41fa-9983-588f83cf7a8c', 'EB2_L03-Bucles de luces'],
-  ['a0fd135e-c4ba-4676-a4c2-cee6f4566269', 'EB2_L04-Control de sonido'],
-  ['2a67911c-34b0-47a3-8a97-a75e730fae02', 'EB2_L05-Música y color'],
-  ['8c9c794d-38d2-4003-9d48-888e16cb0d58', 'EB2_L06-Programador de tareas'],
-  ['05f63f77-ce4c-4008-8c5c-782ca67f119c', 'EB2_L07-Calculadora binaria'],
-  ['f6812f9f-2a2c-48e1-ad01-e2797b351df3', 'EB2_L08-Luces inteligentes'],
-  ['ad4a8feb-22e3-4bf7-8b6a-786f95490b43', 'EB2_L09-Velocidad y aceleración'],
-  ['3ce82438-77ea-4f46-b5d4-dd619d702819', 'EB2_L10-Robot explorador'],
-  ['91436973-1fe2-4432-9d93-2246b51f0b1d', 'ES1_L01-¿Qué es Arduino?'],
-  ['0e4f54da-50b7-46c0-8a44-2317d566e90d', 'ES1_L02-Mi primer programa con Arduino'],
-  ['b4a32202-8f39-4142-bace-90af91b630fe', 'ES1_L03-Ciclos repetitivos de programación'],
-  ['9bc6137d-eac2-41e9-aabb-dd3ea9bc4fa8', 'ES1_L04-Programando un semáforo'],
-  ['4e7dba34-1b91-4f01-a857-b22e0ca75f3c', 'ES1_L05-Principio de las pantallas LED'],
-  ['c33f99f0-1e84-4e8c-9d22-083d25edb970', 'ES1_L06-Contador digital'],
-  ['d8ad7518-1f6c-4bb8-99b5-5ebabb8e4849', 'ES1_L07-Luxómetro'],
-  ['0da5a8ba-1108-4731-aca6-b838dfa8b190', 'ES1_L08-Termómetro digital'],
-  ['1b7c04d8-a56f-43f5-9663-73ba89fa6dcb', 'ES1_L09-Movimientos automatizados'],
-  ['d1e8cc1c-99aa-4339-b22b-a91f4089a386', 'ES1_L10-Robot musical'],
-  ['a09c1311-74cf-4655-85e9-82c65cecaf12', 'ES2_L01-Programando microcontroladores'],
-  ['4d1da65b-b254-44e4-a86f-acb7e301ee8a', 'ES2_L02-Comandos básicos Arduino'],
-  ['2d4bdb16-cca5-405b-9dfb-0fa70d6d62a9', 'ES2_L03-Retardo LED'],
-  ['dd439a13-f166-4a0f-aee2-fdd50aaca88c', 'ES2_L04-Cuidando el medio ambiente'],
-  ['e0e17493-91b9-43f7-8600-f360e1f4ded0', 'ES2_L05-Combinando luz LED RGB'],
-  ['31e00027-dc58-48ca-9caf-c9725ab9dccf', 'ES2_L06-Cronómetro digital'],
-  ['6238282d-cfa4-47f2-b831-360943d05599', 'ES2_L07-Voltímetro digital'],
-  ['ff81d490-3391-4739-926e-694fb48bad62', 'ES2_L08-Sonidos en mi habitación'],
-  ['be436f0a-4f1f-4987-ac0d-3552f39a8dec', 'ES2_L09-Control de velocidad'],
-  ['5b472be5-f5df-4d27-ab70-708c441897a1', 'ES2_L10-Robot policial'],
-  ['479803ba-313e-4e11-99d7-9e1536eb4e62', 'ES3_L01-Circuitos integrados'],
-  ['8e4c9784-88ef-4436-b4b2-951797308c31', 'ES3_L02-Programando Arduino'],
-  ['83d9b2f1-f0b8-407d-916c-ebdd02632b1f', 'ES3_L03-Bucles y efectos luminosos'],
-  ['c1694ffb-6287-4120-abdc-a51549365ecb', 'ES3_L04-Semáforo inteligente'],
-  ['98acb9f0-43d8-46f8-bf3a-b0c94728ccf0', 'ES3_L05-Proyecto arcoiris'],
-  ['3fc6bafa-717e-4e6f-85d6-3284ed49623a', 'ES3_L06-Reloj digital'],
-  ['94f76f0f-820a-41a3-a4ff-74062f71f918', 'ES3_L07-Amperímetro digital'],
-  ['6425927d-d9f8-44fd-9bd6-f83d5edd2ff7', 'ES3_L08-Sensor ultrasónico'],
-  ['c71e9107-93e5-40c0-b6e1-bc2dad140faf', 'ES3_L09-Aceleración programada'],
-  ['b79633d6-4111-4470-9119-b7e500b6dad5', 'ES3_L10-Robot mensajero']
-]
-
-M3D = [
-  "2e2d45b9-3b30-476d-b432-d23c989fef48",
-  "63658ba0-6139-4f9a-8cc3-0ace63277921",
-  "8569d806-9034-4f69-9509-59bd64feb56a",
-  "b471fb75-c4a1-445d-ba9c-182a83a0fc23",
-
-  "e6d8fa4c-6753-4eda-9512-70e0bc0b9444",
-  "12651df5-e694-4eeb-ae81-7f4027dbd329",
-  "97edd512-7bad-4fd7-87e9-b61edf22dc95"
-]
-
 
 // let group_id = "64cd9936-89c3-4e39-b963-e82ae8025fc9";
 
@@ -546,25 +128,1670 @@ let id_lesson = [
 ];
 // let id_lesson = ["f0a1a117-9bac-4b88-9c26-ed06303a4408"];
 
-id_class_group.forEach(group_id => {
+// <a href='https://files.roboxmaker.com/lessons/T1/Recursos/K4_L14%20Cuento%20-%20%C3%81mbar%20quer%C3%ADa%20conocer%20los%20globos%20aerost%C3%A1ticos.pdf'>K4_L14 Cuento - Ámbar quería conocer los globos aerostáticos.pdf</a>
+// <a href='https://files.roboxmaker.com/lessons/T1/Recursos/K4_L3%20Cuento%20-%20Laurita%20y%20sus%20hermanos.pdf'>K4_L3 Cuento - Laurita y sus hermanos.pdf</a>
+// <a href='https://files.roboxmaker.com/lessons/T1/Recursos/K5_L11%20Cuento%20-%20%C2%BFPor%20qu%C3%A9%20Leny%20no%20corr%C3%ADa.pdf'>K5_L11 Cuento - ¿Por qué Leny no corría.pdf</a>
+// <a href='https://files.roboxmaker.com/lessons/T1/Recursos/P2_L13%20Cuento%20-%20Lucio%20quer%C3%ADa%20ser%20constructor.pdf'>P2_L13 Cuento - Lucio quería ser constructor.pdf</a>
+// <a href='https://files.roboxmaker.com/lessons/T1/Recursos/P5_L1%20Cuento%20-%20Los%20castorcitos%20constructores.pdf'>P5_L1 Cuento - Los castorcitos constructores.pdf</a>
+
+new_lessons = [
+  // {id: 'abda3144-45ff-4735-8a4e-e9f66cfcef14', section: 'K4_L14', name:'K4_L14 Cuento - Ámbar quería conocer los globos aerostáticos.pdf'},
+  // {id: 'c810e665-49b8-464d-bac5-c6907aba88d5', section: 'K4_L3', name:'K4_L3 Cuento - Laurita y sus hermanos.pdf'},
+  // {id: '7da22355-c6e5-4984-88b0-4c4c46f06a56', section: 'K5_L11', name:'K5_L11 Cuento - ¿Por qué Leny no corría.pdf'},
+  // {id: '4996d6ed-875c-4d85-a293-ab0a8c34607f', section: 'P2_L13', name:'P2_L13 Cuento - Lucio quería ser constructor.pdf'},
+  {id: 'c53a51e7-c348-4015-b3f2-8d0ea3c07f1b', section: 'P5_L1', name:'P5_L1 Cuento - Los castorcitos constructores.pdf'}
+];
+
+new_groups = [
+  // K4 60b70cf7-146e-4636-bbb7-dada9a14dec7
+  // // "2b4dce57-5b62-42a1-a82f-5d90f30da7eb",
+  // // "2b12d7ab-a14c-4de2-b545-f07d3d092519",
+  // // "e93f5ad6-459d-460b-8286-8fb95a1e45d1",
+  // // "2a7ccb13-d89b-4987-93d5-7d7669147edf",
+  // // "26b7d5ef-58ac-4f08-95b5-db7ff60e636e",
+  // // "74babbf9-6896-4da2-8f59-eaad34b5e944",
+  // "5016d6e6-4e5e-4ad3-8f00-c4586275ee5f",
+  // "7a202d80-42a4-40fb-a2b6-20fd7141f034",
+  // "2b4dce57-5b62-42a1-a82f-5d90f30da7eb",
+  // "73c4108d-50dc-4b4e-bd1a-8e37e837d151",
+  // "2b12d7ab-a14c-4de2-b545-f07d3d092519",
+  // "e93f5ad6-459d-460b-8286-8fb95a1e45d1",
+  // "9a5e0c04-690f-4d01-8092-246abf6f0cb9",
+  // "bc2c75fc-b30a-42b6-b514-85ae99b15e6a",
+  // "2a7ccb13-d89b-4987-93d5-7d7669147edf",
+  // "999959d9-c418-4254-bd79-b2446babb8e3",
+  // "b6b696b1-00c6-4e97-a489-bc2f03dee8d0",
+  // "ad807320-8d27-4dcd-8a5d-c4d0102978ef",
+  // "dab4c559-5fc8-42db-b2a6-1ac9070ea09a",
+  // "e6319799-47c5-4512-b30f-c2214b3c5692",
+  // "bf11f394-230c-4d48-a764-bf3ef879598c",
+  // "780dedb8-a760-4d40-89d5-7c44b08b7798",
+  // "d9934485-12de-4ec3-a3f2-843745542894",
+  // "60c68350-900b-4a01-b5ed-ed0811b6ff47",
+  // "851b3e06-f0ba-4df6-ba3b-4a5281bcbafc",
+  // "8449edc0-2425-4223-b719-83c1de861429",
+  // "26b7d5ef-58ac-4f08-95b5-db7ff60e636e",
+  // "ba00b982-b4ce-47d4-a6ab-be7513413031",
+  // "46016629-1642-4cb3-bade-a6178aa714ac",
+  // "b11a72f4-6df2-4abb-8148-5256a7947fa7",
+  // "74babbf9-6896-4da2-8f59-eaad34b5e944",
+  // "52ef60f8-9111-41e9-a33f-b041200690ec",
+
+  // K5 b064749b-213a-42bc-9d00-61c8d9b94888
+  // // "f1b930e0-43cd-4b08-be6c-b08abd192158",
+  // // "777b9a29-f5d6-4440-820d-adc9dcf85169",
+  // // "dd449a1c-4f0b-4779-be95-7932ee67832a",
+  // // "ae8b21df-ec43-4370-9fe6-53b60b889144",
+  // // "1edd9be3-561f-4d08-86cd-15c6843de975",
+  // // "a68e2df3-f8eb-45c9-9952-10ae2b82098e",
+  // "df3521de-152a-40e1-8ae3-3f49d7523269",
+  // "f4edaf65-59f8-4441-b69d-9d84ece4bef4",
+  // "682d1ffd-2153-4241-8270-d3f5f9f2f605",
+  // "c9a6452a-0120-4d2b-8c9d-2b14bc33bb72",
+  // "50251cf3-b7e0-43bb-b5d8-c453d1a9c623",
+  // "f1b930e0-43cd-4b08-be6c-b08abd192158",
+  // "777b9a29-f5d6-4440-820d-adc9dcf85169",
+  // "e7554286-f365-4fac-bc89-17e3e97a9b5a",
+  // "97ec99a5-7242-4ffb-9992-858ea1b6ada1",
+  // "e84e2914-3b12-45cc-a1b1-184da9de6f9b",
+  // "9eeb096c-57c9-4546-afb1-9676b683418a",
+  // "455edef5-e4c9-4a8a-8f1d-4b850c38ca4d",
+  // "2349f66d-95f0-4ae1-880e-02f350d33c0e",
+  // "2f3ee2d1-2ce3-419c-bcc3-6b7940c42419",
+  // "373b3449-3832-4e01-b873-df549dad8bd9",
+  // "e985a4c7-4daf-4eb1-9711-2120637ce017",
+  // "7ebc5f66-e62f-430b-a4b9-45375f9a1d58",
+  // "8456ec37-49ef-44f9-90b1-1b0a738c64e6",
+  // "dd449a1c-4f0b-4779-be95-7932ee67832a",
+  // "9076589a-eadb-47cb-a1c8-0f4697900bfe",
+  // "49f457d3-c4d6-48fa-8512-066bfc48b58e",
+  // "ae8b21df-ec43-4370-9fe6-53b60b889144",
+  // "e00423e2-ea8a-4ffd-a9d8-b13a28fe30d9",
+  // "1edd9be3-561f-4d08-86cd-15c6843de975",
+  // "5e521d22-bda8-42e7-a88f-d030920869e5",
+  // "2967273e-b739-469a-a21c-a7c13c32d017",
+  // "11e72b29-8071-4cbc-9546-ff115d87509f",
+  // "a68e2df3-f8eb-45c9-9952-10ae2b82098e",
+  // "b6e1022b-2555-4ceb-b536-c6b4499d3e8b",
+  // "870478c9-47a1-4e5b-b1ac-b73cca8e8d17",
+
+  // P2 9f7e4943-3f13-4a58-b1f9-22256a8c09e7
+  // // "a329cd2a-1180-41aa-91fe-824d9efb7731",
+  // // "6d1d5bf1-6463-4fdb-b866-c258b385f0e9",
+  // // "da1081a0-6d97-40c3-97e6-376b6ad56c18",
+  // // "641d5f01-f6c8-4da1-80a6-ede4647397a8",
+  // // "8db24d62-0b7e-44f1-8ad4-11f3a2c2f5fe",
+  // // "73c9e0b1-4cd5-4a1e-993c-5513e5612e35",
+  // // "c5500196-8810-474d-bea4-596ef14d4b0a",
+  // // "d0d1b10e-1dc6-4205-8b1c-abeb8cb86bdb",
+  // "ffa68815-6c8f-4b65-b95e-4a695bd43ac4",
+  // "b42a0bd7-4ed8-496c-bb34-0ef79b06a2e2",
+  // "67a1b2dd-827f-4b95-9ed9-1a8984cc5816",
+  // "b8685dd7-efd8-4367-8b1e-78505adac756",
+  // "42a5a822-1259-4997-b97b-520b1e1afb92",
+  // "a329cd2a-1180-41aa-91fe-824d9efb7731",
+  // "6d1d5bf1-6463-4fdb-b866-c258b385f0e9",
+  // "da1081a0-6d97-40c3-97e6-376b6ad56c18",
+  // "7aa7c246-d5fa-4bef-af7b-7564988140c3",
+  // "9b3c0be4-89da-4da6-952a-bc7c0a8adea2",
+  // "6ec55ffc-7ff7-4dfb-8023-0eadc5878167",
+  // "0f325020-7acd-4e1e-a1a9-341c4cd3ec98",
+  // "9e2c2027-15f8-471e-9682-0db450d41c5e",
+  // "6ffb4190-8d24-4d1a-917c-31e2d66f9aae",
+  // "f65004e6-cb93-4f7a-a0f6-c07d0e8d35a7",
+  // "3eb69bd1-4a9a-47a3-ae57-d613a64dcd4f",
+  // "efc7bbc1-71ed-4e97-9657-d5a33954f613",
+  // "0e3506e5-e028-4574-96b0-a16634927982",
+  // "1f418173-16a4-477d-8bd3-aeca08a8db48",
+  // "fced462a-45c9-4040-973b-06f748d822cd",
+  // "b755450d-a71d-4af1-9853-0362c44805bf",
+  // "641d5f01-f6c8-4da1-80a6-ede4647397a8",
+  // "8db24d62-0b7e-44f1-8ad4-11f3a2c2f5fe",
+  // "2849349d-55d4-4292-869d-8417f8f824f9",
+  // "1c2a6174-e624-4510-8d60-6e449ed20b44",
+  // "981d053a-526a-4b09-9213-d483ccee2f4f",
+  // "5dffb353-013b-4cad-97c7-bb4d179e4581",
+  // "73c9e0b1-4cd5-4a1e-993c-5513e5612e35",
+  // "c5500196-8810-474d-bea4-596ef14d4b0a",
+  // "4f0cbf9c-e162-41f5-9fc2-d7fd7d0cf5b3",
+  // "51be43e2-3df8-4f7b-820f-a43a1df17464",
+  // "ba835cf0-7d5d-4c90-b058-09d7d0bb5864",
+  // "d0d1b10e-1dc6-4205-8b1c-abeb8cb86bdb",
+  // "dbbc2463-3823-4a98-8da8-20e851e87d40",
+  // "6cb256ca-3d21-43b4-bb01-55c92c483c34",
+
+  // P5 d795534b-3662-4e91-8c97-273bc52d661e
+  // "f5d327cf-921f-4fb3-81c5-ae4a47002ee1",
+  // "016767c5-455b-4ec5-ab5b-03c27130ab66",
+  // "c92c0979-50fc-49f3-b2c0-d8b26b802c2d",
+  // "d3e8f40d-75fe-40e8-a689-efd807b10d93",
+  // "ff12b194-87a7-4ea2-8dc6-51a559f00ada",
+  // "c58e3cf6-f5ec-4833-a29c-6a1b36e5ee91",
+  // "9f70af15-8c0e-4ab8-8244-bfc78714746f",
+  // "0850e1e1-6d2e-4690-98ac-2ac8dbc31b45",
+  "f5d327cf-921f-4fb3-81c5-ae4a47002ee1",
+  "cf6ec161-1b14-4a76-95fb-fe5765456d1f",
+  "84f10d3f-d745-4eb3-adef-c0f0c157ed94",
+  "016767c5-455b-4ec5-ab5b-03c27130ab66",
+  "c92c0979-50fc-49f3-b2c0-d8b26b802c2d",
+  "0371e2a9-fc26-4546-b7eb-651f83096873",
+  "a7991c68-1169-4e3b-8914-eefed05ac902",
+  "4647b439-4c52-49b5-9162-a0d39218342a",
+  "e0fe6290-9974-4574-aea2-df721bf461ae",
+  "5e1a868e-9481-4ec2-8303-bca509fc6f4e",
+  "6a785596-a79b-4006-8cc8-7cd166799522",
+  "1b644be1-01bb-48ab-8d84-0f52be42a3e6",
+  "3ca7f7f9-0461-4681-8eb3-35b12b8b5611",
+  "f46e62b8-aa9e-4562-99d2-01f0df2dd120",
+  "5b596147-f96b-427c-a027-a0a95ce7fdaa",
+  "11909988-5777-4a06-96bc-a03a6bd371af",
+  "4d4cf90e-0e28-4001-ac43-918fbf1e7421",
+  "8c198b27-8e24-4831-b55e-a2ef2fae49cb",
+  "c4ec55bd-6d7f-40cc-833e-060537108626",
+  "d3e8f40d-75fe-40e8-a689-efd807b10d93",
+  "ff12b194-87a7-4ea2-8dc6-51a559f00ada",
+  "1431e5c3-4e4a-4c56-9131-5cb565b75072",
+  "f1ab522e-2ce1-4c36-99e6-fa83539a6877",
+  "d066f2c8-c501-4748-af4b-89bd6a4f8870",
+  "90f618ac-d0fc-4162-b453-a3ae69a32e47",
+  "c58e3cf6-f5ec-4833-a29c-6a1b36e5ee91",
+  "69d450a4-6162-4633-818d-1437c9ae65a3",
+  "6b099ff2-41bf-417b-b5f8-ef1980e5313a",
+  "9f70af15-8c0e-4ab8-8244-bfc78714746f",
+  "040f7643-10f3-4635-8256-9e84ab5b6e36",
+  "558a52ba-4a19-46a4-b0a3-0ced57d39b9c",
+  "0f352b31-3c21-4b9e-9ae4-bec11918de18",
+  "0850e1e1-6d2e-4690-98ac-2ac8dbc31b45",
+  "8c990c88-9661-43e5-beed-d575e7f2ada1",
+];
+
+// PRIMARIA 1 ACTUALIZADO
+HP1 = [
+  // ELECTRONICA
+  {
+    "lesson_id": "abbdf2ea-1787-470d-829d-ae8965dae30f",
+    "lesson_profile": {
+      "title": "EP1-L01-La electricidad"
+    }
+  },
+  {
+    "lesson_id": "ee486d17-609c-4ba6-b372-93712c33d12f",
+    "lesson_profile": {
+      "title": "EP1-L02-Interruptores"
+    }
+  },
+  {
+    "lesson_id": "cad60531-33bb-479a-a594-8d74ada6cdae",
+    "lesson_profile": {
+      "title": "EP1-L03-Luz eléctrica"
+    }
+  },
+  {
+    "lesson_id": "919c0ae9-af1f-4c14-8287-932b5607a39c",
+    "lesson_profile": {
+      "title": "EP1-L04-Sonido"
+    }
+  },
+  {
+    "lesson_id": "f6f727e3-e7b4-4588-92dc-3f80dba87aef",
+    "lesson_profile": {
+      "title": "EP1-L05-Creando viento"
+    }
+  },
+  {
+    "lesson_id": "99498159-8655-40d4-8f08-20d0953d1551",
+    "lesson_profile": {
+      "title": "EP1-L06-Conexión en serie"
+    }
+  },
+  {
+    "lesson_id": "70c936c1-68fe-4b7b-9c32-4beafe1a6473",
+    "lesson_profile": {
+      "title": "EP1-L07-Conexión en paralelo"
+    }
+  },
+  {
+    "lesson_id": "3ca58210-d5a8-4a4a-ba71-6dffc6e3e504",
+    "lesson_profile": {
+      "title": "EP1-L08-Alternando dispositivos"
+    }
+  },
+  {
+    "lesson_id": "e5786887-740a-4235-9942-34a4a5e5f392",
+    "lesson_profile": {
+      "title": "EP1-L09-Movimientos y sonidos"
+    }
+  },
+  {
+    "lesson_id": "184bf3a8-492e-40c4-98e5-3208be9a3d17",
+    "lesson_profile": {
+      "title": "EP1-L10-Luz y oscuridad"
+    }
+  },
+  // Recursos
+  {
+    "lesson_id": "5d6e75db-29de-423b-a50e-26786f00f095",
+    "lesson_profile": {
+      "title": "P1-L01-¡Conozcamos nuestras piezas!.pdf"
+    }
+  },
+  {
+    "lesson_id": "05f930b8-9a26-453c-b380-b1f590ea5a18",
+    "lesson_profile": {
+      "title": "P1-L02-Aprendamos a orientar y posicionar objetos.pdf"
+    }
+  },
+  {
+    "lesson_id": "e8a3956d-1aa0-4c6a-844c-348662b886cc",
+    "lesson_profile": {
+      "title": "P1-L03-Construyamos castillos.pdf"
+    }
+  },
+  {
+    "lesson_id": "96f1d382-1023-45cc-976e-615d9e707fa4",
+    "lesson_profile": {
+      "title": "P1-L04-Conozcamos las máquinas simples.pdf"
+    }
+  },
+  {
+    "lesson_id": "7e026316-485b-4f3b-8a4c-1cb310cbce7c",
+    "lesson_profile": {
+      "title": "P1-L05-Conozcamos sobre el plano inclinado.pdf"
+    }
+  },
+  {
+    "lesson_id": "f97f0ea4-b463-44b4-8e89-ec16ac63cca3",
+    "lesson_profile": {
+      "title": "P1-L06-Clasifiquemos y tracemos líneas.pdf"
+    }
+  },
+  {
+    "lesson_id": "36328d83-ae69-4372-8bd5-646909a8804d",
+    "lesson_profile": {
+      "title": "P1-L07-Armemos pistas de carrera.pdf"
+    }
+  },
+  {
+    "lesson_id": "2d10e9ba-5235-432e-8110-6593b0fdfddb",
+    "lesson_profile": {
+      "title": "P1-L08-Aprendamos sobre símbolos patrios.pdf"
+    }
+  },
+  {
+    "lesson_id": "62eedd97-f2c7-419a-a774-bc0f8f80e7d2",
+    "lesson_profile": {
+      "title": "P1-L09-Conozcamos sobre poleas.pdf"
+    }
+  },
+  {
+    "lesson_id": "d221d16f-6fc9-4bf4-b24d-87f05ba319b4",
+    "lesson_profile": {
+      "title": "P1-L10-Juguemos a ser pescadores.pdf"
+    }
+  },
+  {
+    "lesson_id": "e25ca98b-c091-4317-aee3-426499b02d82",
+    "lesson_profile": {
+      "title": "P1-L11-Así funcionan las ruedas.pdf"
+    }
+  },
+  {
+    "lesson_id": "f1683df4-a6b9-4767-b170-da7c34f2c1f0",
+    "lesson_profile": {
+      "title": "P1-L12-Manejemos helicópteros.pdf"
+    }
+  },
+  {
+    "lesson_id": "a24bde4f-e214-436a-be12-4115170c2e27",
+    "lesson_profile": {
+      "title": "P1-L13-Adivina, adivinador.pdf"
+    }
+  },
+  {
+    "lesson_id": "32104111-4c7a-4ec4-87ed-8182b6149d87",
+    "lesson_profile": {
+      "title": "P1-L14-Busquemos semejanzas y diferencias animales.pdf"
+    }
+  },
+  {
+    "lesson_id": "ea7cc9ec-f972-41b8-915d-10e73a6d7f53",
+    "lesson_profile": {
+      "title": "P1-L15-Ideemos y clasifiquemos estructuras.pdf"
+    }
+  },
+  {
+    "lesson_id": "e8bcf72b-3b13-40d7-964d-66e3a78fbc8c",
+    "lesson_profile": {
+      "title": "P1-L16-Cómo funcionan los molinos de viento.pdf"
+    }
+  },
+  {
+    "lesson_id": "d590cb62-9295-4afc-97f7-05f12a2fd9f2",
+    "lesson_profile": {
+      "title": "P1-L17-Encajemos los engranajes.pdf"
+    }
+  },
+  {
+    "lesson_id": "26f8772d-fc10-410d-bbec-109c3577bea6",
+    "lesson_profile": {
+      "title": "P1-L18-Giremos la manivela.pdf"
+    }
+  },
+  {
+    "lesson_id": "dec8575a-e892-445b-8c0e-c9743ad9bfa8",
+    "lesson_profile": {
+      "title": "P1-L19-Describamos nuestro hogar.pdf"
+    }
+  },
+  {
+    "lesson_id": "36824c98-f25f-4f93-b18b-0267e8fda137",
+    "lesson_profile": {
+      "title": "P1-L20-Compitamos en una carrera de carros.pdf"
+    }
+  },
+  {
+    "lesson_id": "a9aac3b5-a46f-4a2d-8d21-d500464ea99c",
+    "lesson_profile": {
+      "title": "P1-L21-El trencito, chucu, chucu, chu….pdf"
+    }
+  },
+  {
+    "lesson_id": "557a53eb-da20-42fc-8271-dfbe43ebfb4e",
+    "lesson_profile": {
+      "title": "P1-L22-Cuánta fuerza tiene el agua.pdf"
+    }
+  },
+  {
+    "lesson_id": "72c0b140-d92a-4a9a-b1f3-7605deee4519",
+    "lesson_profile": {
+      "title": "P1-L23-¡Vamos a la feria!.pdf"
+    }
+  },
+  {
+    "lesson_id": "07a08b37-a6ce-4bf3-a02c-bf70a26041bc",
+    "lesson_profile": {
+      "title": "P1-L24-Cuál es este insecto.pdf"
+    }
+  },
+  {
+    "lesson_id": "0426b65d-fcab-4ad2-9678-b0e85a117616",
+    "lesson_profile": {
+      "title": "P1-L25-Planeemos una competencia de motos.pdf"
+    }
+  },
+  {
+    "lesson_id": "15d78d60-1111-4c1a-9bde-afd22f1ae5e1",
+    "lesson_profile": {
+      "title": "P1-L26-¿Cómo se produce la electricidad.pdf"
+    }
+  },
+  {
+    "lesson_id": "df915b7b-5ac4-4c97-919c-34bf7a6a1da8",
+    "lesson_profile": {
+      "title": "P1-L27-¿Sabes cómo funcionan los interruptores.pdf"
+    }
+  },
+  {
+    "lesson_id": "f999edbd-e03e-4150-b84c-f09f92b5b7f9",
+    "lesson_profile": {
+      "title": "P1-L28-No le temas a la oscuridad.pdf"
+    }
+  },
+  {
+    "lesson_id": "23b660ed-8a77-49f4-b240-9cde6ddf4c8b",
+    "lesson_profile": {
+      "title": "P1-L29-Juguemos con el sonido.pdf"
+    }
+  },
+  {
+    "lesson_id": "fa4b3623-3cc5-49d8-9a6b-3f8a8fc5a318",
+    "lesson_profile": {
+      "title": "P1-L30-¡Hay mucho calor.pdf"
+    }
+  },
+  {
+    "lesson_id": "e957e71e-b7e1-4b9d-adcf-17d7d954f1a3",
+    "lesson_profile": {
+      "title": "P1-L31-Aprendamos nombres propios y comunes en singular y plural.pdf"
+    }
+  },
+  {
+    "lesson_id": "d0f86229-8790-47d6-bc4d-b9d98b7d4de2",
+    "lesson_profile": {
+      "title": "P1-L32-Ocupemos conceptos de tiempo.pdf"
+    }
+  },
+  {
+    "lesson_id": "a169b534-4d7d-4f63-bc3b-f9b0689308a5",
+    "lesson_profile": {
+      "title": "P1-L33-Diversión con circuitos.pdf"
+    }
+  },
+  {
+    "lesson_id": "f692901a-63d9-4365-8a22-920bfe1c71f3",
+    "lesson_profile": {
+      "title": "P1-L34-Detectemos sonidos y objetos.pdf"
+    }
+  },
+  {
+    "lesson_id": "e23ef4d9-3a18-4115-9a3f-52af3e993e79",
+    "lesson_profile": {
+      "title": "P1-L35-Ayudemos a ahorrar energía en casa.pdf"
+    }
+  }
+];
+
+HS1 = [
+  {
+    "lesson_id": "91436973-1fe2-4432-9d93-2246b51f0b1d",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "ES1-L01-¿Qué es Arduino?"
+    }
+  },
+  {
+    "lesson_id": "0e4f54da-50b7-46c0-8a44-2317d566e90d",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "ES1-L02-Mi primer programa con Arduino"
+    }
+  },
+  {
+    "lesson_id": "b4a32202-8f39-4142-bace-90af91b630fe",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "ES1-L03-Ciclos repetitivos de programación"
+    }
+  },
+  {
+    "lesson_id": "9bc6137d-eac2-41e9-aabb-dd3ea9bc4fa8",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "ES1-L04-Programando un semáforo"
+    }
+  },
+  {
+    "lesson_id": "4e7dba34-1b91-4f01-a857-b22e0ca75f3c",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "ES1-L05-Principio de las pantallas LED"
+    }
+  },
+  {
+    "lesson_id": "c33f99f0-1e84-4e8c-9d22-083d25edb970",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "ES1-L06-Contador digital"
+    }
+  },
+  {
+    "lesson_id": "d8ad7518-1f6c-4bb8-99b5-5ebabb8e4849",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "ES1-L07-Luxómetro"
+    }
+  },
+  {
+    "lesson_id": "0da5a8ba-1108-4731-aca6-b838dfa8b190",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "ES1-L08-Termómetro digital"
+    }
+  },
+  {
+    "lesson_id": "1b7c04d8-a56f-43f5-9663-73ba89fa6dcb",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "ES1-L09-Movimientos automatizados"
+    }
+  },
+  {
+    "lesson_id": "d1e8cc1c-99aa-4339-b22b-a91f4089a386",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "ES1-L10-Robot musical"
+    }
+  },
+  {
+    "lesson_id": "57586d37-bb50-4c53-8887-fcc3a9d2487b",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L01-Qué armados puedo realizar.pdf"
+    }
+  },
+  {
+    "lesson_id": "2faaf58b-ec9c-4496-9b1e-a0f5c48fd113",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L02-Recordemos el principio de gravedad.pdf"
+    }
+  },
+  {
+    "lesson_id": "4988fd55-b4d9-4d33-a468-cdb21112a89d",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L03-Para qué sirven las balanzas.pdf"
+    }
+  },
+  {
+    "lesson_id": "11a0e6f5-5706-40a8-a558-b91dc1aa2569",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L04-Aprendamos de máquinas simples.pdf"
+    }
+  },
+  {
+    "lesson_id": "f5f5cee7-5fd6-4fbb-adb7-18746354fdf2",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L05-Tiremos la basura en su lugar.pdf"
+    }
+  },
+  {
+    "lesson_id": "8f67f488-4c46-4e39-bf4c-23ef8a330570",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L06-Creemos nuestros propios manuales.pdf"
+    }
+  },
+  {
+    "lesson_id": "dd284c97-9bd5-4c5d-a3c3-0b240a76af32",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L07-Dejemos que Newton nos enseñe.pdf"
+    }
+  },
+  {
+    "lesson_id": "964d913f-a5ab-4014-80d5-cfc7046588a3",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L08-Conozcamos sobre poleas.pdf"
+    }
+  },
+  {
+    "lesson_id": "a2da9d3c-5f9e-444d-9450-94fc193e1e92",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L09-Diseñemos con contrapesos.pdf"
+    }
+  },
+  {
+    "lesson_id": "c1f44e6b-da92-48c9-8d75-85f1e2280b1c",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L10-Qué necesito para ser constructor.pdf"
+    }
+  },
+  {
+    "lesson_id": "99c4b71c-9bd6-401d-9564-24bc0b52e29e",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L11-Aprendamos de mecánica.pdf"
+    }
+  },
+  {
+    "lesson_id": "5756c76b-747b-4c43-a569-dc3af105dd78",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L12-Qué hacen los policías.pdf"
+    }
+  },
+  {
+    "lesson_id": "7fbd7ff0-63ba-450c-b4f1-dcdb4ad65623",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L13-Así se produce la energía eléctrica.pdf"
+    }
+  },
+  {
+    "lesson_id": "d63cbbd0-5cdc-4727-81a3-4ff3069c73b1",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L14-Conozcamos sobre la energía eólica.pdf"
+    }
+  },
+  {
+    "lesson_id": "8c718731-d657-41ae-85ba-3124fa53731a",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L15- Ideemos y clasifiquemos estructuras.pdf"
+    }
+  },
+  {
+    "lesson_id": "ac9a2fce-6fb0-43da-9300-a7b444cc54aa",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L16-Redactemos noticias.pdf"
+    }
+  },
+  {
+    "lesson_id": "ce6ee9e6-697f-4521-b1a8-a2d7bb724cbc",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L17-Cómo funcionan los engranajes.pdf"
+    }
+  },
+  {
+    "lesson_id": "003d894f-5540-4e0c-a614-b92c74ec84ff",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L18-Conozcamos sobre energía potencial.pdf"
+    }
+  },
+  {
+    "lesson_id": "73704e64-267e-432a-ab10-8b96f7ef76b5",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L19-Por qué se necesita una caja de velocidades.pdf"
+    }
+  },
+  {
+    "lesson_id": "b94350ee-1fbc-4754-9a92-b4a4989f675d",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L20-El agua también produce energía.pdf"
+    }
+  },
+  {
+    "lesson_id": "c0dd214a-4c8d-4e5c-b4de-a1686295a75d",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L21-Inventemos una película.pdf"
+    }
+  },
+  {
+    "lesson_id": "af73cd28-251e-4b60-b747-8cd41de47448",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L22-Todos subamos al tren.pdf"
+    }
+  },
+  {
+    "lesson_id": "338aa159-adae-4d3b-85a5-51dc45d40879",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L23-El ciclo de la vida.pdf"
+    }
+  },
+  {
+    "lesson_id": "8a602503-3bce-46c5-8c72-f25fb0ceede1",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L24-Mírala alzar el vuelo.pdf"
+    }
+  },
+  {
+    "lesson_id": "48c51f31-a1df-423c-ade7-c294d0eb85e4",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L25-Por que se extinguieron los dinosaurios.pdf"
+    }
+  },
+  {
+    "lesson_id": "3d6703dc-067a-4f84-a132-cf9eb29e0b83",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L26-¿Qué es Arduino.pdf"
+    }
+  },
+  {
+    "lesson_id": "1ca99451-b573-45d7-9ea4-7b32a5d759d1",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L27-Desarrollo mi primer programa con Arduino.pdf"
+    }
+  },
+  {
+    "lesson_id": "c84c05d7-c99a-42ac-8021-efdfe090eb9b",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L28-Practico mis conocimientos de programación.pdf"
+    }
+  },
+  {
+    "lesson_id": "36f5562d-98c5-46ab-9c9f-06b3c075714d",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L29-Respetemos las leyes de tránsito.pdf"
+    }
+  },
+  {
+    "lesson_id": "69912d42-d574-44f7-8ba4-9902fdd729f2",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L30-Programemos y mezclemos luces LED.pdf"
+    }
+  },
+  {
+    "lesson_id": "81f88ea8-4ac5-46e9-bc2d-3c8205010512",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L31-Qué son las bibliotecas en software.pdf"
+    }
+  },
+  {
+    "lesson_id": "d3c067df-e367-4ce4-8c4c-7507cf647acb",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L32-¿Cuánta luz hay en mi salón de clases.pdf"
+    }
+  },
+  {
+    "lesson_id": "ec286840-8187-48b7-a63a-ee3138562399",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L33-Elaboro mi propio termómetro.pdf"
+    }
+  },
+  {
+    "lesson_id": "6cf73e48-d304-4e5f-97de-c576741828b3",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L34-Evitemos accidentes de tránsito.pdf"
+    }
+  },
+  {
+    "lesson_id": "531b997a-879f-4470-bec8-84891ece8eee",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-L35-Robots complejos.pdf"
+    }
+  },
+  {
+    "lesson_id": "44e7aa1d-246c-4550-a591-d2286fecf3bd",
+    "group_id": "b5424c4f-d9c9-477d-ae5c-1e0bcd9c70c6",
+    "lesson_profile": {
+      "title": "S1-RECURSOS ARDUINO.pdf"
+    }
+  }
+];
+
+HS2 = [
+  {
+      "lesson_id": "a09c1311-74cf-4655-85e9-82c65cecaf12",
+      "lesson_profile": {
+          "title": "ES2-L01-Programando microcontroladores"
+      }
+  },
+  {
+      "lesson_id": "4d1da65b-b254-44e4-a86f-acb7e301ee8a",
+      "lesson_profile": {
+          "title": "ES2-L02-Comandos básicos Arduino"
+      }
+  },
+  {
+      "lesson_id": "2d4bdb16-cca5-405b-9dfb-0fa70d6d62a9",
+      "lesson_profile": {
+          "title": "ES2-L03-Retardo LED"
+      }
+  },
+  {
+      "lesson_id": "dd439a13-f166-4a0f-aee2-fdd50aaca88c",
+      "lesson_profile": {
+          "title": "ES2-L04-Cuidando el medio ambiente"
+      }
+  },
+  {
+      "lesson_id": "e0e17493-91b9-43f7-8600-f360e1f4ded0",
+      "lesson_profile": {
+          "title": "ES2-L05-Combinando luz LED RGB"
+      }
+  },
+  {
+      "lesson_id": "31e00027-dc58-48ca-9caf-c9725ab9dccf",
+      "lesson_profile": {
+          "title": "ES2-L06-Cronómetro digital"
+      }
+  },
+  {
+      "lesson_id": "6238282d-cfa4-47f2-b831-360943d05599",
+      "lesson_profile": {
+          "title": "ES2-L07-Voltímetro digital"
+      }
+  },
+  {
+      "lesson_id": "ff81d490-3391-4739-926e-694fb48bad62",
+      "lesson_profile": {
+          "title": "ES2-L08-Sonidos en mi habitación"
+      }
+  },
+  {
+      "lesson_id": "be436f0a-4f1f-4987-ac0d-3552f39a8dec",
+      "lesson_profile": {
+          "title": "ES2-L09-Control de velocidad"
+      }
+  },
+  {
+      "lesson_id": "5b472be5-f5df-4d27-ab70-708c441897a1",
+      "lesson_profile": {
+          "title": "ES2-L10-Robot policial"
+      }
+  },
+  {
+      "lesson_id": "c7c5942e-a614-4b61-a870-4044caf826b5",
+      "lesson_profile": {
+          "title": "S2-L01-Identifiquemos ejes de simetría.pdf"
+      }
+  },
+  {
+      "lesson_id": "b790cbf7-089f-4c3c-84c3-f3d407c1a058",
+      "lesson_profile": {
+          "title": "S2-L02-Conozcamos sobre insectos.pdf"
+      }
+  },
+  {
+      "lesson_id": "4a4ed5ce-73c0-4276-b0cd-226dea5ed33c",
+      "lesson_profile": {
+          "title": "S2-L03-Hagamos un torneo de básquetbol.pdf"
+      }
+  },
+  {
+      "lesson_id": "0a5c8e02-0eb3-4ef3-a15f-546e20c1c64f",
+      "lesson_profile": {
+          "title": "S2-L04-Aprendamos sobre la Edad Media.pdf"
+      }
+  },
+  {
+      "lesson_id": "a60f6dfe-95cc-4706-8710-789a813174df",
+      "lesson_profile": {
+          "title": "S2-L05-Primera Ley de Newton.pdf"
+      }
+  },
+  {
+      "lesson_id": "cf9a075b-1639-4e8d-9de6-42a1f4449507",
+      "lesson_profile": {
+          "title": "S2-L06-Para qué sirven los planos inclinados.pdf"
+      }
+  },
+  {
+      "lesson_id": "0ae72301-8e1c-4c3a-8a06-09620e43ea79",
+      "lesson_profile": {
+          "title": "S2-L07-Si cae es porque hay gravedad.pdf"
+      }
+  },
+  {
+      "lesson_id": "650c222e-eb75-439e-a9ee-ac634c451740",
+      "lesson_profile": {
+          "title": "S2-L08-Estas son las poleas.pdf"
+      }
+  },
+  {
+      "lesson_id": "bc103673-053b-4383-8955-3e8761fcfef8",
+      "lesson_profile": {
+          "title": "S2-L09-Aplico los principios de robótica.pdf"
+      }
+  },
+  {
+      "lesson_id": "897abcb9-44bd-4e7d-8924-92da71de1e44",
+      "lesson_profile": {
+          "title": "S2-L10-Prevención en carretera.pdf"
+      }
+  },
+  {
+      "lesson_id": "d6a4c318-eb0b-46a7-8a3e-057dd15a3528",
+      "lesson_profile": {
+          "title": "S2-L11-Principio mecánico de ruedas y ejes.pdf"
+      }
+  },
+  {
+      "lesson_id": "ba586cfe-cda3-40c3-8f8a-145778ccd99b",
+      "lesson_profile": {
+          "title": "S2-L12-Mira cómo se mueve.pdf"
+      }
+  },
+  {
+      "lesson_id": "03cc252c-3e51-4ca1-ab24-6267b9d36d46",
+      "lesson_profile": {
+          "title": "S2-L13-Empuja con fuerza.pdf"
+      }
+  },
+  {
+      "lesson_id": "e7327ab6-8e54-4108-b3b1-4660cdbc9618",
+      "lesson_profile": {
+          "title": "S2-L14-Qué tipo de energía es esta.pdf"
+      }
+  },
+  {
+      "lesson_id": "8b16119d-f1b6-4ca6-b74a-3a6537170c1c",
+      "lesson_profile": {
+          "title": "S2-L15-De dónde vienen los productos.pdf"
+      }
+  },
+  {
+      "lesson_id": "ee6821fb-902c-44f5-b37a-8e1ba8d6084a",
+      "lesson_profile": {
+          "title": "S2-L16-Grandes estructuras.pdf"
+      }
+  },
+  {
+      "lesson_id": "867ea02b-c019-4531-8e8a-1cf776f85efb",
+      "lesson_profile": {
+          "title": "S2-L17-Estos son los engranajes.pdf"
+      }
+  },
+  {
+      "lesson_id": "64900f03-3375-4abb-950c-4f4665fbd4ec",
+      "lesson_profile": {
+          "title": "S2-L18-Ejercitémonos.pdf"
+      }
+  },
+  {
+      "lesson_id": "31ab14e7-5215-4d36-8be8-bfc7a63d509c",
+      "lesson_profile": {
+          "title": "S2-L19-Simple o compuesta.pdf"
+      }
+  },
+  {
+      "lesson_id": "c2bb9977-8f2f-446b-a354-31763690d257",
+      "lesson_profile": {
+          "title": "S2-L20-Cómo ocupamos los combustibles fósiles.pdf"
+      }
+  },
+  {
+      "lesson_id": "6f134525-56d8-48bd-98aa-1f84f5bb0406",
+      "lesson_profile": {
+          "title": "S2-L21-La energía que el agua produce.pdf"
+      }
+  },
+  {
+      "lesson_id": "23431db9-2fce-47f4-a05b-a4219e1b004b",
+      "lesson_profile": {
+          "title": "S2-L22-Desenterremos los fósiles.pdf"
+      }
+  },
+  {
+      "lesson_id": "3b731575-949f-4810-8a39-69850108a93b",
+      "lesson_profile": {
+          "title": "S2-L23-Viajemos al antiguo Egipto.pdf"
+      }
+  },
+  {
+      "lesson_id": "2f8ac149-27db-4a3c-ae25-3e4f3ba04275",
+      "lesson_profile": {
+          "title": "S2-L24-La edad de mi planeta.pdf"
+      }
+  },
+  {
+      "lesson_id": "d4a1b8c7-1fc6-4454-b120-6ff59ed21b9d",
+      "lesson_profile": {
+          "title": "S2-L25-¿Cuál es la edad de la Tierra.pdf"
+      }
+  },
+  {
+      "lesson_id": "77a1eeb6-b530-437d-a35b-695026e42c3a",
+      "lesson_profile": {
+          "title": "S2-L26-Experimentemos con el kit de electrónica.pdf"
+      }
+  },
+  {
+      "lesson_id": "18f32c06-ebd3-4128-8b24-6bc88b9e0200",
+      "lesson_profile": {
+          "title": "S2-L27-Características del software de Arduino.pdf"
+      }
+  },
+  {
+      "lesson_id": "26e51b9a-065d-406d-ba5b-218ed4e98980",
+      "lesson_profile": {
+          "title": "S2-L28-Función de los pulsadores dentro de los circuitos.pdf"
+      }
+  },
+  {
+      "lesson_id": "b1837e4b-1341-41e4-8326-f8408a232810",
+      "lesson_profile": {
+          "title": "S2-L29-Aprendamos a ahorrar energía eléctrica.pdf"
+      }
+  },
+  {
+      "lesson_id": "cd127b41-8c7f-4a0a-8e00-dc760f568fae",
+      "lesson_profile": {
+          "title": "S2-L30-¿Cómo funcionan las luces LED.pdf"
+      }
+  },
+  {
+      "lesson_id": "b1307923-5aff-420d-afaf-c5d0886c5104",
+      "lesson_profile": {
+          "title": "S2-L31-Así se programa con bibliotecas.pdf"
+      }
+  },
+  {
+      "lesson_id": "44ac477e-d7e1-4182-b675-bde22a203c06",
+      "lesson_profile": {
+          "title": "S2-L32-Conozcamos sobre voltímetros y resistencias.pdf"
+      }
+  },
+  {
+      "lesson_id": "7662ef8e-6785-4f44-98a0-b89135aa83a4",
+      "lesson_profile": {
+          "title": "S2-L33-Midamos los sonidos.pdf"
+      }
+  },
+  {
+      "lesson_id": "d862a95b-0ab5-4d5a-bc7c-9ddde632c0fa",
+      "lesson_profile": {
+          "title": "S2-L34-Hagamos una competencia.pdf"
+      }
+  },
+  {
+      "lesson_id": "8ab8fa3d-1519-4499-9191-09b60bff6980",
+      "lesson_profile": {
+          "title": "S2-L35-Tecnología por todos lados.pdf"
+      }
+  },
+  {
+      "lesson_id": "1e242516-dd83-4164-96cf-a747c94590ed",
+      "lesson_profile": {
+          "title": "S2-RECURSOS ARDUINO.pdf"
+      }
+  }
+];
+
+HB1 = [
+  {
+      "lesson_id": "5df2137a-a997-4e12-955f-c0b32cafdb47",
+      "lesson_profile": {
+          "title": "B1-L01-Conozcamos sobre mitología grecolatina.pdf"
+      }
+  },
+  {
+      "lesson_id": "cc02cb1d-8a10-4376-80e1-6cef25a709a3",
+      "lesson_profile": {
+          "title": "B1-L02-Maquinaria y modernización.pdf"
+      }
+  },
+  {
+      "lesson_id": "06ccf6b3-edee-4a54-8642-8f3ff15d685c",
+      "lesson_profile": {
+          "title": "B1-L03-Aprendamos de robótica.pdf"
+      }
+  },
+  {
+      "lesson_id": "279f45ae-0146-4807-81f3-1238ab0670a0",
+      "lesson_profile": {
+          "title": "B1-L04-Máquinas simples_La palanca.pdf"
+      }
+  },
+  {
+      "lesson_id": "02ea7fe9-262d-43ee-8d99-826585396e65",
+      "lesson_profile": {
+          "title": "B1-L05-Uso planos inclinados.pdf"
+      }
+  },
+  {
+      "lesson_id": "25614f63-83b6-4154-b96e-75e5952945a5",
+      "lesson_profile": {
+          "title": "B1-L06-Fuerzas paralelas.pdf"
+      }
+  },
+  {
+      "lesson_id": "58fc92c0-99a2-45c2-881a-64871d78973f",
+      "lesson_profile": {
+          "title": "B1-L07-Aprendamos sobre gravedad.pdf"
+      }
+  },
+  {
+      "lesson_id": "3a90725e-73f1-4cbe-ac98-4f135bdca1b2",
+      "lesson_profile": {
+          "title": "B1-L08-Participemos en la competencia.pdf"
+      }
+  },
+  {
+      "lesson_id": "52d1a254-fc88-488a-bbb4-a9b8efb084bc",
+      "lesson_profile": {
+          "title": "B1-L09-Pesos y contrapesos.pdf"
+      }
+  },
+  {
+      "lesson_id": "c5d4a07e-321c-43e0-a568-c33fb5c87c0f",
+      "lesson_profile": {
+          "title": "B1-L10-Armado y uso de poleas.pdf"
+      }
+  },
+  {
+      "lesson_id": "f9dca96c-d96f-4a6a-9995-733b0e9e26c3",
+      "lesson_profile": {
+          "title": "B1-L11-Calculemos la energía.pdf"
+      }
+  },
+  {
+      "lesson_id": "3d6aea1e-da1d-4c1a-91e7-4ed21b5e0a38",
+      "lesson_profile": {
+          "title": "B1-L12-Las velocidades son relativas.pdf"
+      }
+  },
+  {
+      "lesson_id": "8f05e4a3-3995-4842-8f3d-a10aeaadd20c",
+      "lesson_profile": {
+          "title": "B1-L13-Usos de la robótica.pdf"
+      }
+  },
+  {
+      "lesson_id": "b237c494-2b3c-4c27-8ba7-e404ee767481",
+      "lesson_profile": {
+          "title": "B1-L14-La evolución.pdf"
+      }
+  },
+  {
+      "lesson_id": "1ff0c8c7-70b0-4287-9c85-d8b449f72c15",
+      "lesson_profile": {
+          "title": "B1-L15-Estructuras.pdf"
+      }
+  },
+  {
+      "lesson_id": "fc8bf396-bdb5-47b9-94cb-eba35414c0ef",
+      "lesson_profile": {
+          "title": "B1-L16-Estructura de las moléculas.pdf"
+      }
+  },
+  {
+      "lesson_id": "25c8efc5-9dbc-43ae-a702-38743937f68c",
+      "lesson_profile": {
+          "title": "B1-L17-Tipos de engranajes.pdf"
+      }
+  },
+  {
+      "lesson_id": "48a491c0-244f-4068-8eff-eab207f0fe88",
+      "lesson_profile": {
+          "title": "B1-L18-Ensamblo máquinas compuestas.pdf"
+      }
+  },
+  {
+      "lesson_id": "b1249cf4-2225-4de1-bfaf-6f90ad4dda84",
+      "lesson_profile": {
+          "title": "B1-L19-Máquinas de producción.pdf"
+      }
+  },
+  {
+      "lesson_id": "85da5746-edda-4b92-b2e6-baf2676c4a37",
+      "lesson_profile": {
+          "title": "B1-L20-Segunda Ley de Newton.pdf"
+      }
+  },
+  {
+      "lesson_id": "a0355923-55ef-4481-8e18-65d5ac828830",
+      "lesson_profile": {
+          "title": "B1-L21-Esta es la energía hidráulica.pdf"
+      }
+  },
+  {
+      "lesson_id": "87e47f87-58e2-4e44-bb87-aed6fa38ed45",
+      "lesson_profile": {
+          "title": "B1-L22-Una energía amigable con el medio ambiente.pdf"
+      }
+  },
+  {
+      "lesson_id": "e7853adc-f765-46bd-beb2-55f4cd4733e2",
+      "lesson_profile": {
+          "title": "B1-L23-Desarrollo sostenible.pdf"
+      }
+  },
+  {
+      "lesson_id": "64417429-c266-4d49-86da-3b6d7326b626",
+      "lesson_profile": {
+          "title": "B1-L24-Así son los seres vivos.pdf"
+      }
+  },
+  {
+      "lesson_id": "741243af-053a-420b-b36d-01817b741ae9",
+      "lesson_profile": {
+          "title": "B1-L25-Resiliencia.pdf"
+      }
+  },
+  {
+      "lesson_id": "cea5f7f4-c38a-4e19-a3b5-3a65cef2b6c2",
+      "lesson_profile": {
+          "title": "B1-L26-Conoce el kit de electrónica.pdf"
+      }
+  },
+  {
+      "lesson_id": "d24fcf06-c712-49b7-95da-91e3f7528158",
+      "lesson_profile": {
+          "title": "B1-L27-Aprendamos con Arduino.pdf"
+      }
+  },
+  {
+      "lesson_id": "c83d46e5-688b-404e-bf76-8904a7f680e8",
+      "lesson_profile": {
+          "title": "B1-L28-Conozcamos sobre el funcionamiento de los LED.pdf"
+      }
+  },
+  {
+      "lesson_id": "5735ee86-ca5b-4fd8-9199-d803481773ef",
+      "lesson_profile": {
+          "title": "B1-L29-Encontremos usos prácticos a la electrónica.pdf"
+      }
+  },
+  {
+      "lesson_id": "e0f046fb-3c38-4a07-ad06-f082a423ca2a",
+      "lesson_profile": {
+          "title": "B1-L30-Uso bibliotecas de software.pdf"
+      }
+  },
+  {
+      "lesson_id": "426ad5e8-3ac9-44be-833f-24e34ca51b24",
+      "lesson_profile": {
+          "title": "B1-L31-Aplico mis conocimientos de programación.pdf"
+      }
+  },
+  {
+      "lesson_id": "cced182b-4668-443f-bdd7-37fbaecce0f5",
+      "lesson_profile": {
+          "title": "B1-L32-Midamos la resistencia de los materiales.pdf"
+      }
+  },
+  {
+      "lesson_id": "3756318d-0541-4acf-9b9f-f0fa34259312",
+      "lesson_profile": {
+          "title": "B1-L33-Diseñemos un sistema de enfriamiento.pdf"
+      }
+  },
+  {
+      "lesson_id": "60b24d04-57a0-4587-97d3-fa2e7c5c7ea7",
+      "lesson_profile": {
+          "title": "B1-L34-Alerta de aceleración.pdf"
+      }
+  },
+  {
+      "lesson_id": "284b1371-f65f-4399-8f96-d21b1f0d378f",
+      "lesson_profile": {
+          "title": "B1-L35-Programemos un sistema de manejo automático.pdf"
+      }
+  },
+  {
+      "lesson_id": "10b857e9-5800-4fc1-95f1-fc5ebe088853",
+      "lesson_profile": {
+          "title": "B1-RECURSOS ARDUINO.pdf"
+      }
+  },
+  {
+      "lesson_id": "8d668666-9f8e-487c-9ff7-e5d5d6ea5531",
+      "lesson_profile": {
+          "title": "EB1-L01-Fotorresistencia"
+      }
+  },
+  {
+      "lesson_id": "93d3c567-25c8-44d2-b163-6f072db1b785",
+      "lesson_profile": {
+          "title": "EB1-L02-Control LED"
+      }
+  },
+  {
+      "lesson_id": "47f91c2b-9c40-447e-9c56-02a11139c6cf",
+      "lesson_profile": {
+          "title": "EB1-L03-Luces con NeoPixels"
+      }
+  },
+  {
+      "lesson_id": "f1a7f157-99ba-44e7-a3c6-9074feba9454",
+      "lesson_profile": {
+          "title": "EB1-L04-Control vehicular"
+      }
+  },
+  {
+      "lesson_id": "7fd69612-88f7-4712-a758-1383aa5cec94",
+      "lesson_profile": {
+          "title": "EB1-L05-Color musical"
+      }
+  },
+  {
+      "lesson_id": "049048f5-3cb5-44a6-8ffd-f878a107d9d7",
+      "lesson_profile": {
+          "title": "EB1-L06-Temporizador"
+      }
+  },
+  {
+      "lesson_id": "d57c52b6-4c57-493a-ab34-e0a4d1cd164c",
+      "lesson_profile": {
+          "title": "EB1-L07-Ohmímetro"
+      }
+  },
+  {
+      "lesson_id": "eef2d120-2366-4ac3-a972-5b12eeb08873",
+      "lesson_profile": {
+          "title": "EB1-L08-Sistema de enfriamiento"
+      }
+  },
+  {
+      "lesson_id": "ec46e47a-049c-4d6e-96f3-d10788a810d7",
+      "lesson_profile": {
+          "title": "EB1-L09-Luces de aceleración"
+      }
+  },
+  {
+      "lesson_id": "d8d5bbd8-9ff1-4a80-889d-6ce09779d566",
+      "lesson_profile": {
+          "title": "EB1-L10-Viaje seguro"
+      }
+  }
+];
+
+HB2 = [
+  {
+      "lesson_id": "0eddf47a-6530-4464-8434-2718cb1139dc",
+      "lesson_profile": {
+          "title": "B2-L01-Organicemos una competencia.pdf"
+      }
+  },
+  {
+      "lesson_id": "1a4b98db-13a8-4080-808c-3fc488f79ab0",
+      "lesson_profile": {
+          "title": "B2-L02-Qué tipo de palanca es esta.pdf"
+      }
+  },
+  {
+      "lesson_id": "fbd639b3-b684-4304-b84f-09ab0598c005",
+      "lesson_profile": {
+          "title": "B2-L03-Apliquemos la Ley de la palanca.pdf"
+      }
+  },
+  {
+      "lesson_id": "048b1955-df21-4cbb-9dc9-59faf470971f",
+      "lesson_profile": {
+          "title": "B2-L04-Conozcamos el funcionamiento de nuestras manos.pdf"
+      }
+  },
+  {
+      "lesson_id": "dfc4bab6-b22c-47fd-af62-9c1621eb48aa",
+      "lesson_profile": {
+          "title": "B2-L05-Tornillo de Arquímedes.pdf"
+      }
+  },
+  {
+      "lesson_id": "a1357294-11d5-4497-ad1a-4480709de80a",
+      "lesson_profile": {
+          "title": "B2-L06-El plano inclinado y la fricción.pdf"
+      }
+  },
+  {
+      "lesson_id": "192ee01a-f9d7-4fdf-bf47-1d23e5a18059",
+      "lesson_profile": {
+          "title": "B2-L07-De una simple a una compuesta.pdf"
+      }
+  },
+  {
+      "lesson_id": "ef578c73-53aa-4129-b508-8633f8934058",
+      "lesson_profile": {
+          "title": "B2-L08-Usos y ventajas de las poleas.pdf"
+      }
+  },
+  {
+      "lesson_id": "aa45e389-8371-476e-aca7-dc221481fa68",
+      "lesson_profile": {
+          "title": "B2-L09-Medios de transporte optativos.pdf"
+      }
+  },
+  {
+      "lesson_id": "7100ad8b-1ce1-4f21-bd3b-901146e92c0c",
+      "lesson_profile": {
+          "title": "B2-L10-Aprendamos de mecánica automotriz.pdf"
+      }
+  },
+  {
+      "lesson_id": "d512e270-57f8-4c55-ae8d-67fb21044cfa",
+      "lesson_profile": {
+          "title": "B2-L11-Argumento sobre nuestras costumbres.pdf"
+      }
+  },
+  {
+      "lesson_id": "cb4f2507-cde4-4d7c-826d-0584f062da23",
+      "lesson_profile": {
+          "title": "B2-L12-Ruedas y ejes.pdf"
+      }
+  },
+  {
+      "lesson_id": "3d94f34a-12e3-4123-a22b-0a78fe902f3f",
+      "lesson_profile": {
+          "title": "B2-L13-Tecnología y desarrollo sostenible.pdf"
+      }
+  },
+  {
+      "lesson_id": "a049c017-e5b3-43e7-a488-b545c915ee77",
+      "lesson_profile": {
+          "title": "B2-L14-Observando ecosistemas imperceptibles.pdf"
+      }
+  },
+  {
+      "lesson_id": "f1fb002c-6e0d-4e68-bfa8-e8ec7ed15e86",
+      "lesson_profile": {
+          "title": "B2-L15-Conozcamos de historia.pdf"
+      }
+  },
+  {
+      "lesson_id": "2d9c07ab-8d48-46de-a640-197a7d43b725",
+      "lesson_profile": {
+          "title": "B2-L16-Usos de las estructuras.pdf"
+      }
+  },
+  {
+      "lesson_id": "d01c164a-a9ea-43ca-9067-e0c25c0f1511",
+      "lesson_profile": {
+          "title": "B2-L17-Conoces los tipos de engranajes.pdf"
+      }
+  },
+  {
+      "lesson_id": "84aca061-9b4c-4a0d-8e3d-b6138064d69c",
+      "lesson_profile": {
+          "title": "B2-L18-Viaje a la luna.pdf"
+      }
+  },
+  {
+      "lesson_id": "bb744722-a746-4d11-8e94-689524428db7",
+      "lesson_profile": {
+          "title": "B2-L19-Las construcciones, ¿perjudican el medio ambiente¿.pdf"
+      }
+  },
+  {
+      "lesson_id": "9851e713-e094-4a09-ae63-cccb14387f74",
+      "lesson_profile": {
+          "title": "B2-L20-Fuerza de fricción.pdf"
+      }
+  },
+  {
+      "lesson_id": "1a844c60-b120-4724-b177-335e2cc509fa",
+      "lesson_profile": {
+          "title": "B2-L21-Energía amigable con el medio ambiente.pdf"
+      }
+  },
+  {
+      "lesson_id": "b9a2a33e-4762-4ee4-87f8-d727f75c95f3",
+      "lesson_profile": {
+          "title": "B2-L22-De la Edad Antigua a la contemporaneidad.pdf"
+      }
+  },
+  {
+      "lesson_id": "c8ab53cf-b5e0-41d1-afeb-c81cc743fe9a",
+      "lesson_profile": {
+          "title": "B2-L23-La edad de la Tierra.pdf"
+      }
+  },
+  {
+      "lesson_id": "5636e4a1-8ac7-40c4-b1cd-165453e4a86d",
+      "lesson_profile": {
+          "title": "B2-L24-La hora mundial.pdf"
+      }
+  },
+  {
+      "lesson_id": "bed593d9-534e-4864-83ac-c22d6556f595",
+      "lesson_profile": {
+          "title": "B2-L25-Somos agentes de publicidad.pdf"
+      }
+  },
+  {
+      "lesson_id": "cf9a40fa-56d3-4758-8ed4-b79ea5b7c9cd",
+      "lesson_profile": {
+          "title": "B2-L26-¿Qué es un relé electromagnético.pdf"
+      }
+  },
+  {
+      "lesson_id": "854d5cec-46fa-471a-a0d4-dd939f59a5ae",
+      "lesson_profile": {
+          "title": "B2-L27-Esto es Arduino.pdf"
+      }
+  },
+  {
+      "lesson_id": "d8be861b-2b03-449e-af84-2f789050b7da",
+      "lesson_profile": {
+          "title": "B2-L28-Programo mis circuitos.pdf"
+      }
+  },
+  {
+      "lesson_id": "ebc9223e-6a62-4e7a-a496-b297971c8856",
+      "lesson_profile": {
+          "title": "B2-L29-¡No grites!.pdf"
+      }
+  },
+  {
+      "lesson_id": "f9fe4c6b-be03-44b9-bd33-95d213c51d2f",
+      "lesson_profile": {
+          "title": "B2-L30-Practico mis conocimientos de programación.pdf"
+      }
+  },
+  {
+      "lesson_id": "ce0cf14d-b0ee-4089-b593-bd215a47e1a6",
+      "lesson_profile": {
+          "title": "B2-L31-Ocupo bibliotecas para programar.pdf"
+      }
+  },
+  {
+      "lesson_id": "6de24da5-c4ed-481b-8089-40a74313e070",
+      "lesson_profile": {
+          "title": "B2-L32-El sistema de numeración binario.pdf"
+      }
+  },
+  {
+      "lesson_id": "a7dcb377-6754-4957-b33b-09b6110b0988",
+      "lesson_profile": {
+          "title": "B2-L33-Qué son las fotorresistencias.pdf"
+      }
+  },
+  {
+      "lesson_id": "2d1356f8-f541-4953-8a94-da01629e02a2",
+      "lesson_profile": {
+          "title": "B2-L34-Identifico el tipo de movimiento.pdf"
+      }
+  },
+  {
+      "lesson_id": "09203430-6dbe-4148-9b73-b5366b57f218",
+      "lesson_profile": {
+          "title": "B2-L35-Características de los robots exploradores.pdf"
+      }
+  },
+  {
+      "lesson_id": "7e7f2389-bf9b-4d2a-a9a3-183fd280b6bb",
+      "lesson_profile": {
+          "title": "B2-RECURSOS ARDUINO.pdf"
+      }
+  },
+  {
+      "lesson_id": "a168fc63-35a4-4740-8cf9-06246e7703d0",
+      "lesson_profile": {
+          "title": "EB2-L01-Relé electromagnético"
+      }
+  },
+  {
+      "lesson_id": "fdd5d53a-768c-4a42-812a-b8ff7f3a0846",
+      "lesson_profile": {
+          "title": "EB2-L02-Luces aceleradas"
+      }
+  },
+  {
+      "lesson_id": "55e51b77-26a7-41fa-9983-588f83cf7a8c",
+      "lesson_profile": {
+          "title": "EB2-L03-Bucles de luces"
+      }
+  },
+  {
+      "lesson_id": "a0fd135e-c4ba-4676-a4c2-cee6f4566269",
+      "lesson_profile": {
+          "title": "EB2-L04-Control de sonido"
+      }
+  },
+  {
+      "lesson_id": "2a67911c-34b0-47a3-8a97-a75e730fae02",
+      "lesson_profile": {
+          "title": "EB2-L05-Música y color"
+      }
+  },
+  {
+      "lesson_id": "8c9c794d-38d2-4003-9d48-888e16cb0d58",
+      "lesson_profile": {
+          "title": "EB2-L06-Programador de tareas"
+      }
+  },
+  {
+      "lesson_id": "05f63f77-ce4c-4008-8c5c-782ca67f119c",
+      "lesson_profile": {
+          "title": "EB2-L07-Calculadora binaria"
+      }
+  },
+  {
+      "lesson_id": "f6812f9f-2a2c-48e1-ad01-e2797b351df3",
+      "lesson_profile": {
+          "title": "EB2-L08-Luces inteligentes"
+      }
+  },
+  {
+      "lesson_id": "ad4a8feb-22e3-4bf7-8b6a-786f95490b43",
+      "lesson_profile": {
+          "title": "EB2-L09-Velocidad y aceleración"
+      }
+  },
+  {
+      "lesson_id": "3ce82438-77ea-4f46-b5d4-dd619d702819",
+      "lesson_profile": {
+          "title": "EB2-L10-Robot explorador"
+      }
+  }
+];
+
+// GROUP_ID = "3b4c4e2d-1487-48ca-9e34-76ef99b9ce85"; // PRIMARIA 1B 28-01-2025
+
+// GROUP_ID = "f09f151c-ec01-4c74-94dc-ec570377b5d6";    //Secundaria 1B 30-01-2025
+// GROUP_ID = "d747680e-4aa2-403b-9bb7-35018de5f9fd";    //Secundaria 2B 30-01-2025
+// GROUP_ID = "0816afbf-3d86-47b0-aa96-cc5cda4912c5";    //Bachillerato 1B 30-01-2025
+// GROUP_ID = "d4d9047c-d2cf-40e6-97f9-71d873a7a337";    //Bachillerato 2B 30-01-2025
+
+// HB2.forEach(lesson => {
+//     console.log(lesson.lesson_id);
+//       let cmd = `npm run aker-gql-op -- lesson_group_add  --lesson_id ${lesson.lesson_id} --group_id ${GROUP_ID}`;
+//       console.log(cmd);
+
+//     setTimeout(() => {
+//       // console.log("Delayed for 1 second.");
+//     }, "3000")
+//     exec(cmd, (error, stdout, stderr) => {
+//       if (error) {
+//         console.log(`error: ${error.message}`);
+//         return;
+//       }
+//       if (stderr) {
+//         console.log(`stderr: ${stderr}`);
+//         return;
+//       }
+//       console.log(`stdout: ${stdout}`);
+//     });
+// });
+
+
+new_groups.forEach(group_id => {
   // console.log(group_id);
-  id_lesson.forEach(lesson_id => {
-      // console.log(lesson_id)
-        let cmd = `npm run aker-gql-op -- lesson_group_add  --lesson_id ${lesson_id} --group_id ${group_id}`;
-        console.log(cmd);
-      setTimeout(() => {
-        // console.log("Delayed for 1 second.");
-      }, "3000")
-      exec(cmd, (error, stdout, stderr) => {
-        if (error) {
-          console.log(`error: ${error.message}`);
-          return;
-        }
-        if (stderr) {
-          console.log(`stderr: ${stderr}`);
-          return;
-        }
-        console.log(`stdout: ${stdout}`);
-      });
-  })
-})
+  new_lessons.forEach(lesson => {
+    // console.log(lesson.id);
+      let cmd = `npm run aker-gql-op -- lesson_group_add  --lesson_id ${lesson.id} --group_id ${group_id}`;
+      console.log(cmd);
+
+    setTimeout(() => {
+      // console.log("Delayed for 1 second.");
+    }, "3000")
+    exec(cmd, (error, stdout, stderr) => {
+      if (error) {
+        console.log(`error: ${error.message}`);
+        return;
+      }
+      if (stderr) {
+        console.log(`stderr: ${stderr}`);
+        return;
+      }
+      console.log(`stdout: ${stdout}`);
+    });
+  });
+});

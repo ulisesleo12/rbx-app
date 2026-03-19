@@ -1,13 +1,16 @@
 use log::*;
+use std::vec;
 use yew::prelude::*;
 use crate::ActivityStyle;
-use yew::{html, Component, Html};
 use crate::activity_list::ActivityProfile;
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_main::lang;
 use roboxmaker_types::types::{ClassesId, GroupId};
 
-pub struct ActivityCardClasses {}
+pub struct ActivityCardClasses {
+    props: ActivityCardClassesProps,
+}
 
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct ActivityCardClassesProps {
@@ -24,31 +27,34 @@ impl Component for ActivityCardClasses {
     type Message = ActivityCardClassesMessage;
     type Properties = ActivityCardClassesProps;
 
-    fn create(_ctx: &Context<Self>) -> Self {
-        ActivityCardClasses {}
+    fn create(props: Self::Properties, _link: ComponentLink<Self>) -> Self {
+        ActivityCardClasses {
+            props,
+        }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         match msg {
             
         }
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
-        let mut should_render = false;
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        let mut should_render = true;
 
-        if ctx.props() != old_props {
+        if self.props != props {
+            self.props = props;
             should_render = true;
-        } 
+        }
 
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
         
-        if let Some(activity_profile) = &ctx.props().activity_profile {
+        if let Some(activity_profile) = &self.props.activity_profile {
             let maybe_score = if activity_profile.score < 1  {
                 html! {
                 }
@@ -58,7 +64,7 @@ impl Component for ActivityCardClasses {
                 }
             };
             let style = {
-                match ctx.props().maybe_style {
+                match self.props.maybe_style {
                     ActivityStyle::ClassesPage => {
                         html! { }
                     }

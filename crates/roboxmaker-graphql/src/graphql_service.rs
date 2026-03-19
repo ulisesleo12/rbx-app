@@ -1,23 +1,22 @@
-use log::*;
-use uuid::Uuid;
-use serde_json;
-use instant::Instant;
 use super::protocol::*;
-use wasm_bindgen::JsCast;
-use wasm_bindgen::prelude::*;
-use std::collections::HashMap;
+use roboxmaker_main::config::AKER_API_WSS_URL;
 use code_location::CodeLocation;
-use serde::{Deserialize, Serialize};
-use yew::{Callback, Component, Context};
-use gloo_storage::{LocalStorage, Storage};
 use graphql_client::{GraphQLQuery, QueryBody};
-use web_sys::{CloseEvent, ErrorEvent, MessageEvent, WebSocket};
+use instant::Instant;
+use gloo_storage::{LocalStorage, Storage};
+use log::*;
+use serde::{Deserialize, Serialize};
+use serde_json;
+use std::collections::HashMap;
 use std::{
     rc::{Rc, Weak},
     sync::{Arc, Mutex},
 };
-
-use roboxmaker_main::config::{AKER_API_WSS_URL, AKER_AUTH_KEY};
+use uuid::Uuid;
+use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast;
+use web_sys::{CloseEvent, ErrorEvent, MessageEvent, WebSocket};
+use yew::{services::Task, Callback, Component, ComponentLink};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 enum Headers {
@@ -27,11 +26,6 @@ enum Headers {
         #[serde(skip_serializing_if = "Option::is_none")]
         authorization: Option<String>,
     },
-}
-
-pub trait Task: Drop {
-    /// Returns `true` if task is active.
-    fn is_active(&self) -> bool;
 }
 
 #[derive(Debug, Serialize)]
@@ -297,10 +291,9 @@ impl GraphQLTask {
             let cloned_ws = ws.clone();
             let ws_onopen: Closure<dyn FnMut(JsValue)> = Closure::wrap(Box::new(move |_| {
                 info!("GraphQLTask: OnOpen");
-                let auth: Option<Auth> = LocalStorage::get(AKER_AUTH_KEY).ok();
+                let auth: Option<Auth> = LocalStorage::get("app.aker.auth").ok();
 
-                let access_token: Option<String> =
-                    auth.and_then(|data| Some("Bearer ".to_owned() + &data.access_token));
+                let access_token: Option<String> = auth.and_then(|data| Some("Bearer ".to_owned() + &data.access_token));
 
                 let msg = Headers::Auth {
                     authorization: access_token,
@@ -394,7 +387,7 @@ impl Drop for SubscriptionTask {
 pub trait Subscribe {
     fn subscribe<C, M, F>(
         graphql_task: &GraphQLTask,
-        ctx: &Context<C>,
+        link: &ComponentLink<C>,
         vars: Self::Variables,
         on_response: F,
     ) -> SubscriptionTask
@@ -407,11 +400,12 @@ pub trait Subscribe {
         let uuid = Uuid::new_v4();
         let vars_value = serde_json::to_value(&vars).ok();
         let query: QueryBody<Self::Variables> = Self::build_query(vars);
-        let callback: Callback<String> = ctx.link().callback(move |json: String| {
+        let callback: Callback<String> = link.callback(move |json: String| {
             let data: Result<Self::ResponseData, serde_json::Error> = serde_json::from_str(&json);
             on_response(data.ok())
         });
 
+        
         let payload = ClientMessage::Subscribe {
             id: uuid.to_string(),
             payload: ClientPayload {
@@ -501,7 +495,7 @@ impl Drop for RequestTask {
 pub trait Request {
     fn request<C, M, F>(
         graphql_task: &GraphQLTask,
-        ctx: &Context<C>,
+        link: &ComponentLink<C>,
         vars: Self::Variables,
         on_response: F,
     ) -> RequestTask
@@ -514,7 +508,7 @@ pub trait Request {
         let uuid = Uuid::new_v4();
         let vars_value = serde_json::to_value(&vars).ok();
         let query: QueryBody<Self::Variables> = Self::build_query(vars);
-        let callback: Callback<String> = ctx.link().callback(move |json: String| {
+        let callback: Callback<String> = link.callback(move |json: String| {
             let data: Result<Self::ResponseData, serde_json::Error> = serde_json::from_str(&json);
             on_response(data.ok())
         });
@@ -601,7 +595,7 @@ impl GraphQLService {
                 };
 
                 // if let Ok(ws_state_two) = ws_state.lock() {
-                //     if let Some(ws) = ws_state_two.ws.clone() {
+                //     if let Some(ws) = ws_state_two.ws.clone() { 
                 //         let state = ws.ready_state();
 
                 //         if state == 0 {
@@ -620,7 +614,7 @@ impl GraphQLService {
                 // }
 
                 // if let Ok(graphql_state) = graphql_state.lock() {
-                //     let graphql_st = format!("{:p}", &graphql_state);
+                //     let graphql_st =  format!("{:p}", &graphql_state);
                 //     info!("Subs {:?}  state: {}", graphql_state.subs, graphql_st);
                 // }
 
@@ -640,14 +634,14 @@ impl GraphQLService {
         };
 
         let keep_alive_id = web_sys::window()
-            .expect("Missing Window")
-            .set_interval_with_callback_and_timeout_and_arguments(
-                on_keep_alive.as_ref().unchecked_ref(),
-                3500,
-                &js_sys::Array::new(),
-            )
-            .unwrap();
-
+        .expect("Missing Window")
+        .set_interval_with_callback_and_timeout_and_arguments(
+            on_keep_alive.as_ref().unchecked_ref(),
+            3500,
+            &js_sys::Array::new(),
+        )
+        .unwrap();
+        
         if let Ok(ping_state) = ping_state.lock().as_mut() {
             ping_state.on_keep_alive = Some(on_keep_alive);
             ping_state.keep_alive_id = keep_alive_id;

@@ -1,24 +1,25 @@
 use log::*;
 use uuid::Uuid;
 use yew::prelude::*;
+use std::time::Duration;
 use code_location::code_location;
-use gloo_timers::callback::Timeout;
-use yew_router::scope_ext::RouterScopeExt;
 use crate::robots_list::RobotProfile;
-use yew::{html, Component, Html, Properties};
+use yew::services::{TimeoutService, Task};
+use yew::{html, Component, ComponentLink, Html, ShouldRender, Properties};
 
 use roboxmaker_main::{lang, config};
-use roboxmaker_models::robot_model::{self, get_robot_list};
+use roboxmaker_models::robot_model::{self, robots_list_by_group};
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
 use roboxmaker_loaders::placeholders::card_robot_list::CardRobotListPlaceholder;
 use roboxmaker_types::types::{RobotId, GroupId, UserId, AppRoute, MyUserProfile};
 
 pub struct RobotsCard {
+    link: ComponentLink<Self>,
+    props: RobotsCardProperties,
     graphql_task: Option<GraphQLTask>,
     robot_update_task: Option<RequestTask>,
     maybe_placeholder: bool,
-    job: Option<Timeout>,
-    enabled: bool,
+    job: Option<Box<dyn Task>>,
 }
 
 #[derive(Debug, Properties, Clone, PartialEq)]
@@ -27,7 +28,6 @@ pub struct RobotsCardProperties {
     pub user_profile: Option<MyUserProfile>,
     pub user_id: Option<UserId>,
     pub group_id: GroupId,
-    #[prop_or(None)]
     pub on_app_route: Option<Callback<AppRoute>>,
     pub on_robot_delete: Option<Callback<RobotId>>,
     pub on_change_list: Callback<(RobotId, bool)>,
@@ -41,39 +41,43 @@ pub enum RobotsCardMessage {
     SaveRobot(RobotId),
     HiddenPlaceholder,
     DeleteRobot,
-    None,
 }
 
 impl Component for RobotsCard {
     type Message = RobotsCardMessage;
     type Properties = RobotsCardProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(RobotsCardMessage::None);
-        let enabled = ctx.props().robot_profile.enabled;
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+
+        let handle = TimeoutService::spawn(
+            Duration::from_millis(400),
+            link.callback(|_| RobotsCardMessage::HiddenPlaceholder),
+        );
+
         RobotsCard {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             robot_update_task: None,
             maybe_placeholder: true,
-            job: None,
-            enabled,
+            job: Some(Box::new(handle)),
         }
     }
     
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
             RobotsCardMessage::AppRoute(route) => {
-                if let Some(on_app_route) = &ctx.props().on_app_route {
+                if let Some(on_app_route) = &self.props.on_app_route {
                     on_app_route.emit(route);
                 }
             }
             RobotsCardMessage::EnabledToggle(response) => {
-                let robot_id = ctx.props().robot_id;
+                let robot_id = self.props.robot_id;
                 if response.clone().and_then(|data| data.update_robot_group_by_pk).clone().and_then(|update_robot_group_by_pk| Some(update_robot_group_by_pk.enabled)).is_some() {
-                    self.enabled = response.and_then(|data| data.update_robot_group_by_pk).clone().and_then(|update_robot_group_by_pk| Some(update_robot_group_by_pk.enabled)).unwrap_or(false);
-                    ctx.props().on_change_list.emit((robot_id, ctx.props().robot_profile.enabled))
+                    self.props.robot_profile.enabled = response.and_then(|data| data.update_robot_group_by_pk).clone().and_then(|update_robot_group_by_pk| Some(update_robot_group_by_pk.enabled)).unwrap_or(false);
+                    self.props.on_change_list.emit((robot_id, self.props.robot_profile.enabled))
                 }
             }
             RobotsCardMessage::SaveRobot(robot_id) => {
@@ -81,13 +85,13 @@ impl Component for RobotsCard {
 
                     let vars = robot_model::update_robot_group_enabled::Variables {
                         robot_id: robot_id.0,
-                        group_id: ctx.props().group_id.0,
-                        enabled: !ctx.props().robot_profile.enabled,
+                        group_id: self.props.group_id.0,
+                        enabled: !self.props.robot_profile.enabled,
                     };
 
                     let task = robot_model::UpdateRobotGroupEnabled::request(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             |response| {
                                 RobotsCardMessage::EnabledToggle(response)
@@ -100,54 +104,45 @@ impl Component for RobotsCard {
                 self.maybe_placeholder = false;
             }
             RobotsCardMessage::DeleteRobot => {
-                let robot_id = ctx.props().robot_id;
-                if let Some(robot) = &ctx.props().on_robot_delete {
+                let robot_id = self.props.robot_id;
+                if let Some(robot) = &self.props.on_robot_delete {
                     robot.emit(robot_id)
                 }
-            }
-            RobotsCardMessage::None => {
-                let link = ctx.link().clone();
-
-               self.job = Some(Timeout::new(400, move || {
-                    link.send_message(RobotsCardMessage::HiddenPlaceholder)
-               }));
             }
         }
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
-        
-        if ctx.props() != old_props {
+
+        if self.props != props {
+            self.props = props;
             should_render = true;
         }
-        
+
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
         let _none = self.job.as_ref();
 
-        let robot_id = ctx.props().robot_id;
-        let group_id = ctx.props().group_id;
-        let user_id = if let Some(user_id) = ctx.props().user_id {
+        let robot_id = self.props.robot_id;
+        let group_id = self.props.group_id;
+        let user_id = if let Some(user_id) = self.props.user_id {
             user_id
         } else {
             UserId(Uuid::default())
         };
-        
-        let navigator = ctx.link().navigator().unwrap();
 
-        // let on_robot = ctx.link().callback(move |_| {
-        //     RobotsCardMessage::AppRoute(AppRoute::Robot{robot_id, group_id, user_id})
-        // });
-        let on_robot = Callback::from(move |_| navigator.push(&AppRoute::Robot{robot_id, group_id, user_id}));
+        let on_robot = self.link.callback(move |_| {
+            RobotsCardMessage::AppRoute(AppRoute::Robot(robot_id, group_id, user_id))
+        });
         
-        let on_enabled_toggle = ctx.link().callback(move |_| RobotsCardMessage::SaveRobot(robot_id));        
+        let on_enabled_toggle = self.link.callback(move |_| RobotsCardMessage::SaveRobot(robot_id));        
 
-        let text_toggle = if ctx.props().robot_profile.enabled {
+        let text_toggle = if self.props.robot_profile.enabled {
             html! {
                 <span class="text-white noir-bold is-size-16 lh-19">{lang::dict("Enabled")}</span>
             }
@@ -157,14 +152,14 @@ impl Component for RobotsCard {
             }
         };
 
-        let icon_robot_hidden = ctx
-            .props()
+        let icon_robot_hidden = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|item|{
                 if item.user_staff.is_some() || item.user_teacher.is_some() || item.user_student.is_some() {
                     Some(html! {
-                        <a onclick={&on_robot}>
+                        <a onclick=&on_robot>
                             <img src="/icons/play.svg" style="height: 22px;" />
                         </a>
                     })
@@ -174,8 +169,8 @@ impl Component for RobotsCard {
             })
             .unwrap_or(html! {});
 
-        let maybe_option_robot_view = ctx
-            .props()
+        let maybe_option_robot_view = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|item|{
@@ -185,8 +180,8 @@ impl Component for RobotsCard {
                             <div class="field d-flex flex-wrap align-items-center ps-2">
                                 <div class="control pe-2" style="padding-top: 5px;">
                                     <label class="switch">
-                                        <input type="checkbox" checked={ctx.props().robot_profile.enabled}
-                                            onclick={on_enabled_toggle} />
+                                        <input type="checkbox" checked=self.props.robot_profile.enabled
+                                            onclick=on_enabled_toggle />
                                         <span class="slider round"></span>
                                     </label>
                                 </div>
@@ -196,9 +191,15 @@ impl Component for RobotsCard {
                     })
                 } else {
                     Some(html! {
-                        <div class="d-flex flex-column">
-                            <progress class="progress is-info" style="height: 18px; width: 145px; border-radius: 10px;" value="20" max="100"></progress>
-                        </div>
+                        <span class="text-white noir-light is-size-12 lh-17 text-nowrap" style="padding-top: 14px;">
+                            <span class="is-size-12">
+                                <i class="far fa-clock"></i>
+                            </span>
+                            <span class="px-2">{lang::dict("Added")} { &self.props.robot_profile.timestamp}</span>
+                        </span>
+                        // <div class="d-flex flex-column">
+                        //     <progress class="progress is-info" style="height: 18px; width: 145px; border-radius: 10px;" value="20" max="100"></progress>
+                        // </div>
                     })
                 }
             })
@@ -207,11 +208,11 @@ impl Component for RobotsCard {
         let robot_thumb = format!(
             "{}/robots/{}_thumbnail.jpg",
             config::AKER_FILES_URL,
-            ctx.props().robot_profile.path
+            self.props.robot_profile.path
         );
-        let on_delete_robot = ctx.link().callback(move |_| RobotsCardMessage::DeleteRobot);
+        let on_delete_robot = self.link.callback(move |_| RobotsCardMessage::DeleteRobot);
 
-        let maybe_delete = if ctx.props().robot_profile.robot_type == get_robot_list::RoboxRobotTypeEnum::Different {
+        let maybe_delete = if self.props.robot_profile.robot_type == robots_list_by_group::RoboxRobotTypeEnum::Different {
             html! {
                 <button class="btn text-danger border border-0 p-0" onclick={on_delete_robot}>
                     <i class="fas fa-trash-alt fa-lg"></i>
@@ -229,12 +230,19 @@ impl Component for RobotsCard {
             html! {
                 <div class="card-robot-view-degree d-flex justify-content-between p-4 mb-3 mb-lg-5 me-md-3 me-lg-5">
                     <div class="d-flex align-items-center">
-                        <a onclick={&on_robot}>
-                            <img src={robot_thumb} class="img-card-64" />
+                        <a onclick=&on_robot>
+                            <img src=robot_thumb class="img-card-64" />
                         </a>
                         <div class="d-flex flex-column justify-content-between ms-2">
-                            <span class="text-white noir-bold is-size-18 lh-22 mb-4">{&ctx.props().robot_profile.name}</span>
+                            <span class="text-white noir-bold is-size-18 lh-22 mb-4">{&self.props.robot_profile.name}</span>
                             {maybe_option_robot_view}
+                            // <span class="text-white noir-light is-size-12 lh-17 text-nowrap"
+                            //     style="padding-top: 14px;">
+                            //     <span class="is-size-12">
+                            //         <i class="far fa-clock"></i>
+                            //     </span>
+                            //     <span class="px-2">{lang::dict("Added")} { &self.props.robot_profile.timestamp}</span>
+                            // </span>
                         </div>
                     </div>
                     <div class="d-flex flex-column justify-content-between align-items-end">

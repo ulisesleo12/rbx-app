@@ -1,0 +1,258 @@
+[
+    {
+        "id": "1ff593dd-fe47-4863-9e5d-c68b14ddcca5",
+        "createdTimestamp": 1744231975427,
+        "username": "10806556",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "ALEX FELIPE",
+        "lastName": "BERMÚDEZ ROSALES",
+        "email": "alex.bermúdez@colegiocristobalcolon.edu.sv",
+        "attributes": {
+            "x-hasura-default-role": [
+                "student"
+            ],
+            "x-hasura-user-id": [
+                "4935e1e9-dedb-4075-a205-b369c4f8f008"
+            ],
+            "x-hasura-school-id": [
+                "f5c3c010-b381-4835-adbe-890ddb60995f"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "ab2e85cf-f92f-481f-bbbc-bae2f9067305",
+        "createdTimestamp": 1744231975037,
+        "username": "10806657",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "IZEL ",
+        "lastName": "MARTÍNEZ PEÑA",
+        "email": "izel.martínez@colegiocristobalcolon.edu.sv",
+        "attributes": {
+            "x-hasura-default-role": [
+                "student"
+            ],
+            "x-hasura-user-id": [
+                "d3f6abdb-d9c1-4645-a348-fe476017e136"
+            ],
+            "x-hasura-school-id": [
+                "f5c3c010-b381-4835-adbe-890ddb60995f"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "6084ce73-adcd-4a80-a756-5d41ee6daba0",
+        "createdTimestamp": 1744231975109,
+        "username": "10806751",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "ESTEBAN NICOLAS",
+        "lastName": "VALDÉS ALFARO",
+        "email": "esteban.valdés@colegiocristobalcolon.edu.sv",
+        "attributes": {
+            "x-hasura-default-role": [
+                "student"
+            ],
+            "x-hasura-user-id": [
+                "1132981b-b42d-4ae2-911d-ca391358f522"
+            ],
+            "x-hasura-school-id": [
+                "f5c3c010-b381-4835-adbe-890ddb60995f"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "fba909d2-9cb4-4cde-ac2e-8f4282c3f17e",
+        "createdTimestamp": 1744231975468,
+        "username": "10922660",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "EDWIN GABRIEL",
+        "lastName": "RODRÍGUEZ MARTÍNEZ",
+        "email": "edwin.rodríguez@colegiocristobalcolon.edu.sv",
+        "attributes": {
+            "x-hasura-default-role": [
+                "student"
+            ],
+            "x-hasura-user-id": [
+                "8da22840-1f8e-4048-b861-2b3355118ba5"
+            ],
+            "x-hasura-school-id": [
+                "f5c3c010-b381-4835-adbe-890ddb60995f"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "65a661e4-9768-4eb3-9975-fa1dc090ed62",
+        "createdTimestamp": 1744231957868,
+        "username": "20054942",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "VALENTINA GISELLE",
+        "lastName": "PEÑA HERNÁNDEZ",
+        "email": "valentina.peña@colegiocristobalcolon.edu.sv",
+        "attributes": {
+            "x-hasura-default-role": [
+                "student"
+            ],
+            "x-hasura-user-id": [
+                "cbb36a47-316a-48a6-9980-141f8e902127"
+            ],
+            "x-hasura-school-id": [
+                "f5c3c010-b381-4835-adbe-890ddb60995f"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "55b11943-efab-4444-8cec-e72b5145c50c",
+        "createdTimestamp": 1744231976859,
+        "username": "20137160",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "GERARDO JOSE",
+        "lastName": "CASTILLO RODRIGUEZ",
+        "email": "gerardo.castillo @colegiocristobalcolon.edu.sv",
+        "attributes": {
+            "x-hasura-default-role": [
+                "student"
+            ],
+            "x-hasura-user-id": [
+                "9c40e628-d036-4118-b8cb-f0be88b2a55a"
+            ],
+            "x-hasura-school-id": [
+                "f5c3c010-b381-4835-adbe-890ddb60995f"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "deef59eb-22d8-48f0-8880-a94fbce6cefe",
+        "createdTimestamp": 1755744702621,
+        "username": "gaby.esck008",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "Miriam Gabriela",
+        "lastName": "Escamilla",
+        "email": "gabriel.esck21@gmail.com",
+        "attributes": {
+            "x-hasura-default-role": [
+                "student"
+            ],
+            "x-hasura-user-id": [
+                "5ee9ffe1-4310-4ad3-91d3-9dd4fe3c09bb"
+            ],
+            "x-hasura-school-id": [
+                "658a4461-192a-4dd1-ae0d-1caa9800ed55"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "2019da9d-fd87-4c05-9761-8deb5f20ed26",
+        "createdTimestamp": 1755744352034,
+        "username": "katia2008",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "Katia Abigail",
+        "lastName": "Ramírez Ortiz",
+        "email": "katiaabigail2008@gmail.com",
+        "attributes": {
+            "x-hasura-default-role": [
+                "student"
+            ],
+            "x-hasura-user-id": [
+                "499341d6-0062-4e96-99b2-660041fea022"
+            ],
+            "x-hasura-school-id": [
+                "658a4461-192a-4dd1-ae0d-1caa9800ed55"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    }
+]

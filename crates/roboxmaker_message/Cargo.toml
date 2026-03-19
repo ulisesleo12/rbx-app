@@ -15,38 +15,13 @@ roboxmaker_loaders = {path = "../roboxmaker_loaders"}
 roboxmaker-graphql = { path = "../roboxmaker-graphql" }
 
 
-uuid = { version = "1.6.1", features = ["serde", "v4", "v5", "wasm-bindgen"] }
-chrono = { version = "0.4", features = ["serde"] }
-yew = "0.21"
-serde = { version = "1", features = ["derive"] }
-yew-router = "0.18"
+uuid = { version = "1.2.2", features = ["serde", "v4", "v5", "wasm-bindgen"] }
+chrono = { version = "0.4.23", features = ["serde"] }
+yew = { version = "0.18", features = ["default", "toml"] }
+serde = { version = "1.0.152", features = ["derive"] }
+
 log = "0.4"
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"]  }
-serde_derive = "1"
+serde_derive = "1.0.152"
 code_location = "1.1"
 
-[dependencies.web-sys]
-version = "0.3"
-features = [
-  "Document",
-  "Headers",
-  "Request",
-  "RequestInit",
-  "RequestMode",
-  "Response",
-  "Window",
-  "Element",
-  "DomTokenList",
-  "HtmlSelectElement",
-  "HtmlDocument",
-  "HtmlMediaElement",
-  "HtmlElement",
-  "Navigator",
-  "BinaryType",
-  "Blob",
-  "FileReader",
-  "ProgressEvent",
-  "FocusEvent",
-  "InputEvent",
-  "CssStyleDeclaration"
-]

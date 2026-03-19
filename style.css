@@ -424,6 +424,11 @@ div.box-robot-editor {
   border-radius: 10px;
 }
 
+.drop-hover-filter:disabled,
+.drop-hover-filter-del:disabled {
+  cursor: not-allowed;
+}
+
 .drop-hover-filter:hover {
   background: var(--color-lavanda-strong) !important;
 }
@@ -456,6 +461,7 @@ div.box-message-to-post-2 {
 /* END USER PAGE */
 
 /* POST PAGE */
+button.button-saved-eraser,
 a.button-saved-eraser {
   width: 196px;
   height: 50px;
@@ -463,6 +469,7 @@ a.button-saved-eraser {
   border-radius: 10px;
 }
 
+button.button-saved-post,
 a.button-saved-post {
   width: 196px;
   height: 50px;
@@ -470,6 +477,9 @@ a.button-saved-post {
   border-radius: 10px;
 }
 
+textarea.input-style-universal:focus-visible {
+  outline: none !important;
+}
 textarea.input-style-universal,
 input.input-style-universal {
   height: 50px;
@@ -518,9 +528,19 @@ input.input-style-universal:focus {
   box-shadow: none !important;
 }
 
+textarea.input-style-universal:focus-visible,
 input.input-style-universal:focus-visible {
   border-color: var(--color-lavanda) !important;
   box-shadow: none !important;
+}
+
+textarea.input-style-universal:disabled,
+input.input-style-universal:disabled {
+  font-family: Noir-Regular;
+  font-size: 18px;
+  line-height: 22px;
+  color: var(--color-purple) !important;
+  cursor: not-allowed;
 }
 
 .input-style-universal:active {
@@ -1286,4 +1306,20 @@ a.dropdown-item:active {
 
 .card-search-u {
   width: 300px;
+}
+
+select.option-select-type:focus-visible {
+  outline: none !important;
+}
+select.option-select-type:focus {
+  box-shadow: none !important;
+}
+select.option-select-type {
+  border-radius: 10px;
+  border: 2px solid var(--color-lavanda) !important;
+  color: var(--color-purple) !important;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
 }

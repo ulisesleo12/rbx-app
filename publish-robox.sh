@@ -11,4 +11,4 @@
 #     IdentityFile ~/.ssh/id_rsa
 
 trunk build --release && \
-scp -r dist/* robox-prodvm:/var/www/www.roboxmaker.com/html
+scp -r dist/* fullserver-vm-frp:/var/www/www.roboxmaker.com/html

@@ -1,12 +1,13 @@
 use log::*;
 use yew::prelude::*;
-use web_sys::{Node, self};
 use yew::virtual_dom::VNode;
-use yew::{html, Component, Html};
+use yew::web_sys::{Node, self};
 use crate::user_messages::MessagesContent;
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 
 pub struct MessageResponse {
+    props: MessageResponseProperties,
     node_response: Option<Node>,
 }
 
@@ -24,8 +25,8 @@ impl Component for MessageResponse {
     type Message = MessageResponseMessage;
     type Properties = MessageResponseProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        let content = ctx.props().content.clone();
+    fn create(props: Self::Properties, _link: ComponentLink<Self>) -> Self {
+        let content = props.content.clone();
         let node_response = web_sys::window()
             .and_then(|window| window.document())
             .and_then(|document| document.create_element("div").ok())
@@ -35,28 +36,30 @@ impl Component for MessageResponse {
                 Some(Node::from(div))
             });
         MessageResponse {
+            props,
             node_response,
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         match msg {
         }
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
 
-        if ctx.props() != old_props {
+        if self.props != props {
+            self.props = props;
             should_render = true;
         } 
         
         should_render
     }
 
-    fn view(&self, _ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
         let node_response = if let Some(node) = &self.node_response {
             VNode::VRef(node.clone())
         } else {

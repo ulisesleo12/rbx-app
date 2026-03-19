@@ -2,10 +2,10 @@ use log::*;
 use chrono::Local;
 use yew::prelude::*;
 use code_location::code_location;
-use yew::{html, Component, Html};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_models::meetings_model;
-use roboxmaker_types::types::SchoolId;
+use roboxmaker_types::types::{AppRoute, SchoolId};
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -15,6 +15,8 @@ pub struct MeetingsProfileFinished {
 }
 
 pub struct LastMeetingsList {
+    link: ComponentLink<Self>,
+    props: LastMeetingsListProperties,
     graphql_task: Option<GraphQLTask>,
     task: Option<RequestTask>,
     meetings_finished: Vec<MeetingsProfileFinished>,
@@ -22,6 +24,7 @@ pub struct LastMeetingsList {
 
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct LastMeetingsListProperties {
+    pub on_app_route: Callback<AppRoute>,
     pub school_id: SchoolId,
     pub school_name: String,
 }
@@ -36,17 +39,18 @@ impl Component for LastMeetingsList {
     type Message = LastMeetingsListMessage;
     type Properties = LastMeetingsListProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(LastMeetingsListMessage::FetchMeetingsFinished);
-
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(LastMeetingsListMessage::FetchMeetingsFinished);
         LastMeetingsList {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             task: None,
             meetings_finished: vec![],
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
@@ -54,14 +58,13 @@ impl Component for LastMeetingsList {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let last_meetings = Local::now().date_naive();
                     let vars = meetings_model::list_last_meetings_by_school_id::Variables { 
-                        school_id: ctx.props().school_id.0,
+                        school_id: self.props.school_id.0,
                         last_meetings: last_meetings,
                         // end_of_meeting: end_of_meeting,
                     };
-
                     let task = meetings_model::ListLastMeetingsBySchoolId::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             LastMeetingsListMessage::MeetingsFinished(response)
@@ -85,24 +88,25 @@ impl Component for LastMeetingsList {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
-        let mut should_render = false;
-
-        if ctx.props() != old_props {
-            should_render = true;
-        } 
-
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        let should_render = false;
+        if self.props != props {
+            self.props = props;
+            true;
+        } else {
+            false;
+        }
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
         let list_meetings_finished = self
             .meetings_finished
             .iter().map(|meetings_profile| {
                 html! {
                     <div class="card-last-meettings bg-white d-flex flex-column justify-content-center p-4 mb-4">
-                        <span class="text-primary-blue-dark noir-bold is-size-18 lh-22">{ctx.props().school_name.clone()}</span>
+                        <span class="text-primary-blue-dark noir-bold is-size-18 lh-22">{self.props.school_name.clone()}</span>
                         <div class="d-flex align-items-center justify-content-between pt-3">
                             <span class="text-gray-blue noir-regular is-size-14 lh-18 d-flex align-items-center">
                                 <i class="far fa-calendar me-1"></i>

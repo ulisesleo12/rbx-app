@@ -1,12 +1,13 @@
 use log::*;
 use yew::prelude::*;
-use web_sys::{Node, self};
 use yew::virtual_dom::VNode;
-use yew::{html, Component, Html};
+use yew::web_sys::{Node, self};
 use crate::user_messages::MessagesContent;
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 
 pub struct MessageReply {
+    props: MessageReplyProperties,
     node_reply: Option<Node>,
 }
 
@@ -24,8 +25,8 @@ impl Component for MessageReply {
     type Message = MessageReplyMessage;
     type Properties = MessageReplyProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        let content_reply = ctx.props().content_reply.clone();
+    fn create(props: Self::Properties, _link: ComponentLink<Self>) -> Self {
+        let content_reply = props.content_reply.clone();
         let node_reply = web_sys::window()
             .and_then(|window| window.document())
             .and_then(|document| document.create_element("div").ok())
@@ -35,28 +36,30 @@ impl Component for MessageReply {
                 Some(Node::from(div))
             });
         MessageReply {
+            props,
             node_reply,
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         match msg {
         }
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
 
-        if ctx.props() != old_props {
+        if self.props != props {
+            self.props = props;
             should_render = true;
         } 
         
         should_render
     }
 
-    fn view(&self, _ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
         let node_reply = if let Some(node) = &self.node_reply {
             VNode::VRef(node.clone())
         } else {

@@ -1,16 +1,20 @@
+use anyhow;
 use uuid::Uuid;
+use yew::format::Json;
 use graphql_client::GraphQLQuery;
-// use yew::services::fetch::{FetchService, FetchTask, Response};
+use yew::{Component, ComponentLink};
+use yew::services::fetch::{FetchService, FetchTask, Response};
 // use reqwest::{self, header::HeaderMap, StatusCode};
 
 use roboxmaker_graphql::{Subscribe, Request};
+use crate::auth;
 
 type Timestamp = chrono::NaiveDateTime;
 
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "schema.graphql",
-    query_path = "test.graphql",
+    query_path = "query.graphql",
     response_derives = "Clone, Debug, PartialEq, Serialize",
     normalization = "rust"
 )]
@@ -51,52 +55,49 @@ pub struct MyContributionsAndComments;
 impl Request for MyContributionsAndComments {}
 
 
-// #[derive(GraphQLQuery)]
-// #[graphql(
-//     schema_path = "schema.graphql",
-//     query_path = "query.graphql",
-//     response_derives = "Clone, Debug",
-//     normalization = "rust"
-// )]
-// pub struct RobotIdsByNames;
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "schema.graphql",
+    query_path = "query.graphql",
+    response_derives = "Clone, Debug",
+    normalization = "rust"
+)]
+pub struct RobotIdsByNames;
 
-// type RobotIdsByNamesFetchResponse = Response<
-//     Json<Result<graphql_client::Response<robot_ids_by_names::ResponseData>, anyhow::Error>>,
-// >;
+type RobotIdsByNamesFetchResponse = Response<
+    Json<Result<graphql_client::Response<robot_ids_by_names::ResponseData>, anyhow::Error>>,
+>;
 
-// pub fn fetch_robot_ids_by_names<C, F, M>(
-//     vars: robot_ids_by_names::Variables,
-//     response: F,
-// ) -> Result<FetchTask, anyhow::Error>
-// where
-//     C: Component,
-//     M: Into<C::Message>,
-//     F: Fn(Vec<robot_ids_by_names::RobotIdsByNamesRobot>) -> M + 'static,
-// {
-//     let query = RobotIdsByNames::build_query(vars);
-//     let post_request = auth::query_req(Json(&query));
-//     let post_callback = link.callback(move |callback: RobotIdsByNamesFetchResponse| {
-//         if let (_meta, Json(Ok(gq_response))) = callback.into_parts() {
-//             if let Some(_errors) = gq_response.errors {
-//                 response(vec![])
-//             } else {
-//                 let data: robot_ids_by_names::ResponseData =
-//                     gq_response.data.expect("missing response data");
-//                 let robots: Vec<robot_ids_by_names::RobotIdsByNamesRobot> = data.robot;
-//                 response(robots)
-//             }
-//         } else {
-//             response(vec![])
-//         }
-//     });
-//     post_request
-//         .and_then(|req| Some(FetchService::fetch(req, post_callback)))
-//         .unwrap_or(Err(anyhow::Error::msg("Unable to build request")))
-// }
-
-
-
-
+pub fn fetch_robot_ids_by_names<C, F, M>(
+    link: &ComponentLink<C>,
+    vars: robot_ids_by_names::Variables,
+    response: F,
+) -> Result<FetchTask, anyhow::Error>
+where
+    C: Component,
+    M: Into<C::Message>,
+    F: Fn(Vec<robot_ids_by_names::RobotIdsByNamesRobot>) -> M + 'static,
+{
+    let query = RobotIdsByNames::build_query(vars);
+    let post_request = auth::query_req(Json(&query));
+    let post_callback = link.callback(move |callback: RobotIdsByNamesFetchResponse| {
+        if let (_meta, Json(Ok(gq_response))) = callback.into_parts() {
+            if let Some(_errors) = gq_response.errors {
+                response(vec![])
+            } else {
+                let data: robot_ids_by_names::ResponseData =
+                    gq_response.data.expect("missing response data");
+                let robots: Vec<robot_ids_by_names::RobotIdsByNamesRobot> = data.robot;
+                response(robots)
+            }
+        } else {
+            response(vec![])
+        }
+    });
+    post_request
+        .and_then(|req| Some(FetchService::fetch(req, post_callback)))
+        .unwrap_or(Err(anyhow::Error::msg("Unable to build request")))
+}
 // #[derive(GraphQLQuery)]
 // #[graphql(
 //     schema_path = "schema.graphql",

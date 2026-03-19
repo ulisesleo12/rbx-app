@@ -45,8 +45,8 @@ impl Component for FilesSelect {
     type Message = FilesSelectMessage;
     type Properties = FilesSelectProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        link().send_message(FilesSelectMessage::FetchFilesByAuthorId);
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(FilesSelectMessage::FetchFilesByAuthorId);
         FilesSelect {
             link,
             props,
@@ -57,17 +57,17 @@ impl Component for FilesSelect {
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_render = true;
         match msg {
             FilesSelectMessage::SelectFiles(select_option) => {
                 self.show_modal_add_file = false;
                 self.files_list = vec![];
-                ctx.props().on_select.emit(select_option);
+                self.props.on_select.emit(select_option);
             }
             FilesSelectMessage::FetchFilesByAuthorId => {
-                let user_id = ctx.props().auth_user.as_ref()
+                let user_id = self.props.auth_user.as_ref()
                     .and_then(|data| data.user_by_pk.as_ref())
                     .and_then(|data| Some(data.id));
 
@@ -99,8 +99,8 @@ impl Component for FilesSelect {
         should_render
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
 
         if self.props != props {
@@ -111,14 +111,14 @@ impl Component for FilesSelect {
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
         let maybe_new = self
             .props.auth_user
             .as_ref()
             .and_then(|data| data.user_by_pk.as_ref())
             .and_then(|user|{
                 if user.user_staff.is_some() || user.user_teacher.is_some() || user.user_student.is_some() {
-                    let on_select = ctx.link().callback(move |_| FilesSelectMessage::SelectFiles(FilesSelectOption::NewFiles));
+                    let on_select = self.link.callback(move |_| FilesSelectMessage::SelectFiles(FilesSelectOption::NewFiles));
                     Some(html! {
                         <a class="btn button-update-file d-flex align-items-center justify-content-center me-5" onmousedown=on_select>
                             <span class="text-white noir-bold is-size-16 lh-20 text-center">{lang::dict("Upload File...")}</span>
@@ -132,7 +132,7 @@ impl Component for FilesSelect {
             .iter()
             .map(|files| {
                 let files_id = FilesId(files.id);
-                let on_select = ctx.link().callback(move |_| {FilesSelectMessage::SelectFiles(FilesSelectOption::Files(files_id))});
+                let on_select = self.link.callback(move |_| {FilesSelectMessage::SelectFiles(FilesSelectOption::Files(files_id))});
                 let title = files.files_profile.clone().unwrap().title;
                 html! {
                     <div class="m-4">
@@ -154,7 +154,7 @@ impl Component for FilesSelect {
                 }
             })
             .collect::<Html>();
-        let show_modal = ctx.link().callback(|_| FilesSelectMessage::ShowModal);
+        let show_modal = self.link.callback(|_| FilesSelectMessage::ShowModal);
         let class_search_modal = if self.show_modal_add_file {
             "modal fade show"
         } else {

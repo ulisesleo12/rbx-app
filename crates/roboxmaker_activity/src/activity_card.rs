@@ -1,22 +1,23 @@
 use log::*;
+use std::vec;
 use uuid::Uuid;
-use web_sys::Node;
 use chrono::NaiveDate;
 use crate::ActivityStyle;
 use code_location::code_location;
 use crate::activity_list::ActivityProfile;
-use yew::{prelude::*, virtual_dom::VNode};
-use yew::{html, Component, Html};
+use yew::{prelude::*, web_sys::{Node, self}, virtual_dom::VNode};
 use crate::v_calendar_activity::ActivityCardVCalendar;
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_ckeditor::ckeditor;
 use roboxmaker_main::{lang, config};
 use roboxmaker_models::activity_model;
-use roboxmaker_utils::functions::get_value_from_input_event;
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
-use roboxmaker_types::types::{ActivityId, ClassesId, GroupId, MyUserProfile};
+use roboxmaker_types::types::{AppRoute, ActivityId, ClassesId, GroupId, MyUserProfile};
 
 pub struct ActivityCard {
+    link: ComponentLink<Self>,
+    props: ActivityCardProps,
     graphql_task: Option<GraphQLTask>,
     save_task: Option<RequestTask>,
     delete_task: Option<RequestTask>,
@@ -30,6 +31,7 @@ pub struct ActivityCard {
 
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct ActivityCardProps {
+    pub on_app_route: Callback<AppRoute>,
     pub user_profile: Option<MyUserProfile>,
     pub activity_profile: Option<ActivityProfile>,
     pub classes_id: ClassesId,
@@ -61,10 +63,11 @@ impl Component for ActivityCard {
     type Message = ActivityCardMessage;
     type Properties = ActivityCardProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(ActivityCardMessage::ContentActivity);
-        
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(ActivityCardMessage::ContentActivity);
         ActivityCard {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             save_task: None,
             delete_task: None,
@@ -77,7 +80,7 @@ impl Component for ActivityCard {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
@@ -91,15 +94,15 @@ impl Component for ActivityCard {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let vars = activity_model::activity_classes_group_create::Variables {
                         content,
-                        group_id: ctx.props().group_id.0,
-                        classes_id: ctx.props().classes_id.0,
+                        group_id: self.props.group_id.0,
+                        classes_id: self.props.classes_id.0,
                         title: String::from(lang::dict("New Activity")),
                         timestamp: local,
                     };
 
                     let task = activity_model::ActivityClassesGroupCreate::request(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             |response| {
                                 ActivityCardMessage::ContentSaved(response)
@@ -116,7 +119,7 @@ impl Component for ActivityCard {
 
                     let task = activity_model::DeleteActivityById::request(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             |response| {
                                 ActivityCardMessage::ActivityDeleted(response)
@@ -130,11 +133,11 @@ impl Component for ActivityCard {
                 self.edit = true;
             }
             ActivityCardMessage::ContentActivity => {
-                self.title = ctx.props().activity_profile.clone().and_then(|data| Some(data.title)).unwrap_or("".to_string());
-                self.score = ctx.props().activity_profile.clone().and_then(|data| Some(data.score)).unwrap_or(0);
-                self.date = ctx.props().activity_profile.clone().and_then(|data| Some(format! ("{}", data.deliver))).unwrap_or("01/01/2022".to_string());
-                self.content = ctx.props().activity_profile.clone().and_then(|data| Some(data.content)).unwrap_or("".to_string());
-                // let content = ctx.props().activity_profile.clone().and_then(|data| Some(data.content)).unwrap_or("".to_string());
+                self.title = self.props.activity_profile.clone().and_then(|data| Some(data.title)).unwrap_or("".to_string());
+                self.score = self.props.activity_profile.clone().and_then(|data| Some(data.score)).unwrap_or(0);
+                self.date = self.props.activity_profile.clone().and_then(|data| Some(format! ("{}", data.deliver))).unwrap_or("01/01/2022".to_string());
+                self.content = self.props.activity_profile.clone().and_then(|data| Some(data.content)).unwrap_or("".to_string());
+                // let content = self.props.activity_profile.clone().and_then(|data| Some(data.content)).unwrap_or("".to_string());
                 self.node = web_sys::window()
                     .and_then(|window| window.document())
                     .and_then(|document| document.create_element("div").ok())
@@ -149,7 +152,7 @@ impl Component for ActivityCard {
             }
             ActivityCardMessage::OnContent(content) => {
                 self.content = content;
-                // content = ctx.props().activity_profile.clone().and_then(|data| Some(data.content)).unwrap_or("".to_string());
+                // content = self.props.activity_profile.clone().and_then(|data| Some(data.content)).unwrap_or("".to_string());
             }
             ActivityCardMessage::Title(title) => {
                 self.title = title;
@@ -185,7 +188,7 @@ impl Component for ActivityCard {
 
                     let task = activity_model::UpdateActivityContentById::request(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             move |response| {
                                 ActivityCardMessage::UpdateActivity(response)
@@ -203,33 +206,34 @@ impl Component for ActivityCard {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = true;
-        
-        if ctx.props() != old_props {
-            ctx.link().send_message(ActivityCardMessage::ContentActivity);
+
+        if self.props != props {
+            self.props = props;
+            self.link.send_message(ActivityCardMessage::ContentActivity);
             should_render = true;
-        } 
+        }
 
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
         let upload_url = format!("{}/upload.php", config::AKER_FILES_URL);
-        let on_callback_date = ctx.link().callback(move |date| ActivityCardMessage::OnDateActivity(date));
+        let on_callback_date = self.link.callback(move |date| ActivityCardMessage::OnDateActivity(date));
 
-        if let Some(activity_profile) = &ctx.props().activity_profile {
+        if let Some(activity_profile) = &self.props.activity_profile {
             if self.edit {
                 let activity_id = activity_profile.activity_id;
-                let on_data = ctx
-                    .link()
+                let on_data = self
+                    .link
                     .callback(move |data| ActivityCardMessage::OnContent(data));
-                let on_save = ctx
-                    .link()
+                let on_save = self
+                    .link
                     .callback(move |_| ActivityCardMessage::SaveActivity(activity_id));
-                let on_cancel = ctx
-                    .link()
+                let on_cancel = self
+                    .link
                     .callback(move |_| ActivityCardMessage::CancelEditActivity(activity_id));
                 let maybe_node = if let Some(node) = &self.node {
                     VNode::VRef(node.clone())
@@ -240,10 +244,10 @@ impl Component for ActivityCard {
                         </span>
                     }
                 };
-                let on_title = ctx.link().callback(|data: InputEvent| ActivityCardMessage::Title(get_value_from_input_event(data)));
-                let on_score = ctx.link().callback(|data: InputEvent| ActivityCardMessage::OnScore(get_value_from_input_event(data)));
-                let maybe_option_edit = ctx
-                    .props()
+                let on_title = self.link.callback(|data: InputData| ActivityCardMessage::Title(data.value));
+                let on_score = self.link.callback(|data: InputData| ActivityCardMessage::OnScore(data.value));
+                let maybe_option_edit = self
+                    .props
                     .user_profile
                     .as_ref()
                     .and_then(|user|{
@@ -251,37 +255,37 @@ impl Component for ActivityCard {
                             Some(html! {
                                 <>
                                     <div class="pb-5 mt-5">
-                                        <input class="input input-style-universal px-4 w-100" type="text" placeholder={lang::dict("Activity Title")} value={self.title.clone()} oninput={on_title} />
+                                        <input class="input input-style-universal px-4 w-100" type="text" placeholder={lang::dict("Activity Title")} value=self.title.clone() oninput=on_title />
                                     </div>
                                     <div class="d-flex justify-content-between mb-5">
                                         <div class="d-flex flex-row">
                                             <div class="d-flex flex-column">
                                                 <span class="text-secondary-purple noir-bold is-size-16 lh-20 mb-2">{lang::dict("Delivery Date")}</span>
                                                 // <input class="input input-style-universal form-date-input px-3" type="date" placeholder="Text input" oninput=on_date />
-                                                <ActivityCardVCalendar on_callback_date={on_callback_date}
-                                                    activity_profile={ctx.props().activity_profile.clone()} />
+                                                <ActivityCardVCalendar on_callback_date=on_callback_date
+                                                    activity_profile=self.props.activity_profile.clone() />
                                             </div>
                                             <div class="pe-5 me-2"></div>
                                             <div class="d-flex flex-column">
                                                 <span class="text-secondary-purple noir-bold is-size-16 lh-20 mb-2">{lang::dict("Punctuation")}</span>
-                                                <input class="input input-style-universal px-2" type="number" min="0" max="10" value={format!("{}", self.score.clone())} placeholder="0" oninput={on_score} />
+                                                <input class="input input-style-universal px-2" type="number" min="0" max="10" value=format!("{}", self.score.clone()) placeholder="0" oninput=on_score />
                                             </div>
                                         </div>
                                         <div class="d-flex is-align-items-flex-end justify-content-end">
-                                            <button class="button btn-cancel-activity" onclick={&on_cancel}>
+                                            <button class="button btn-cancel-activity" onclick=&on_cancel>
                                                 <span class="text-white noir-bold is-size-16 lh-20">{lang::dict("Cancel")}</span>
                                             </button>
                                             <div class="pe-4"></div>
-                                            <button class="button btn-save-activity bg-primary-blue-dark" onclick={on_save}>
+                                            <button class="button btn-save-activity bg-primary-blue-dark" onclick=on_save>
                                                 <span class="text-white noir-bold is-size-16 lh-20">{lang::dict("Modify Activity")}</span>
                                             </button>
                                         </div>
                                     </div>
                                     <div class="container-editor-activity mb-6">
-                                        <ckeditor::CKEditor user_profile={ctx.props().user_profile.clone()}
-                                            content={self.content.clone()}
-                                            upload_url={upload_url.clone()}
-                                            on_data={on_data.clone()} />
+                                        <ckeditor::CKEditor user_profile=self.props.user_profile.clone()
+                                            content=self.content.clone()
+                                            upload_url=upload_url.clone()
+                                            on_data=on_data.clone() />
                                     </div>
                                 </>
                             })
@@ -295,7 +299,7 @@ impl Component for ActivityCard {
                                         <span class="text-gray-purple-two noir-light is-size-14 lh-17-2">{&activity_profile.score}{" pts"}</span>
                                         <span class="text-gray-purple-two noir-light is-size-14 lh-17-2">{"Hasta "}{&activity_profile.deliver}</span>
                                         <span class="text-gray-purple-two noir-light is-size-14 lh-17-2">{&activity_profile.timestamp}</span>
-                                        <button class="btn btn-outline-danger" onclick={&on_cancel}>
+                                        <button class="btn btn-outline-danger" onclick=&on_cancel>
                                             <i class="fas fa-times"></i>
                                         </button>
                                     </div>
@@ -311,24 +315,24 @@ impl Component for ActivityCard {
                     maybe_option_edit
                 }
             } else {
-                let maybe_edit_activity = ctx
-                    .props()
+                let maybe_edit_activity = self
+                    .props
                     .user_profile
                     .as_ref()
                     .and_then(|auth_user| {
                         let activity_id = activity_profile.activity_id;
                         let author_id = activity_profile.user_id;
-                        let on_activity_edit = ctx.link().callback(move |_| ActivityCardMessage::EditActivity(activity_id));
-                        let on_activity_delete = ctx.link().callback(move |_| ActivityCardMessage::DeleteActivity(activity_id));
+                        let on_activity_edit = self.link.callback(move |_| ActivityCardMessage::EditActivity(activity_id));
+                        let on_activity_delete = self.link.callback(move |_| ActivityCardMessage::DeleteActivity(activity_id));
                         if auth_user.user_id.0 == author_id.0 && auth_user.user_staff.is_some() || auth_user.user_teacher.is_some() {
                             Some(html! {
                                 <div class="d-flex flex-wrap justify-content-end col order-lg-2 mt-3 mt-lg-0">
-                                    <button class="btn btn-transparent me-4" onclick={on_activity_edit}>
+                                    <button class="btn btn-transparent me-4" onclick=on_activity_edit>
                                         <span class="icon is-medium" style="color: #A4A5E3">
                                             <i class="far fa-edit fas fa-lg"></i>
                                         </span>
                                     </button>
-                                    <button class="btn btn-outline-danger" onclick={on_activity_delete}>
+                                    <button class="btn btn-outline-danger" onclick=on_activity_delete>
                                         <span class="is-size-14">
                                             <i class="far fa-trash-alt"></i>
                                         </span>
@@ -341,21 +345,21 @@ impl Component for ActivityCard {
                     })
                     .unwrap_or(html! {});
 
-                let activity_div_key = ctx
-                    .props()
+                let activity_div_key = self
+                    .props
                     .activity_profile
                     .as_ref()
                     .and_then(|activity_profile| Some(activity_profile.activity_id))
                     .unwrap_or(ActivityId(Uuid::default()));
                 let activity_id = activity_profile.activity_id;
-                let on_activity_edit = ctx.link().callback(move |_| ActivityCardMessage::EditActivity(activity_id));
+                let on_activity_edit = self.link.callback(move |_| ActivityCardMessage::EditActivity(activity_id));
                 let maybe_model = {
-                    match ctx.props().maybe_style {
+                    match self.props.maybe_style {
                         ActivityStyle::ClassesPage => {
                             html! {
-                                <div key={activity_div_key.to_string()}>
+                                <div key=activity_div_key.to_string()>
                                     <div class="card-activity-view bg-white d-flex flex-wrap align-items-center justify-content-between p-4 mt-5">
-                                        <a class="col-12 col-sm-12 col-md-12 col-lg-6 order-0" onclick={on_activity_edit}>
+                                        <a class="col-12 col-sm-12 col-md-12 col-lg-6 order-0" onclick=on_activity_edit>
                                             <span class="text-primary-blue-dark noir-bold is-size-18 lh-22 d-flex align-items-center">
                                                 <img src="/icons/clipboard-2.svg" style="width: 22px;" />
                                                 <span class="ps-2">{&activity_profile.title}</span>
@@ -380,13 +384,13 @@ impl Component for ActivityCard {
                     {maybe_model}
                 }
             }
-        } else if let Some(user) = &ctx.props().user_profile {
-            let on_send = ctx
-                .link()
+        } else if let Some(user) = &self.props.user_profile {
+            let on_send = self
+                .link
                 .callback(move |_| ActivityCardMessage::CreateActivity);
             let maybe_option = if user.user_staff.is_some() || user.user_teacher.is_some() {
                 Some(html! {
-                    <button class="btn btn-create-activity bg-primary-blue-dark" onclick={&on_send}>
+                    <button class="btn btn-create-activity bg-primary-blue-dark" onclick=&on_send>
                         <span class="text-white noir-bold is-size-16 lh-20">{lang::dict("Create Activity")}</span>
                     </button>
                 })
@@ -395,7 +399,7 @@ impl Component for ActivityCard {
             }.unwrap_or(html! {});
 
             let maybe_button = {
-                match ctx.props().maybe_style {
+                match self.props.maybe_style {
                     ActivityStyle::ClassesPage => {
                         html! {
                             <div class="d-flex flex-column">

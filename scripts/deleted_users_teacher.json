@@ -1,0 +1,281 @@
+[
+  {
+    "id": "7b898e77-3f86-494b-b97f-bc0cd7e01a84",
+    "username": "albertoramos",
+    "fullName": "Luis Alberto Campos Ramos",
+    "email": "barchiel06@gmail.com",
+    "role": "teacher",
+    "user_id": "566e6e42-4214-426c-b9b0-5fc57c80b213",
+    "shool_id": "d15d3e13-388e-40af-8182-ffd7187a5cba"
+  },
+  {
+    "id": "984c6dbb-ea27-4095-9f1b-b032bca0c770",
+    "username": "angelicacortez",
+    "fullName": "Angélica Cortez",
+    "email": "caren.barrera@colegiobautistamies.com",
+    "role": "teacher",
+    "user_id": "7cc50b02-b374-47cc-9b01-49e32b8eaae1",
+    "shool_id": "ff04c23e-1a51-4be1-bc63-e986129b1143"
+  },
+  {
+    "id": "21c332f0-e6c7-492e-b2cc-9f7ff81764dc",
+    "username": "arturoreyes",
+    "fullName": "Arturo Reyes",
+    "email": "arturoreyes@colegiofatima.edu.sv",
+    "role": "teacher",
+    "user_id": "423a31d3-dbd1-440d-b722-c292f2be38ac",
+    "shool_id": "09ac5158-6e7e-4743-9e75-9713d2047e46"
+  },
+  {
+    "id": "be139494-85a7-4bbb-bbfe-e1aa1242dca7",
+    "username": "ceciliagomez",
+    "fullName": "Cecilia Carolina Gómez López",
+    "email": "ceciliagomez@colegioguadalupanosm.com",
+    "role": "teacher",
+    "user_id": "466dbe1a-d1e2-4297-8ad2-904cd93002f8",
+    "shool_id": "fbad49bf-1f7c-4c1b-a9c9-aee4987e5fa9"
+  },
+  {
+    "id": "443d5b49-f97a-4c8c-81e2-672d64292aa6",
+    "username": "ceciliarojas",
+    "fullName": "Yolanda Cecilia Rojas Marmol",
+    "email": "rojasyolanda@colegioioseph.edu.sv",
+    "role": "teacher",
+    "user_id": "248ae852-6e5e-44c7-9d4b-5b29395b7c5d",
+    "shool_id": "59ddc028-79c9-4be2-86c9-b1d430995786"
+  },
+  {
+    "id": "da5473d5-c463-4c81-b50f-e72901ef3e66",
+    "username": "dlopezccc344",
+    "fullName": "Diana López",
+    "email": "dianaalopez@colegiocristobalcolon.edu.sv",
+    "role": "teacher",
+    "user_id": "5848729a-eaae-4d41-a955-90c283d037b2",
+    "shool_id": "f5c3c010-b381-4835-adbe-890ddb60995f"
+  },
+  {
+    "id": "8ca5df63-c98d-4ab4-9d96-3283991fb87b",
+    "username": "elbiquintanilla",
+    "fullName": "Elbi Rodrigo Quintanilla Molina",
+    "email": "elbiquintanilla@colegioguadalupanosm.com",
+    "role": "teacher",
+    "user_id": "8da96522-019c-4176-8ae9-ac552eaea307",
+    "shool_id": "fbad49bf-1f7c-4c1b-a9c9-aee4987e5fa9"
+  },
+  {
+    "id": "56933abb-b7f2-4df5-bd2f-670135dc77db",
+    "username": "emersonbonilla",
+    "fullName": "Emerson Bonilla",
+    "email": "emerson.bonilla@cdb.edu.sv",
+    "role": "teacher",
+    "user_id": "64cd9936-89c3-4e39-b963-e82ae8025fc9",
+    "shool_id": "f7a0cc38-d35a-496a-a442-6f40fdfe36a5"
+  },
+  {
+    "id": "ae465bc7-81d1-444c-b92d-38ebf61b7463",
+    "username": "emersonvega",
+    "fullName": "Emerson Alexander Vega Santos",
+    "email": "emerson.vega@colsanfra.edu.sv",
+    "role": "teacher",
+    "user_id": "40a6a251-4079-499e-b20c-5d2cf31ac709",
+    "shool_id": "2382e193-c4fa-4120-8615-23fb9d980514"
+  },
+  {
+    "id": "75b588fa-5ed1-4e5f-8f11-6bdd302ca877",
+    "username": "ericksonhernandez",
+    "fullName": "Yimmy Erickson Hernández",
+    "email": "ericksonhernandez@colsanfra.edu.sv",
+    "role": "teacher",
+    "user_id": "b47ccf8a-e02d-4c99-afc7-7007010b27e4",
+    "shool_id": "2382e193-c4fa-4120-8615-23fb9d980514"
+  },
+  {
+    "id": "0d9a53f8-25cb-457b-80e4-f7ca26094143",
+    "username": "erickvelis",
+    "fullName": "Erick Armando Velis Penado",
+    "email": "erick_velis@hotmail.com",
+    "role": "teacher",
+    "user_id": "88d198b3-40b9-45bc-a602-5c1a8b3ef8f9",
+    "shool_id": "001862ff-8cd1-4867-a3b0-e4290ae5236c"
+  },
+  {
+    "id": "2fb86826-d5e8-4373-8fc7-205fb909f2ca",
+    "username": "franciscorivera",
+    "fullName": "José Francisco Rivera Castro",
+    "email": "jfrc0599@hotmail.com",
+    "role": "teacher",
+    "user_id": "9c455dd1-8770-48fe-bfeb-6a5e0aada323",
+    "shool_id": "09ac5158-6e7e-4743-9e75-9713d2047e46"
+  },
+  {
+    "id": "bfa9009e-d9c9-492a-b712-219296e48b63",
+    "username": "griseldaherrera",
+    "fullName": "Griselda Lisette Herrera de Avila",
+    "email": "coordinacioninformatica@colegioguadalupanosm.com",
+    "role": "teacher",
+    "user_id": "08674114-2a70-434e-b5ab-39e1afe04bab",
+    "shool_id": "fbad49bf-1f7c-4c1b-a9c9-aee4987e5fa9"
+  },
+  {
+    "id": "06e55204-a5dc-4d48-9fdb-f66852833684",
+    "username": "isabelrobles",
+    "fullName": "Irma Isabel Morales Robles",
+    "email": "irmamorales@colegioguadalupanosm.com",
+    "role": "teacher",
+    "user_id": "acfd4528-29fb-4315-9bdf-9d8a36cb2115",
+    "shool_id": "fbad49bf-1f7c-4c1b-a9c9-aee4987e5fa9"
+  },
+  {
+    "id": "52f3f802-641b-4a28-ae7c-0e40b0e207a5",
+    "username": "jfloresmejia",
+    "fullName": "Josue Mejia",
+    "email": "josue@vertexstudio.co",
+    "role": "teacher",
+    "user_id": "7266d4b9-47bb-4eb0-87bb-c21bd1b51bd5",
+    "shool_id": "77c03b6e-d901-4b83-a3b0-0ca8f20fa727"
+  },
+  {
+    "id": "6c4d5137-9d9a-46b5-b079-9cdaf95223f6",
+    "username": "jorgebasagoitia",
+    "fullName": "Jorge Basagoitia",
+    "email": "jorge.basagoitia@cdb.edu.sv",
+    "role": "teacher",
+    "user_id": "40549c2b-2d0c-4ed0-ba33-2f01d5bcf706",
+    "shool_id": "f7a0cc38-d35a-496a-a442-6f40fdfe36a5"
+  },
+  {
+    "id": "9f949e05-7d3a-469a-a307-7d04884383cc",
+    "username": "jorgemartinez",
+    "fullName": "Jorge Luis Martínez",
+    "email": "j_luismartinez@hotmail.com",
+    "role": "teacher",
+    "user_id": "896da174-850c-488d-ab2e-c9ad30042239",
+    "shool_id": "94df7d74-ce0a-45ba-9cad-05a1cc636bfb"
+  },
+  {
+    "id": "5118032f-eeb2-4436-89a6-7f63e5e5eb40",
+    "username": "leylarodriguez",
+    "fullName": "Leyla Carina Rodriguez de Díaz",
+    "email": "rodriguezleyla@gmail.com",
+    "role": "teacher",
+    "user_id": "3e8b4eed-ac5b-40d2-900d-f6f4e2a593a5",
+    "shool_id": "d15d3e13-388e-40af-8182-ffd7187a5cba"
+  },
+  {
+    "id": "9c6ae4cb-1501-4701-858e-6f89f306e9c7",
+    "username": "marisolsalinas",
+    "fullName": "Marisol Salinas",
+    "email": "marisol.salinas@santacecilia.edu.sv",
+    "role": "teacher",
+    "user_id": "f6be84d0-4061-4d51-b5e0-99723d070074",
+    "shool_id": "ecd5dcec-8dff-11ee-b9d1-0242ac120002"
+  },
+  {
+    "id": "c1319c9e-2c87-4129-8134-0ec05ff5605e",
+    "username": "rafaelorellana",
+    "fullName": "Rafael Antonio Orellana Batres",
+    "email": "faffaorellana@gmail.com",
+    "role": "teacher",
+    "user_id": "b26da56a-dafe-478c-84b7-d85a73f78eed",
+    "shool_id": "59ddc028-79c9-4be2-86c9-b1d430995786"
+  },
+  {
+    "id": "6eff5fea-bc50-4096-ac35-697e8f8a6eeb",
+    "username": "ricardofonseca",
+    "fullName": "Ricardo Fonseca",
+    "email": "ricardofonseca@colegiofatima.edu.sv",
+    "role": "teacher",
+    "user_id": "841623a6-a028-4c60-b524-43c49eef7264",
+    "shool_id": "09ac5158-6e7e-4743-9e75-9713d2047e46"
+  },
+  {
+    "id": "23a999f0-48b7-411b-830e-ba6375aa86ab",
+    "username": "robertolainez",
+    "fullName": "Roberto Carlos Lainez Rodriguez",
+    "email": "robertolainezico@gmail.com",
+    "role": "teacher",
+    "user_id": "4ee6a168-d246-4650-8b20-d8bd93a4e4d1",
+    "shool_id": "94df7d74-ce0a-45ba-9cad-05a1cc636bfb"
+  },
+  {
+    "id": "5d4173ff-cf8c-41bc-a0f6-81c708213cca",
+    "username": "ronaldomendoza",
+    "fullName": "Ronaldo Alfredo Mendoza Mancia",
+    "email": "ronaldo.mendoza@santacecilia.edu.sv",
+    "role": "teacher",
+    "user_id": "f4b08028-3231-4938-9387-47f49310e1db",
+    "shool_id": "ecd5dcec-8dff-11ee-b9d1-0242ac120002"
+  },
+  {
+    "id": "042ac605-f9bf-4117-9bc2-ba0932e0ec89",
+    "username": "roxanatrejo",
+    "fullName": "Roxana Yaneth Trejo Arevalo",
+    "email": "profaroxanatrejo@hotmail.com",
+    "role": "teacher",
+    "user_id": "844709ac-5e28-44b5-99a1-178e7d9658f3",
+    "shool_id": "840a1b44-3eb7-4941-8eb2-046c20269450"
+  },
+  {
+    "id": "9d25443a-e06c-405a-959e-3ee543e352cf",
+    "username": "salvadorgarciaguirre",
+    "fullName": "Salvador de Jesús Garciaguirre Martínez",
+    "email": "sgarciaguirre@hotmail.com",
+    "role": "teacher",
+    "user_id": "b66da015-32b7-4c3f-a1e5-c046796a9601",
+    "shool_id": "94df7d74-ce0a-45ba-9cad-05a1cc636bfb"
+  },
+  {
+    "id": "405037b1-14c9-45ef-a7e0-cb4a57523ca8",
+    "username": "samuelperez",
+    "fullName": "Samuel  Pérez",
+    "email": "samuel.perez@colegiobautistamies.com",
+    "role": "teacher",
+    "user_id": "739329db-1f2c-4612-aaea-a2d98e25e02d",
+    "shool_id": "ff04c23e-1a51-4be1-bc63-e986129b1143"
+  },
+  {
+    "id": "8f0b255e-b59c-4aa0-ba25-1ff952b9d96d",
+    "username": "saulsorto",
+    "fullName": "Saúl Sorto",
+    "email": "admin@colsanfra.edu.sv",
+    "role": "teacher",
+    "user_id": "4377a111-9caf-4b6d-9eca-1bc2a3fade9d",
+    "shool_id": "2382e193-c4fa-4120-8615-23fb9d980514"
+  },
+  {
+    "id": "136e03c5-a145-44db-b3ee-49266f4cdb1b",
+    "username": "sorconcepcionramos",
+    "fullName": "Sor Concepción Ramos",
+    "email": "direccion@lasagradafamilia.edu.sv",
+    "role": "teacher",
+    "user_id": "117e60e4-0bd9-4879-b875-dbc20e019d75",
+    "shool_id": "09fcc879-6760-42df-975b-d1bebe6a7fbf"
+  },
+  {
+    "id": "42a2eda9-3b9d-41c1-a61d-42440ab71139",
+    "username": "stephanielopez",
+    "fullName": "Yancy Stephanie López Araniba",
+    "email": "stephanielopez@lasagradafamilia.edu.sv",
+    "role": "teacher",
+    "user_id": "5a5ac9a7-6264-41a0-b1c8-b09fd57d3109",
+    "shool_id": "09fcc879-6760-42df-975b-d1bebe6a7fbf"
+  },
+  {
+    "id": "0a87c583-4e9c-4b73-a390-dd1555d4d785",
+    "username": "waltergonz",
+    "fullName": "Walter González",
+    "email": "walter.gonzalez@maestros.highlands.edu.sv",
+    "role": "teacher",
+    "user_id": "2f6ae1cd-d186-45a4-92e9-c23c33515e71",
+    "shool_id": "f7a0cc38-d35a-496a-a442-6f40fdfe36a5"
+  },
+  {
+    "id": "16f9be0f-1306-4f19-ba63-a0dc346ef6ae",
+    "username": "wilmerascencio",
+    "fullName": "Wilmer Ulises Ascencio Piche",
+    "email": "ulisesaoficial98@gmail.com",
+    "role": "teacher",
+    "user_id": "0b88854e-209a-40cc-a8bf-3cbec33d2810",
+    "shool_id": "840a1b44-3eb7-4941-8eb2-046c20269450"
+  }
+]

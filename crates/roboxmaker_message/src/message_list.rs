@@ -3,17 +3,19 @@ use uuid::Uuid;
 use yew::prelude::*;
 use std::collections::HashMap;
 use code_location::code_location;
-use yew::{html, Component, Html};
 use crate::message_card::MessageCard;
 use crate::{MessageProfile, MessageAuthor};
 use crate::{MessageGroupCategory, message_card::MessageEdit};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_main::lang;
 use roboxmaker_models::message_model;
-use roboxmaker_types::types::{LessonId, PostId, MessageId, GroupId, UserId, RobotId, MyUserProfile};
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Subscribe, SubscriptionTask, Request, RequestTask};
+use roboxmaker_types::types::{LessonId, PostId, MessageId, GroupId, UserId, RobotId, AppRoute, MyUserProfile};
 
 pub struct MessageList {
+    link: ComponentLink<Self>,
+    props: MessageListProperties,
     graphql_task: Option<GraphQLTask>,
     posts_sub: Option<SubscriptionTask>,
     lessons_sub: Option<SubscriptionTask>,
@@ -31,6 +33,7 @@ pub struct MessageList {
 
 #[derive(Properties, Debug, Clone, PartialEq)]
 pub struct MessageListProperties {
+    pub on_app_route: Option<Callback<AppRoute>>,
     pub user_id: Option<UserId>,
     pub user_profile: Option<MyUserProfile>,
     pub group_category: MessageGroupCategory,   
@@ -60,27 +63,29 @@ impl Component for MessageList {
     type Message = MessageListMessage;
     type Properties = MessageListProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        match ctx.props().group_category {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        match props.group_category {
             MessageGroupCategory::Lessons(group_id, lesson_id) => {
-                ctx.link().send_message(MessageListMessage::FetchMessagesByLessonGroup(
+                link.send_message(MessageListMessage::FetchMessagesByLessonGroup(
                     lesson_id, group_id,
                 ));
             }
-            MessageGroupCategory::Posts(group_id, post_id) => ctx.link().send_message(
+            MessageGroupCategory::Posts(group_id, post_id) => link.send_message(
                 MessageListMessage::FetchMessagesByPostGroup(post_id, group_id),
             ),
-            MessageGroupCategory::Robots(group_id, robot_id) => ctx.link().send_message(
+            MessageGroupCategory::Robots(group_id, robot_id) => link.send_message(
                 MessageListMessage::FetchMessagesByRobotGroup(robot_id, group_id),
             ),
-            MessageGroupCategory::DirectMessages(group_id) => ctx.link().send_message(
+            MessageGroupCategory::DirectMessages(group_id) => link.send_message(
                 MessageListMessage::FetchMessagesByDirectMessageGroup(group_id),
             ),
             MessageGroupCategory::FilesUser => {
-                ctx.link().send_message(MessageListMessage::FetchMessagesWithFilesUser)
+                link.send_message(MessageListMessage::FetchMessagesWithFilesUser)
             }
         }
         MessageList {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             posts_sub: None,
             lessons_sub: None,
@@ -95,7 +100,7 @@ impl Component for MessageList {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
@@ -107,7 +112,7 @@ impl Component for MessageList {
                     };
                     let task = message_model::MessagesByLessonGroup::subscribe(
                         graphql_task, 
-                        &ctx, 
+                        &self.link, 
                         vars, 
                         |response| {
                             MessageListMessage::MessageLessons(response)
@@ -150,7 +155,7 @@ impl Component for MessageList {
                     };
                     let task = message_model::MessagesByPostGroup::subscribe(
                         graphql_task, 
-                        &ctx, 
+                        &self.link, 
                         vars, 
                         |response| {
                             MessageListMessage::MessagePosts(response)
@@ -193,7 +198,7 @@ impl Component for MessageList {
                     };
                     let task = message_model::MessagesByRobotGroup::subscribe(
                         graphql_task, 
-                        &ctx, 
+                        &self.link, 
                         vars, 
                         |response| {
                             MessageListMessage::MessageRobots(response)
@@ -235,7 +240,7 @@ impl Component for MessageList {
                     };
                     let task = message_model::MessagesByDirectMessageGroup::subscribe(
                         graphql_task, 
-                        &ctx, 
+                        &self.link, 
                         vars, 
                         |response| {
                             MessageListMessage::MessagesDirect(response)
@@ -245,7 +250,7 @@ impl Component for MessageList {
                 }
             }
             MessageListMessage::FetchMessagesWithFilesUser => {
-                let user_id = ctx.props().user_id.unwrap();
+                let user_id = self.props.user_id.unwrap();
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let vars = message_model::contribution_files_by_author_id::Variables {
                         author_id: user_id.0,
@@ -253,7 +258,7 @@ impl Component for MessageList {
                     };
                     let task = message_model::ContributionFilesByAuthorId::request(
                         graphql_task, 
-                        &ctx, 
+                        &self.link, 
                         vars, 
                         |response| {
                             MessageListMessage::MessagesFiles(response)
@@ -327,7 +332,7 @@ impl Component for MessageList {
                     };
                     let task = message_model::DeleteMessageById::request(
                         graphql_task, 
-                        &ctx, 
+                        &self.link, 
                         vars, 
                         |response| {
                             MessageListMessage::MessageDeleted(response)
@@ -346,7 +351,7 @@ impl Component for MessageList {
                     };
                     let task = message_model::UpdateMessageContentById::request(
                         graphql_task, 
-                        &ctx, 
+                        &self.link, 
                         vars, 
                         |response| {
                             MessageListMessage::ContentProfileUpdate(response)
@@ -363,44 +368,45 @@ impl Component for MessageList {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
 
-        if ctx.props().group_category != old_props.group_category {
-            match old_props.group_category {
+        if self.props.group_category != props.group_category {
+            match props.group_category {
                 MessageGroupCategory::Lessons(group_id, lesson_id) => {
-                    ctx.link().send_message(MessageListMessage::FetchMessagesByLessonGroup(
+                    self.link.send_message(MessageListMessage::FetchMessagesByLessonGroup(
                         lesson_id, group_id,
                     ));
                 }
-                MessageGroupCategory::Posts(group_id, post_id) => ctx.link().send_message(
+                MessageGroupCategory::Posts(group_id, post_id) => self.link.send_message(
                     MessageListMessage::FetchMessagesByPostGroup(post_id, group_id),
                 ),
-                MessageGroupCategory::Robots(group_id, robot_id) => ctx.link().send_message(
+                MessageGroupCategory::Robots(group_id, robot_id) => self.link.send_message(
                     MessageListMessage::FetchMessagesByRobotGroup(robot_id, group_id),
                 ),
-                MessageGroupCategory::DirectMessages(group_id) => ctx.link().send_message(
+                MessageGroupCategory::DirectMessages(group_id) => self.link.send_message(
                     MessageListMessage::FetchMessagesByDirectMessageGroup(group_id),
                 ),
                 MessageGroupCategory::FilesUser => {
-                    ctx.link().send_message(MessageListMessage::FetchMessagesWithFilesUser)
+                    self.link.send_message(MessageListMessage::FetchMessagesWithFilesUser)
                 }
             }
         }
-        if ctx.props() != old_props {
+        if self.props != props {
+            self.props = props;
             should_render= true;
         }
         
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_message_delete = ctx.link().callback(|message_id| MessageListMessage::DeleteMessage(message_id));
-        let on_change_list = ctx.link().callback(|(message_id, content, replies_private)| MessageListMessage::UpdateMessage(message_id, content, replies_private));
+    fn view(&self) -> Html {
+        let on_message_delete = self.link.callback(|message_id| MessageListMessage::DeleteMessage(message_id));
+        let on_change_list = self.link.callback(|(message_id, content, replies_private)| MessageListMessage::UpdateMessage(message_id, content, replies_private));
 
-        let user_profile = ctx.props().user_profile.clone();
-        let group_category = ctx.props().group_category;
+        let user_profile = self.props.user_profile.clone();
+        let group_category = self.props.group_category;
 
         let stats = self.messages.iter().fold(
             HashMap::new(),
@@ -415,8 +421,8 @@ impl Component for MessageList {
             },
         );
 
-        let on_reply_to = ctx
-            .link()
+        let on_reply_to = self
+            .link
             .callback(move |message_id| MessageListMessage::ReplyTo(message_id));
 
         let messages = if let Some(replying_to) = &self.replying_to {
@@ -427,17 +433,17 @@ impl Component for MessageList {
             .map(|message_profile| {
                 info!("{:?} {}", message_profile.reply_id, message_profile.message_id);
                 html!{
-                    <MessageCard 
-                        user_profile={user_profile.clone()} 
-                        group_category={group_category.clone()} 
-                        message_profile={message_profile.clone()} 
-                        on_message_delete={on_message_delete.clone()}
-                        message_edit_style={MessageEdit::EditModal}
-                        on_change_list={on_change_list.clone()}
-                        on_reply_to={on_reply_to.clone()}
-                        mod_commets={true}
-                        replying_to={self.replying_to} 
-                        stats_messages_reply={stats.clone()} />
+                    <MessageCard on_app_route=self.props.on_app_route.clone() 
+                        user_profile=user_profile.clone() 
+                        group_category=group_category.clone() 
+                        message_profile=message_profile.clone() 
+                        on_message_delete=on_message_delete.clone()
+                        message_edit_style=MessageEdit::EditModal
+                        on_change_list=on_change_list.clone()
+                        on_reply_to=None
+                        mod_commets=true
+                        replying_to=self.replying_to 
+                        stats_messages_reply=stats.clone() />
                 }
             })
             .collect::<Html>()
@@ -448,38 +454,38 @@ impl Component for MessageList {
             .filter(|message_profile| message_profile.reply_id.is_none())
             .map(|message_profile| {
                 html! {
-                    <MessageCard
-                        user_profile={user_profile.clone()} 
-                        group_category={group_category.clone()} 
-                        message_profile={message_profile.clone()}
-                        message_edit_style={MessageEdit::EditModal}
-                        on_reply_to={Some(on_reply_to.clone())} 
-                        replying_to={self.replying_to} 
-                        on_message_delete={on_message_delete.clone()}
-                        on_change_list={on_change_list.clone()}
-                        mod_commets={true}
-                        stats_messages_reply={stats.clone()} />
+                    <MessageCard on_app_route=self.props.on_app_route.clone() 
+                        user_profile=user_profile.clone() 
+                        group_category=group_category.clone() 
+                        message_profile=message_profile.clone()
+                        message_edit_style=MessageEdit::EditModal
+                        on_reply_to=Some(on_reply_to.clone()) 
+                        replying_to=self.replying_to 
+                        on_message_delete=on_message_delete.clone()
+                        on_change_list=on_change_list.clone()
+                        mod_commets=true
+                        stats_messages_reply=stats.clone() />
                 }
             })
             .collect::<Html>()
         };
         let maybe_add_message = html! {
-            <MessageCard
-                user_profile={user_profile.clone()} 
-                group_category={group_category.clone()}
-                message_profile={None} 
-                message_edit_style={MessageEdit::Thread}
-                on_change_list={on_change_list.clone()}
-                on_reply_to={on_reply_to.clone()} 
-                mod_commets={false}
-                on_message_delete={on_message_delete.clone()}
-                replying_to={self.replying_to}
-                stats_messages_reply={stats.clone()} />
+            <MessageCard on_app_route=self.props.on_app_route.clone() 
+                user_profile=user_profile.clone() 
+                group_category=group_category.clone()
+                message_profile=None 
+                message_edit_style=MessageEdit::Thread
+                on_change_list=on_change_list.clone()
+                on_reply_to=None 
+                mod_commets=false
+                on_message_delete=on_message_delete.clone()
+                replying_to=self.replying_to
+                stats_messages_reply=stats.clone() />
         };
         let maybe_exit_thread = if self.replying_to.is_some() {
-            let on_exit_thread = ctx.link().callback(move |_| MessageListMessage::ExitThread);
+            let on_exit_thread = self.link.callback(move |_| MessageListMessage::ExitThread);
             html! {
-                <a class="btn bg-purple-on ms-5" onclick={&on_exit_thread}>
+                <a class="btn bg-purple-on ms-5" onclick=&on_exit_thread>
                     <span class="text-white">
                         <i class="fas fa-times"></i>
                     </span>
@@ -488,8 +494,8 @@ impl Component for MessageList {
         } else {
             html! {}
         };
-        let on_reply_to = ctx
-            .link()
+        let on_reply_to = self
+            .link
             .callback(move |message_id| MessageListMessage::ReplyTo(message_id));
         let list_messages = self
             .messages
@@ -497,17 +503,17 @@ impl Component for MessageList {
             .filter(|message_profile| message_profile.reply_id.is_none())
             .map(|message_profile| {
                 html! {
-                    <MessageCard
-                        user_profile={user_profile.clone()} 
-                        group_category={group_category.clone()} 
-                        message_profile={message_profile.clone()}
-                        message_edit_style={MessageEdit::Thread}
-                        on_reply_to={Some(on_reply_to.clone()) }
-                        on_message_delete={on_message_delete.clone()}
-                        on_change_list={on_change_list.clone()}
-                        replying_to={None}
-                        mod_commets={false}
-                        stats_messages_reply={stats.clone()} />
+                    <MessageCard on_app_route=self.props.on_app_route.clone() 
+                        user_profile=user_profile.clone() 
+                        group_category=group_category.clone() 
+                        message_profile=message_profile.clone()
+                        message_edit_style=MessageEdit::Thread
+                        on_reply_to=Some(on_reply_to.clone()) 
+                        on_message_delete=on_message_delete.clone()
+                        on_change_list=on_change_list.clone()
+                        replying_to=None
+                        mod_commets=false
+                        stats_messages_reply=stats.clone() />
                 }
             })
             .collect::<Html>();
@@ -522,7 +528,7 @@ impl Component for MessageList {
             "display: none;"
         };
         let maybe_modal_messages = html! {
-            <div class={class_modal_response} id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style={class_reponse_scroll} aria-modal="true" role="dialog">
+            <div class=class_modal_response id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style=class_reponse_scroll aria-modal="true" role="dialog">
                 <div class="modal-dialog modal-dialog-scrollable modal-xl">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -540,17 +546,16 @@ impl Component for MessageList {
             </div>
         };
         let maybe_add = html! {
-            <MessageCard
-                user_profile={user_profile.clone()} 
-                group_category={group_category.clone()} 
-                message_profile={None}
-                message_edit_style={MessageEdit::Thread}
-                on_reply_to={on_reply_to.clone()} 
-                on_message_delete={on_message_delete.clone()}
-                on_change_list={on_change_list.clone()}
-                replying_to={self.replying_to}
-                mod_commets={false}
-                stats_messages_reply={stats.clone()} />
+            <MessageCard on_app_route=self.props.on_app_route.clone() 
+                user_profile=user_profile.clone() 
+                group_category=group_category.clone() 
+                message_profile=None
+                message_edit_style=MessageEdit::Thread
+                on_change_list=on_change_list.clone()
+                on_reply_to=None 
+                mod_commets=false
+                replying_to=self.replying_to
+                stats_messages_reply=stats.clone() />
         };
         html! {
             <>

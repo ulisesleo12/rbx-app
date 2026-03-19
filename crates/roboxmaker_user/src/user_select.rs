@@ -1,14 +1,14 @@
 use log::*;
 use uuid::Uuid;
+use yew::web_sys;
 use yew::prelude::*;
 use code_location::code_location;
 use roboxmaker_types::types::GroupId;
-use yew::{html, Component, Html, NodeRef};
+use yew::{html, Component, ComponentLink, Html, InputData, NodeRef, ShouldRender};
 
 use roboxmaker_main::lang;
 use roboxmaker_models::user_model;
-use roboxmaker_types::types::{UserId, MyUserProfile};
-use roboxmaker_utils::functions::get_value_from_input_event;
+use roboxmaker_types::types::{UserId, AppRoute, MyUserProfile};
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
 
 #[derive(Debug, Clone)]
@@ -28,6 +28,8 @@ pub enum UserSelectOption {
     User(UserId),
 }
 pub struct UserSelect {
+    link: ComponentLink<Self>,
+    props: UserSelectProperties,
     graphql_task: Option<GraphQLTask>,
     task: Option<RequestTask>,
     users: Vec<user_model::users_by_full_name::UsersByFullNameUser>,
@@ -40,10 +42,9 @@ pub struct UserSelect {
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct UserSelectProperties {
     pub on_select: Callback<UserSelectOption>,
-    #[prop_or(None)]
     pub user_profile: Option<MyUserProfile>,
-    #[prop_or(None)]
     pub user_id: Option<UserId>,
+    pub on_app_route: Callback<AppRoute>,
     pub group_id: GroupId,
 }
 
@@ -61,8 +62,10 @@ impl Component for UserSelect {
     type Message = UserSelectMessage;
     type Properties = UserSelectProperties;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         UserSelect {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             task: None,
             users: vec![],
@@ -73,7 +76,7 @@ impl Component for UserSelect {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let mut should_render = true;
         match msg {
@@ -82,12 +85,12 @@ impl Component for UserSelect {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
 
                     let vars = user_model::users_by_full_name::Variables { 
-                        search: format!("%{}%" ,search)
+                        search: search
                     };
 
                     let task = user_model::UsersByFullName::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             UserSelectMessage::Users(response)
@@ -112,7 +115,7 @@ impl Component for UserSelect {
                 self.show_create = false;
                 self.maybe_section_search = false;
                 self.users = vec![];
-                ctx.props().on_select.emit(select_option);
+                self.props.on_select.emit(select_option);
             }
             UserSelectMessage::OnFocus => {
                 self.show_create = true;
@@ -135,31 +138,33 @@ impl Component for UserSelect {
         should_render
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
-        let mut should_render = false;
-        
-        if ctx.props() != old_props {
-            should_render = true;
-        }
-        
-        should_render
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        if self.props != props {}
+        self.props = props;
+        false
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_focus = ctx.link().callback(move |_| UserSelectMessage::OnFocus);
-        let on_blur = ctx.link().callback(move |_| UserSelectMessage::OnBlur);
-        let on_hidden_modal = ctx.link().callback(move |_| UserSelectMessage::HiddenModal);
-
-        let on_search = ctx.link().callback(|search: InputEvent| UserSelectMessage::FetchUsersByUserName(get_value_from_input_event(search)));
-
+    fn view(&self) -> Html {
+        let on_focus = self.link.callback(move |_| UserSelectMessage::OnFocus);
+        let on_blur = self.link.callback(move |_| UserSelectMessage::OnBlur);
+        let on_hidden_modal = self.link.callback(move |_| UserSelectMessage::HiddenModal);
+        let on_search = self.link.callback(|search: InputData| {
+            info!("search: {:?}", search);
+            let search = if search.value.len() > 0 {
+                format!("%{}%", search.value)
+            } else {
+                search.value
+            };
+            UserSelectMessage::FetchUsersByUserName(search)
+        });
         let users = self
             .users
             .iter()
             .map(|user| {
                 let user_id = UserId(user.id);
-                let on_select = ctx
-                    .link()
+                let on_select = self
+                    .link
                     .callback(move |_| UserSelectMessage::SelectUser(UserSelectOption::User(user_id)));
                 let full_name = user.user_profile.clone().unwrap().full_name;
                 let uuid = user.user_profile.clone().and_then(|data| data.group_member).clone().and_then(|group| Some(group.group_id)).unwrap_or(Uuid::default());
@@ -211,7 +216,7 @@ impl Component for UserSelect {
                                 </span>
                             </div>
                             <div class="card-body border-top d-flex px-5 py-2">
-                                <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={on_select}>
+                                <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown=on_select>
                                     <span>
                                         {lang::dict("Add")}
                                     </span>
@@ -255,13 +260,13 @@ impl Component for UserSelect {
         };
         html! {
             <>
-                <a class="button btn-create-card bg-primary-blue-dark d-flex align-items-center justify-content-center me-5" onclick={&on_hidden_modal}>
+                <a class="button btn-create-card bg-primary-blue-dark d-flex align-items-center justify-content-center me-5" onclick=&on_hidden_modal>
                     <span class="text-white noir-bold is-size-16 lh-20 d-flex align-items-center">
                         <i class="fas fa-plus me-2"></i>
                         <span>{lang::dict("New User")}</span>
                     </span>
                 </a>
-                <div class={class_search_modal} id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style={class_search_scroll} aria-modal="true" role="dialog">
+                <div class=class_search_modal id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style=class_search_scroll aria-modal="true" role="dialog">
                     <div class="modal-dialog modal-dialog-scrollable modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -269,10 +274,10 @@ impl Component for UserSelect {
                                     <span class="input-group-text text-primary-blue-dark input-group-search">
                                         <i class="fas fa-search"></i>
                                     </span>
-                                    <input type="text" class="form-control input-style-class" ref={self.search_node.clone()}
-                                        oninput={on_search.clone()} onfocus={on_focus.clone()} onblur={on_blur.clone()} placeholder={lang::dict("Search")} />
+                                    <input type="text" class="form-control input-style-class" ref=self.search_node.clone()
+                                        oninput=on_search.clone() onfocus=on_focus.clone() onblur=on_blur.clone() placeholder=lang::dict("Search") />
                                 </div>
-                                <a class="btn bg-purple-on ms-5" onclick={&on_hidden_modal}>
+                                <a class="btn bg-purple-on ms-5" onclick=&on_hidden_modal>
                                     <span class="text-white">
                                         <i class="fas fa-times"></i>
                                     </span>

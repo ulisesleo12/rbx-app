@@ -1,15 +1,13 @@
 use log::*;
 use uuid::Uuid;
-use yew::prelude::*;
+use yew::{prelude::*, web_sys};
 use code_location::code_location;
-use yew::{html, Component, Html};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_main::lang;
 use roboxmaker_models::post_model;
-use roboxmaker_utils::functions::get_value_from_input_event;
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
-use roboxmaker_types::types::{PostId, GroupId, AppRoute, LoadSearch, LoadSearchFound, SchoolId, MyUserProfile};
-use yew_router::scope_ext::RouterScopeExt;
+use roboxmaker_types::types::{AppRoute, GroupId, LoadSearch, LoadSearchFound, MyUserProfile, PageMode, PostId, SchoolId};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum PostMode {
@@ -18,6 +16,8 @@ pub enum PostMode {
 }
 
 pub struct SearchPostsGroup {
+    link: ComponentLink<Self>,
+    props: SearchPostsGroupProperties,
     graphql_task: Option<GraphQLTask>,
     task: Option<RequestTask>,
     posts_by_grade: Option<post_model::search_by_post_grade_by_group_id::SearchByPostGradeByGroupIdGroupByPk>,
@@ -28,6 +28,7 @@ pub struct SearchPostsGroup {
 
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct SearchPostsGroupProperties {
+    pub on_app_route: Callback<AppRoute>,
     pub user_profile: Option<MyUserProfile>,
     pub group_id: GroupId,
     pub school_id: SchoolId,
@@ -35,7 +36,7 @@ pub struct SearchPostsGroupProperties {
 
 #[derive(Debug)]
 pub enum SearchPostsGroupMessage {
-    // AppRoute(AppRoute),
+    AppRoute(AppRoute),
     FetchPostsByPostsGrade(String),
     PostsByGrade(Option<post_model::search_by_post_grade_by_group_id::ResponseData>),
     OnFocus,
@@ -47,8 +48,10 @@ impl Component for SearchPostsGroup {
     type Message = SearchPostsGroupMessage;
     type Properties = SearchPostsGroupProperties;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         SearchPostsGroup {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             task: None,
             posts_by_grade: None,
@@ -58,24 +61,24 @@ impl Component for SearchPostsGroup {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         let mut should_update = true;
         match msg {
-            // SearchPostsGroupMessage::AppRoute(route) => {
-            //     ctx.props().on_app_route.emit(route)
-            // }
+            SearchPostsGroupMessage::AppRoute(route) => {
+                self.props.on_app_route.emit(route)
+            }
             SearchPostsGroupMessage::FetchPostsByPostsGrade(search) => {
                 should_update = false;
-                let group_id = ctx.props().group_id;
+                let group_id = self.props.group_id;
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let vars = post_model::search_by_post_grade_by_group_id::Variables { 
-                        search: format!("%{}%", search), 
+                        search, 
                         group_id: group_id.0 
                     };
 
                     let task = post_model::SearchByPostGradeByGroupId::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             SearchPostsGroupMessage::PostsByGrade(response)
@@ -111,49 +114,56 @@ impl Component for SearchPostsGroup {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        let mut should_render = false;
         
-        true
+        if self.props != props {
+            self.props = props;
+            should_render = true;
+        }
+        
+        should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let group_id = ctx.props().group_id;
-        let on_focus = ctx.link().callback(move |_| SearchPostsGroupMessage::OnFocus);
-        let on_blur = ctx.link().callback(move |_| SearchPostsGroupMessage::OnBlur);
-        let on_hidden_modal = ctx.link().callback(move |_| SearchPostsGroupMessage::HiddenModal);
-
-        let on_search = ctx.link().callback(|search: InputEvent| SearchPostsGroupMessage::FetchPostsByPostsGrade(get_value_from_input_event(search)));
-
+    fn view(&self) -> Html {
+        let group_id = self.props.group_id;
+        let on_focus = self.link.callback(move |_| SearchPostsGroupMessage::OnFocus);
+        let on_blur = self.link.callback(move |_| SearchPostsGroupMessage::OnBlur);
+        let on_hidden_modal = self.link.callback(move |_| SearchPostsGroupMessage::HiddenModal);
+        let on_search = self.link.callback(|search: InputData| {
+            info!("search: {:?}", search);
+            let search = if search.value.len() > 0 {
+                format!("%{}%", search.value)
+            } else {
+                search.value
+            };
+            SearchPostsGroupMessage::FetchPostsByPostsGrade(search)
+        });
         let posts_by_grade = self
             .posts_by_grade.clone().and_then(|data| Some(data.post_groups))
             .unwrap_or(vec![])
             .iter()
-            .zip(ctx
-                    .props().user_profile
+            .zip(self
+                    .props.user_profile
                     .as_ref()
                 )
             .map(|(data, user)| {
                 let post_uuid = data.post_profile.clone().and_then(|data| Some(data.post_id)).unwrap_or(Uuid::default());
                 let topic = data.post_profile.clone().and_then(|data| Some(data.topic)).unwrap_or("".to_string());
                 let post_id = PostId(post_uuid);
-                let school_id = ctx.props().school_id;
-                let navigator = ctx.link().navigator().unwrap();
-                let navigator_two = ctx.link().navigator().unwrap();
-                let on_post_edit = Callback::from(move |_| navigator.push(&AppRoute::Post{school_id, group_id, post_id}));
-                let on_post_view = Callback::from(move |_| navigator_two.push(&AppRoute::PostView{school_id, group_id, post_id}));
-        
-                // let on_post_edit = ctx.link().callback(move |_| SearchPostsGroupMessage::AppRoute(AppRoute::Post{school_id, group_id, post_id}));  
-                // let on_post_view = ctx.link().callback(move |_| SearchPostsGroupMessage::AppRoute(AppRoute::PostView{school_id, group_id, post_id})); 
+                let school_id = self.props.school_id;
+                let on_post_edit = self.link.callback(move |_| SearchPostsGroupMessage::AppRoute(AppRoute::Post(school_id, group_id, post_id, PageMode::Edit)));  
+                let on_post_view = self.link.callback(move |_| SearchPostsGroupMessage::AppRoute(AppRoute::Post(school_id, group_id, post_id, PageMode::View))); 
                 let maybe_user = if user.user_staff.is_some() || user.user_teacher.is_some() {
                     html! {
                         <>
-                            <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={&on_post_edit}>
+                            <a class="btn btn-outline-secondary btn-sm mx-auto" onclick={&on_post_edit}>
                                 <span>
                                     {lang::dict("Edit")}
                                 </span>
                             </a>
-                            <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={&on_post_view}>
+                            <a class="btn btn-outline-secondary btn-sm mx-auto" onclick={&on_post_view}>
                                 <span>
                                     {lang::dict("View")}
                                 </span>
@@ -162,7 +172,7 @@ impl Component for SearchPostsGroup {
                     }
                 } else {
                     html! {
-                        <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={on_post_view}>
+                        <a class="btn btn-outline-secondary btn-sm mx-auto" onclick=on_post_view>
                             <span>
                                 {lang::dict("View")}
                             </span>
@@ -219,7 +229,7 @@ impl Component for SearchPostsGroup {
         };
         html! {
             <>
-                <a class="button-search-univeral mt-3" onclick={&on_hidden_modal}>
+                <a class="button-search-univeral mt-3" onclick=&on_hidden_modal>
                     <span class="icon-text-search-universal">
                         <span>{lang::dict("Search")}</span>
                         <span class="icon">
@@ -227,7 +237,7 @@ impl Component for SearchPostsGroup {
                         </span>
                     </span>
                 </a>
-                <div class={class_search_modal} id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style={class_search_scroll} aria-modal="true" role="dialog">
+                <div class=class_search_modal id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style=class_search_scroll aria-modal="true" role="dialog">
                     <div class="modal-dialog modal-dialog-scrollable modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -235,10 +245,10 @@ impl Component for SearchPostsGroup {
                                     <span class="input-group-text text-primary-blue-dark input-group-search">
                                         <i class="fas fa-search"></i>
                                     </span>
-                                    <input type="text" class="form-control input-style-class" ref={self.search_node.clone()}
-                                        oninput={on_search.clone()} onfocus={on_focus.clone()} onblur={on_blur.clone()} placeholder={lang::dict("Search")} />
+                                    <input type="text" class="form-control input-style-class" ref=self.search_node.clone()
+                                        oninput=on_search.clone() onfocus=on_focus.clone() onblur=on_blur.clone() placeholder=lang::dict("Search") />
                                 </div>
-                                <a class="btn bg-purple-on ms-5" onclick={&on_hidden_modal}>
+                                <a class="btn bg-purple-on ms-5" onclick=&on_hidden_modal>
                                     <span class="text-white">
                                         <i class="fas fa-times"></i>
                                     </span>

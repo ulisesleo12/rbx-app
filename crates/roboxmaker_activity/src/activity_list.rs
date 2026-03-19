@@ -9,7 +9,7 @@ use crate::{activity_card::ActivityCard, ActivityStyle};
 
 use roboxmaker_models::activity_model;
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Subscribe, SubscriptionTask};
-use roboxmaker_types::types::{ClassesId, UserId, GroupId, ActivityId, MyUserProfile};
+use roboxmaker_types::types::{ClassesId, UserId, GroupId, AppRoute, ActivityId, MyUserProfile};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ActivityProfile {
@@ -28,6 +28,8 @@ pub struct ActivityProfile {
 }
 
 pub struct ActivityList {
+    link: ComponentLink<Self>,
+    props: ActivityListProperties,
     graphql_task: Option<GraphQLTask>,
     activity_list_task: Option<SubscriptionTask>,
     activity: Vec<ActivityProfile>,
@@ -35,6 +37,7 @@ pub struct ActivityList {
 
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct ActivityListProperties {
+    pub on_app_route: Callback<AppRoute>,
     pub user_id: Option<UserId>,
     pub user_profile: Option<MyUserProfile>,
     pub classes_id: ClassesId,
@@ -52,30 +55,31 @@ impl Component for ActivityList {
     type Message = ActivityListMessage;
     type Properties = ActivityListProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(ActivityListMessage::FetchActivityByClassesGroup);
-        
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(ActivityListMessage::FetchActivityByClassesGroup);
         ActivityList {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             activity_list_task: None,
             activity: vec![],
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
             ActivityListMessage::FetchActivityByClassesGroup => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let vars = activity_model::activity_by_classes_group::Variables {
-                        group_id: ctx.props().group_id.0,
-                        classes_id: ctx.props().classes_id.0,
+                        group_id: self.props.group_id.0,
+                        classes_id: self.props.classes_id.0,
                     };
 
                     let task = activity_model::ActivityByClassesGroup::subscribe(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             |response| {
                                 ActivityListMessage::Activities(response)
@@ -114,48 +118,49 @@ impl Component for ActivityList {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
 
-        if ctx.props().classes_id != old_props.classes_id {
-            ctx.link().send_message(ActivityListMessage::FetchActivityByClassesGroup);
+        if self.props.classes_id != props.classes_id {
+            self.link.send_message(ActivityListMessage::FetchActivityByClassesGroup);
         }
 
-        if ctx.props() != old_props {
+        if self.props != props {
+            self.props = props;
             should_render = true;
         } 
 
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let user_profile = ctx.props().user_profile.clone();
+    fn view(&self) -> Html {
+        let user_profile = self.props.user_profile.clone();
         let activity = |activity_profile: &ActivityProfile | {
             html! {
-                <ActivityCard
-                user_profile={user_profile.clone()}
-                group_id={ctx.props().group_id}
-                classes_id={ctx.props().classes_id}
-                maybe_style={ctx.props().maybe_style}
-                activity_profile={activity_profile.clone()} />
+                <ActivityCard on_app_route=self.props.on_app_route.clone()
+                user_profile=user_profile.clone()
+                group_id=self.props.group_id
+                classes_id=self.props.classes_id
+                maybe_style=self.props.maybe_style
+                activity_profile=activity_profile.clone() />
             }
         };
         let activity_classes = |activity_profile: &ActivityProfile | {
             html! {
-                <ActivityCardClasses group_id={ctx.props().group_id}
-                    classes_id={ctx.props().classes_id}
-                    maybe_style={ctx.props().maybe_style}
-                    activity_profile={activity_profile.clone()} />
+                <ActivityCardClasses group_id=self.props.group_id
+                    classes_id=self.props.classes_id
+                    maybe_style=self.props.maybe_style
+                    activity_profile=activity_profile.clone() />
             }
         };
         let maybe_add = html! {
-                <ActivityCard 
-                user_profile={user_profile.clone()}
-                group_id={ctx.props().group_id}
-                classes_id={ctx.props().classes_id}
-                maybe_style={ctx.props().maybe_style}
-                activity_profile={None} />
+                <ActivityCard on_app_route=self.props.on_app_route.clone()
+                user_profile=user_profile.clone()
+                group_id=self.props.group_id
+                classes_id=self.props.classes_id
+                maybe_style=self.props.maybe_style
+                activity_profile=None />
         };
         let maybe_activities = {
             if self.activity.len() > 0 {

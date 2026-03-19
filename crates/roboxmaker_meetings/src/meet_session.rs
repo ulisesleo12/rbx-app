@@ -1,12 +1,17 @@
 use log::*;
-use web_sys::Node;
+use yew::web_sys::Node;
+use yew::virtual_dom::VNode;
 use wasm_bindgen::prelude::*;
-use yew::{html, Component, Html};
-use yew::{virtual_dom::VNode, Context, Properties};
+use yew::{prelude::*, web_sys};
+use yew::services::fetch::FetchTask;
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_types::types::{GroupId, MeetingsId, MyUserProfile};
 
 pub struct MeetSession {
+    _link: ComponentLink<Self>,
+    props: MeetSessionProperties,
+    _task: Option<FetchTask>,
     node: Node,
 }
 
@@ -25,50 +30,51 @@ impl Component for MeetSession {
     type Message = MeetSessionMessage;
     type Properties = MeetSessionProperties;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let node = web_sys::window()
             .and_then(|window| window.document())
             .and_then(|document| document.create_element("div").ok())
             .and_then(|div| Some(Node::from(div)));
-        
-            MeetSession {
+        MeetSession {
+            _link: link,
+            props,
+            _task: None,
             node: node.unwrap(),
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         true
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
-
-        if ctx.props() != old_props {
+        if self.props != props {
+            self.props = props;
             should_render = true;
-        } 
-
+        }
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let is_student = ctx
-            .props()
+    fn view(&self) -> Html {
+        let is_student = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|item| item.user_student.as_ref())
             .is_some();
-        let maybe_meet = ctx
-            .props()
+        let maybe_meet = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|item| {
-                let meet_room = ctx.props().meetings_id.0.to_string();
+                let meet_room = self.props.meetings_id.0.to_string();
                 let meet_user = item.full_name.clone();
                 render_meet(
                     &self.node,
-                    ctx.props().domain.clone(),
+                    self.props.domain.clone(),
                     meet_room,
                     meet_user,
                     !is_student,

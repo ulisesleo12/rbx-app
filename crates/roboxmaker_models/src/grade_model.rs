@@ -1,10 +1,9 @@
 use uuid::Uuid;
 use graphql_client::GraphQLQuery;
-use roboxmaker_graphql::{Request, Subscribe};
+use roboxmaker_graphql::Request;
 
 type Date = chrono::NaiveDate;
 type Timestamp = chrono::NaiveDateTime;
-type Time = chrono::NaiveTime;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -125,24 +124,3 @@ impl Request for DeleteClassGroupById {}
 // )]
 // pub struct UserStaffAdd;
 // impl Request for UserStaffAdd {}
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "schema.graphql",
-    query_path = "test.graphql",
-    response_derives = "Debug, Clone, PartialEq, Serialize",
-    normalization = "rust"
-)]
-pub struct HomeDataByGroupId;
-impl Subscribe for HomeDataByGroupId {}
-
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "schema.graphql",
-    query_path = "query.graphql",
-    response_derives = "Debug, Clone, PartialEq, Serialize",
-    normalization = "rust"
-)]
-pub struct GetClassGroupByGroupId;
-impl Subscribe for GetClassGroupByGroupId {}

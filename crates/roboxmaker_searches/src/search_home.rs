@@ -1,21 +1,19 @@
 use log::*;
 use uuid::Uuid;
 use chrono::Local;
-use yew::prelude::*;
+use yew::{prelude::*, web_sys};
 use code_location::code_location;
-use yew::{html, Component, Html};
-use yew_router::scope_ext::RouterScopeExt;
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_main::lang;
-use roboxmaker_utils::functions::get_value_from_input_event;
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
-use roboxmaker_models::grade_model::{self, search_by_universal_grade_by_group_id::{self, RoboxLessonTypeEnum}};
-use roboxmaker_types::types::{GroupId, RobotId, PostId, ClassesId, SchoolId, UserId, AppRoute, ClassGroupCategory, MeetingsId, LessonId, MyUserProfile};
+use roboxmaker_models::{school_model, grade_model::{self, search_by_universal_grade_by_group_id::{self, RoboxLessonTypeEnum}}};
+use roboxmaker_types::types::{AppRoute, ClassGroupCategory, ClassesId, GroupId, LessonId, MeetingsId, MyUserProfile, PageMode, PostId, RobotId, SchoolId, UserId};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum SearchPage {
     Posts,
-    Classes,
+    // Classes,
     Lessons,
     Robots,
     Meetings,
@@ -23,8 +21,11 @@ pub enum SearchPage {
 }
 
 pub struct SearchView {
+    link: ComponentLink<Self>,
+    props: SearchProps,
     graphql_task: Option<GraphQLTask>,
     search_data_task: Option<RequestTask>,
+    // universal_search: Option<grade_model::search_by_universal_grade_by_group_id::SearchByUniversalGradeByGroupIdGroupByPk>,
     universal_search: Option<grade_model::search_by_universal_grade_by_group_id::ResponseData>,
     search_node: NodeRef,
     maybe_section_search: bool,
@@ -35,11 +36,14 @@ pub struct SearchView {
 pub struct SearchProps{
     pub group_id: Option<GroupId>,
     pub school_id: SchoolId,
+    pub on_app_route: Callback<AppRoute>,
+    pub auth_school: Option<school_model::school_by_id::SchoolByIdSchoolByPk>,
     pub user_profile: Option<MyUserProfile>,
 }
 
 #[derive(Debug)]
 pub enum SearchMessage {
+    AppRoute(AppRoute),
     FetchUniversalSearch(String),
     SearchData(Option<grade_model::search_by_universal_grade_by_group_id::ResponseData>),
     OnFocus,
@@ -52,13 +56,10 @@ impl Component for SearchView {
     type Message = SearchMessage;
     type Properties = SearchProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
-
-        info!("CREATESEARCH {:?}", ctx.props().group_id);
-        info!("CREATESEARCH {:?}", ctx.props().school_id);
-        info!("CREATESEARCH {:?}", ctx.props().user_profile);
-
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         SearchView {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             search_data_task: None,
             universal_search: None,
@@ -68,23 +69,25 @@ impl Component for SearchView {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-        info!("update {:?}", msg);
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+        info!("{:?}", msg);
         let should_render = true;
         match msg {
+            SearchMessage::AppRoute(route) => {
+                self.props.on_app_route.emit(route);
+            }
             SearchMessage::FetchUniversalSearch(search) => {
-
                 let scheduled_meetings = Local::now().date_naive();
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
-                    if let Some(group_id) = ctx.props().group_id {
+                    if let Some(group_id) = self.props.group_id {
                         let vars = grade_model::search_by_universal_grade_by_group_id::Variables {
-                            search: format!("%{}%", search), 
+                            search, 
                             group_id: group_id.0,
                             schedule_time: scheduled_meetings,
                         };
                         let task = grade_model::SearchByUniversalGradeByGroupId::request(
                             graphql_task, 
-                            &ctx, 
+                            &self.link, 
                             vars, 
                             |response| {
                                 SearchMessage::SearchData(response)
@@ -115,28 +118,38 @@ impl Component for SearchView {
         should_render
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        let mut should_render = false;
+
+        if self.props != props {
+            self.props = props;
+            should_render = true;
+        } 
         
-        true
+        should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
 
-        let navigator = ctx.link().navigator().unwrap();
-
-        let group_id = if let Some(group_id) = ctx.props().group_id {
+        let group_id = if let Some(group_id) = self.props.group_id {
             group_id
         } else {
             GroupId(Uuid::default())
         };
         let user_id = UserId(Uuid::default());
-        let on_focus = ctx.link().callback(move |_| SearchMessage::OnFocus);
-        // let on_blur = ctx.link().callback(move |_| SearchMessage::OnBlur);
-        let on_hidden_modal = ctx.link().callback(move |_| SearchMessage::HiddenModal);
-
-        let on_search = ctx.link().callback(|search| SearchMessage::FetchUniversalSearch(get_value_from_input_event(search)));
-
+        let on_focus = self.link.callback(move |_| SearchMessage::OnFocus);
+        // let on_blur = self.link.callback(move |_| SearchMessage::OnBlur);
+        let on_hidden_modal = self.link.callback(move |_| SearchMessage::HiddenModal);
+        let on_search = self.link.callback(|search: InputData| {
+            info!("search: {:?}", search);
+            let search = if search.value.len() > 0 {
+                format!("%{}%", search.value)
+            } else {
+                search.value
+            };
+            SearchMessage::FetchUniversalSearch(search)
+        });
         let posts_by_grade = self
             .universal_search.clone()
             .and_then(|data| Some(data.post_profile))
@@ -145,10 +158,9 @@ impl Component for SearchView {
             .map(|data| {
                 let topic = data.topic.clone();
                 let post_id = PostId(data.post_id);
-                let school_id = ctx.props().school_id;
+                let school_id = self.props.school_id;
 
-                let navigator = navigator.clone();
-                let on_post = Callback::from(move |_| navigator.push(&AppRoute::PostView{school_id, group_id, post_id}));
+                let on_post = self.link.callback(move |_| SearchMessage::AppRoute(AppRoute::Post(school_id, group_id, post_id, PageMode::View)));  
 
                 html! {
                     <div class="m-4">
@@ -159,7 +171,7 @@ impl Component for SearchView {
                                 </span>
                             </div>
                             <div class="card-body border-top d-flex px-5 py-2">
-                                <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={&on_post}>
+                                <a class="btn btn-outline-secondary btn-sm mx-auto" onclick={&on_post}>
                                     <span>
                                         {lang::dict("View")}
                                     </span>
@@ -172,38 +184,36 @@ impl Component for SearchView {
             .collect::<Html>();
 
 
-        let classes_by_grade = self
-            .universal_search.clone().and_then(|data| Some(data.classes_profile))
-            .unwrap_or(vec![])
-            .iter()
-            .map(|data| {
-                let topic = data.topic.clone();
-                let classes_id = ClassesId(data.classes_id);
-                let school_id = ctx.props().school_id;
+        // let classes_by_grade = self
+        //     .universal_search.clone().and_then(|data| Some(data.classes_profile))
+        //     .unwrap_or(vec![])
+        //     .iter()
+        //     .map(|data| {
+        //         let topic = data.topic.clone();
+        //         let classes_id = ClassesId(data.classes_id);
+        //         let school_id = self.props.school_id;
+        //         let on_classes = self.link.callback(move |_| SearchMessage::AppRoute(AppRoute::Classes(school_id, group_id, classes_id)));  
 
-                let navigator = navigator.clone();
-                let on_classes = Callback::from(move |_| navigator.push(&AppRoute::Classes{school_id, group_id, classes_id}));
-
-                html! {
-                    <div class="m-4">
-                        <div class="card card-search-u vh-15">
-                            <div class="module-message-universal line-clamp-message-universal p-2 h-80">
-                                <span class="text-primary-blue-dark noir-bold is-size-18 lh-22">
-                                    {&topic}
-                                </span>
-                            </div>
-                            <div class="card-body border-top d-flex px-5 py-2">
-                                <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={&on_classes}>
-                                    <span>
-                                        {lang::dict("View")}
-                                    </span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                }
-            })
-            .collect::<Html>();
+        //         html! {
+        //             <div class="m-4">
+        //                 <div class="card card-search-u vh-15">
+        //                     <div class="module-message-universal line-clamp-message-universal p-2 h-80">
+        //                         <span class="text-primary-blue-dark noir-bold is-size-18 lh-22">
+        //                             {&topic}
+        //                         </span>
+        //                     </div>
+        //                     <div class="card-body border-top d-flex px-5 py-2">
+        //                         <a class="btn btn-outline-secondary btn-sm mx-auto" onclick={&on_classes}>
+        //                             <span>
+        //                                 {lang::dict("View")}
+        //                             </span>
+        //                         </a>
+        //                     </div>
+        //                 </div>
+        //             </div>
+        //         }
+        //     })
+        //     .collect::<Html>();
 
             
         let lesson_by_grade = self
@@ -211,18 +221,17 @@ impl Component for SearchView {
             .unwrap_or(vec![])
             .iter()
             .map(|data| {
-                let user_id = ctx.props().user_profile.clone().and_then(|item| Some(item.user_id)).unwrap_or(UserId(Uuid::default()));
+                let user_id = self.props.user_profile.clone().and_then(|item| Some(item.user_id)).unwrap_or(UserId(Uuid::default()));
                 
-                let no_student = ctx.props().user_profile.clone().and_then(|item| Some(item.user_staff.is_some() || item.user_teacher.is_some())).unwrap_or(false);
+                let no_student = self.props.user_profile.clone().and_then(|item| Some(item.user_staff.is_some() || item.user_teacher.is_some())).unwrap_or(false);
                 
                 let title = data.title.clone();
                 let lesson_id = LessonId(data.lesson_id);
-                let school_id = ctx.props().school_id;
+                let school_id = self.props.school_id;
 
                 let author_id = data.author_id;
 
-                let navigator = navigator.clone();
-                let on_lesson = Callback::from(move |_| navigator.push(&AppRoute::LessonView{school_id, group_id, lesson_id}));
+                let on_lesson = self.link.callback(move |_| SearchMessage::AppRoute(AppRoute::LessonView(school_id, group_id, lesson_id)));  
 
                 let lesson_type = data.lesson_type.clone().unwrap_or(search_by_universal_grade_by_group_id::RoboxLessonTypeEnum::Extra); 
 
@@ -240,7 +249,7 @@ impl Component for SearchView {
                                             </span>
                                         </div>
                                         <div class="card-body border-top d-flex px-5 py-2">
-                                            <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={&on_lesson}>
+                                            <a class="btn btn-outline-secondary btn-sm mx-auto" onclick={&on_lesson}>
                                                 <span>
                                                     {lang::dict("View")}
                                                 </span>
@@ -275,7 +284,7 @@ impl Component for SearchView {
                                         </span>
                                     </div>
                                     <div class="card-body border-top d-flex px-5 py-2">
-                                        <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={&on_lesson}>
+                                        <a class="btn btn-outline-secondary btn-sm mx-auto" onclick={&on_lesson}>
                                             <span>
                                                 {lang::dict("View")}
                                             </span>
@@ -295,7 +304,7 @@ impl Component for SearchView {
                                             </span>
                                         </div>
                                         <div class="card-body border-top d-flex px-5 py-2">
-                                            <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={&on_lesson}>
+                                            <a class="btn btn-outline-secondary btn-sm mx-auto" onclick={&on_lesson}>
                                                 <span>
                                                     {lang::dict("View")}
                                                 </span>
@@ -320,7 +329,7 @@ impl Component for SearchView {
                                     </span>
                                 </div>
                                 <div class="card-body border-top d-flex px-5 py-2">
-                                    <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={&on_lesson}>
+                                    <a class="btn btn-outline-secondary btn-sm mx-auto" onclick={&on_lesson}>
                                         <span>
                                             {lang::dict("View")}
                                         </span>
@@ -340,9 +349,7 @@ impl Component for SearchView {
             .map(|data| {
                 let name = data.name.clone();
                 let robot_id = RobotId(data.robot_id);
-
-                let navigator = navigator.clone();
-                let on_robot = Callback::from(move |_| navigator.push(&AppRoute::Robot{robot_id, group_id, user_id}));
+                let on_robot = self.link.callback(move |_| SearchMessage::AppRoute(AppRoute::Robot(robot_id, group_id, user_id)));  
                 
                 html! {
                     <div class="m-4">
@@ -353,7 +360,7 @@ impl Component for SearchView {
                                 </span>
                             </div>
                             <div class="card-body border-top d-flex px-5 py-2">
-                                <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={&on_robot}>
+                                <a class="btn btn-outline-secondary btn-sm mx-auto" onclick={&on_robot}>
                                     <span>
                                         {lang::dict("View")}
                                     </span>
@@ -371,11 +378,8 @@ impl Component for SearchView {
             .iter()
             .map(|data| {
                 let title = data.title.clone();
-                let meetings_id = MeetingsId(data.meet_id);
-
-                let navigator = navigator.clone();
-                let on_meet = Callback::from(move |_| navigator.push(&AppRoute::Meet{group_id, meetings_id}));
-
+                let meetings_id = data.meet_id;
+                let on_meet = self.link.callback(move |_| SearchMessage::AppRoute(AppRoute::Meet(GroupId(group_id.0), MeetingsId(meetings_id))));  
                 html! {
                     <div class="m-4">
                         <div class="card card-search-u vh-15">
@@ -385,7 +389,7 @@ impl Component for SearchView {
                                 </span>
                             </div>
                             <div class="card-body border-top d-flex px-5 py-2">
-                                <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={&on_meet}>
+                                <a class="btn btn-outline-secondary btn-sm mx-auto" onclick={&on_meet}>
                                     <span>
                                         {lang::dict("View")}
                                     </span>
@@ -403,13 +407,14 @@ impl Component for SearchView {
             .iter()
             .map(|data| {
                 let full_name = data.full_name.clone();
-                let school_id = ctx.props().school_id;
-                let category = ClassGroupCategory::Members;
-
-
-                let navigator = navigator.clone();
-                let on_list_users = Callback::from(move |_| navigator.push(&AppRoute::SchoolGroupSection{school_id, group_id, category}));
-
+                let school_id = self.props.school_id;
+                let on_list_users = self.link.callback(move |_| {
+                    SearchMessage::AppRoute(AppRoute::SchoolGroupSection(
+                        school_id.clone(),
+                        group_id.clone(),
+                        ClassGroupCategory::Members,
+                    ))
+                });
                 html! {
                     <div class="m-4">
                         <div class="card card-search-u vh-15">
@@ -419,7 +424,7 @@ impl Component for SearchView {
                                 </span>
                             </div>
                             <div class="card-body border-top d-flex px-5 py-2">
-                                <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={&on_list_users}>
+                                <a class="btn btn-outline-secondary btn-sm mx-auto" onclick={&on_list_users}>
                                     <span>
                                         {lang::dict("View")}
                                     </span>
@@ -431,12 +436,12 @@ impl Component for SearchView {
             })
             .collect::<Html>();
 
-        let on_posts = ctx.link().callback(|_| SearchMessage::TabSearchPage(SearchPage::Posts));
-        let on_classes = ctx.link().callback(|_| SearchMessage::TabSearchPage(SearchPage::Classes));
-        let on_lessons = ctx.link().callback(|_| SearchMessage::TabSearchPage(SearchPage::Lessons));
-        let on_robots = ctx.link().callback(|_| SearchMessage::TabSearchPage(SearchPage::Robots));
-        let on_meetings = ctx.link().callback(|_| SearchMessage::TabSearchPage(SearchPage::Meetings));
-        let on_members = ctx.link().callback(|_| SearchMessage::TabSearchPage(SearchPage::Members));
+        let on_posts = self.link.callback(|_| SearchMessage::TabSearchPage(SearchPage::Posts));
+        // let on_classes = self.link.callback(|_| SearchMessage::TabSearchPage(SearchPage::Classes));
+        let on_lessons = self.link.callback(|_| SearchMessage::TabSearchPage(SearchPage::Lessons));
+        let on_robots = self.link.callback(|_| SearchMessage::TabSearchPage(SearchPage::Robots));
+        let on_meetings = self.link.callback(|_| SearchMessage::TabSearchPage(SearchPage::Meetings));
+        let on_members = self.link.callback(|_| SearchMessage::TabSearchPage(SearchPage::Members));
         
         let page_mode = match self.tab_search_mode {
             SearchPage::Posts => {
@@ -444,11 +449,11 @@ impl Component for SearchView {
                     <div class="d-flex flex-wrap justify-content-center">{posts_by_grade}</div>
                 }
             },
-            SearchPage::Classes => {
-                html! {
-                    <div class="d-flex flex-wrap justify-content-center">{classes_by_grade}</div>
-                }
-            },
+            // SearchPage::Classes => {
+                // html! {
+                    // <div class="d-flex flex-wrap justify-content-center">{classes_by_grade}</div>
+            //     }
+            // },
             SearchPage::Lessons => {
                 html! {
                     <div class="d-flex flex-wrap justify-content-center">{lesson_by_grade}</div>
@@ -483,17 +488,17 @@ impl Component for SearchView {
                         }
                     }
                 },
-                SearchPage::Classes => {
-                    if !universal_search.classes_profile.is_empty() {
-                        html! {}
-                    } else {
-                        html! {
-                            <div class="d-flex justify-content-center">
-                                <span class="text-danger is-size-20 lh-20">{"No se encontraron "}{lang::dict("Classes")}</span>
-                            </div>
-                        }
-                    }
-                },
+                // SearchPage::Classes => {
+                //     if !universal_search.classes_profile.is_empty() {
+                //         html! {}
+                //     } else {
+                //         html! {
+                //             <div class="d-flex justify-content-center">
+                //                 <span class="text-danger is-size-20 lh-20">{"No se encontraron "}{lang::dict("Classes")}</span>
+                //             </div>
+                //         }
+                //     }
+                // },
                 SearchPage::Lessons => {
                     if !universal_search.lesson_profile.is_empty() {
                         html! {}
@@ -554,11 +559,11 @@ impl Component for SearchView {
                 </div>
             }
         } else {
-            let maybe_tabs = self.universal_search.iter().zip(ctx.props().user_profile.clone()).map(|(search, user)| {
+            let maybe_tabs = self.universal_search.iter().zip(self.props.user_profile.clone()).map(|(search, user)| {
                 let members_search =  if user.user_staff.is_some() || user.user_teacher.is_some() {
                     html! {
                         <li class="nav-item">
-                            <a class={class_tab_search(self.tab_search_mode==SearchPage::Members)} onclick={on_members.clone()}>
+                            <a class={class_tab_search(self.tab_search_mode==SearchPage::Members)} onclick=on_members.clone()>
                                 <img src="/icons/user-class-2.svg" style="height: 22px;" />
                                 <span class="ms-1">{lang::dict("Members")}<span class="ms-1">{&search.user_profile.len()}</span></span>
                             </a>
@@ -603,17 +608,17 @@ impl Component for SearchView {
                 html! {
                     <ul class="nav nav-tabs justify-content-center mb-5">
                         <li class="nav-item">
-                            <a class={class_tab_search(self.tab_search_mode==SearchPage::Posts)} onclick={on_posts.clone()}>
+                            <a class={class_tab_search(self.tab_search_mode==SearchPage::Posts)} onclick=on_posts.clone()>
                                 <img src="/icons/envelope-open-text.svg" style="height: 22px;" />
                                 <span class="ms-1">{lang::dict("Posts")}<span class="ms-1">{&search.post_profile.len()}</span></span>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class={class_tab_search(self.tab_search_mode==SearchPage::Classes)} onclick={on_classes.clone()}>
-                                <img src="/icons/folders-2.svg" style="height: 22px;" />
-                                <span class="ms-1">{lang::dict("Classes")}<span class="ms-1">{&search.classes_profile.len()}</span></span>
-                            </a>
-                        </li>
+                        // <li class="nav-item">
+                        //     <a class={class_tab_search(self.tab_search_mode==SearchPage::Classes)} onclick=on_classes.clone()>
+                        //         <img src="/icons/folders-2.svg" style="height: 22px;" />
+                        //         <span class="ms-1">{lang::dict("Classes")}<span class="ms-1">{&search.classes_profile.len()}</span></span>
+                        //     </a>
+                        // </li>
                         {maybe_lessons}
                         // <li class="nav-item">
                         //     <a class={class_tab_search(self.tab_search_mode==SearchPage::Lessons)} onclick={&on_lessons}>
@@ -622,13 +627,13 @@ impl Component for SearchView {
                         //     </a>
                         // </li>
                         <li class="nav-item">
-                            <a class={class_tab_search(self.tab_search_mode==SearchPage::Robots)} onclick={on_robots.clone()}>
+                            <a class={class_tab_search(self.tab_search_mode==SearchPage::Robots)} onclick=on_robots.clone()>
                                 <img src="/icons/robot-2.svg" style="height: 22px;" />
                                 <span class="ms-1">{lang::dict("Robots")}<span class="ms-1">{&search.robot_profile.len()}</span></span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class={class_tab_search(self.tab_search_mode==SearchPage::Meetings)} onclick={on_meetings.clone()}>
+                            <a class={class_tab_search(self.tab_search_mode==SearchPage::Meetings)} onclick=on_meetings.clone()>
                                 <img src="/icons/video-2.svg" style="height: 22px;" />
                                 <span class="ms-1">{lang::dict("Meetings")}<span class="ms-1">{&search.meetings_profile.len()}</span></span>
                             </a>
@@ -653,7 +658,7 @@ impl Component for SearchView {
         };
         html! {
             <>
-                <div class={class_search_modal} id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style={class_search_scroll} aria-modal="true" role="dialog">
+                <div class=class_search_modal id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style=class_search_scroll aria-modal="true" role="dialog">
                     <div class="modal-dialog modal-dialog-scrollable modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -661,10 +666,10 @@ impl Component for SearchView {
                                     <span class="input-group-text text-primary-blue-dark input-group-search">
                                         <i class="fas fa-search"></i>
                                     </span>
-                                    <input type="text" class="form-control input-style-class"
-                                        oninput={on_search} onfocus={on_focus} placeholder={lang::dict("Search")} />
+                                    <input type="text" class="form-control input-style-class" ref=self.search_node.clone()
+                                        oninput=on_search.clone() onfocus=on_focus.clone() placeholder=lang::dict("Search") />
                                 </div>
-                                <a class="btn bg-purple-on ms-5" onclick={&on_hidden_modal}>
+                                <a class="btn bg-purple-on ms-5" onclick=&on_hidden_modal>
                                     <span class="text-white">
                                         <i class="fas fa-times"></i>
                                     </span>
@@ -678,7 +683,7 @@ impl Component for SearchView {
                         </div>
                     </div>
                 </div>
-                <a class="button-search-univeral mt-3" onclick={&on_hidden_modal}>
+                <a class="button-search-univeral mt-3" onclick=&on_hidden_modal>
                     <span class="icon-text-search-universal">
                         <span>{lang::dict("Search")}</span>
                         <span class="icon">
@@ -693,6 +698,8 @@ impl Component for SearchView {
 
 
 pub struct ContentLesson {
+    _link: ComponentLink<Self>,
+    props: ContentLessonProps,
     link_download: String,
 }
 
@@ -709,41 +716,44 @@ impl Component for ContentLesson {
     type Message = ContentLessonMessage;
     type Properties = ContentLessonProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(props: Self::Properties, _link: ComponentLink<Self>) -> Self {
         let start = "<a href=\'";
-        let end = "\'>".to_owned() + &ctx.props().title.clone() + "</a>";
-        let maybe_content = ctx.props().content.clone();
+        let end = "\'>".to_owned() + &props.title.clone() + "</a>";
+        let maybe_content = props.content.clone();
         let content = maybe_content.trim_start_matches(start);
         let link_download = content.trim_end_matches(&end);
         ContentLesson {
+            _link,
+            props,
             link_download: link_download.to_string(),
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         match msg { }
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
         
         let start = "<a href=\'";
-        let end = "\'>".to_owned() + &ctx.props().content.clone() + "</a>";
-        let maybe_content = ctx.props().content.clone();
+        let end = "\'>".to_owned() + &props.content.clone() + "</a>";
+        let maybe_content = props.content.clone();
         let content = maybe_content.trim_start_matches(start);
         let link_download = content.trim_end_matches(&end);
         self.link_download = link_download.to_string();
 
-        if ctx.props() != old_props {
+        if self.props != props {
+            self.props = props;
             should_render = true;
         } 
 
         should_render
     }
 
-    fn view(&self, _ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
         html! {
             <>
                 <a href={self.link_download.clone()} target="_blank" class="btn btn-outline-secondary btn-sm mx-auto">

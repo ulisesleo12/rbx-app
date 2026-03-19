@@ -1,8 +1,8 @@
 use log::*;
 use yew::prelude::*;
 use code_location::code_location;
-use yew::{html, Component, Html};
 use crate::direct_meet_session::DirectMeetSession;
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_models::grade_model;
 use roboxmaker_main::{lang, config};
@@ -10,6 +10,8 @@ use roboxmaker_types::types::{GroupId, MyUserProfile};
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
 
 pub struct DirectMeetingRoom {
+    link: ComponentLink<Self>,
+    props: DirectMeetingRoomProperties,
     graphql_task: Option<GraphQLTask>,
     direct_meet_task: Option<RequestTask>,
     whiteboard_on: bool,
@@ -33,12 +35,11 @@ impl Component for DirectMeetingRoom {
     type Message = DirectMeetingRoomMessage;
     type Properties = DirectMeetingRoomProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(DirectMeetingRoomMessage::FetchClassName);
-
-        roboxmaker_utils::functions::school_state();
-
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(DirectMeetingRoomMessage::FetchClassName);
         DirectMeetingRoom {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             direct_meet_task: None,
             whiteboard_on: false,
@@ -46,18 +47,18 @@ impl Component for DirectMeetingRoom {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
             DirectMeetingRoomMessage::FetchClassName => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let vars = grade_model::name_of_degree_by_id::Variables {
-                        group_id: ctx.props().group_id.0, 
+                        group_id: self.props.group_id.0, 
                     };
                     let task = grade_model::NameOfDegreeById::request(
                         graphql_task, 
-                        &ctx, 
+                        &self.link, 
                         vars, 
                         |response| {
                             DirectMeetingRoomMessage::ClassName(response)
@@ -74,20 +75,21 @@ impl Component for DirectMeetingRoom {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
 
-        if ctx.props() != old_props {
+        if self.props != props {
+            self.props = props;
             should_render = true;
-        } 
+        }
 
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_toggle_whiteboard = ctx
-            .link()
+    fn view(&self) -> Html {
+        let on_toggle_whiteboard = self
+            .link
             .callback(move |_| DirectMeetingRoomMessage::ToggleWhiteboard);
         let class_name = self.class_name.iter().map(|item| {
             html! {
@@ -96,16 +98,16 @@ impl Component for DirectMeetingRoom {
                 </h1>
             }
         }).collect::<Html>();
-        let maybe_whiteboard = ctx.props().user_profile.as_ref()
+        let maybe_whiteboard = self.props.user_profile.as_ref()
             .and_then(|item| {
                 let _display_name = item.full_name.clone();
                 let whiteboard_url = format!(
                     "{}/boards/{}",
                     config::AKER_WBO_URL,
-                    ctx.props().group_id.0
+                    self.props.group_id.0
                 );
                 let iframe = html!{
-                    <iframe allow="camera; microphone; fullscreen; display-capture" src={whiteboard_url}
+                    <iframe allow="camera; microphone; fullscreen; display-capture" src=whiteboard_url
                         style="min-height: 700px; width: 100%; border: 0px; padding: 0px, margin: 0px;"></iframe>
                 };
 
@@ -117,7 +119,7 @@ impl Component for DirectMeetingRoom {
                 if self.whiteboard_on {
                     Some(html! {
                         <>
-                            <div class={maybe_class}>
+                            <div class=maybe_class>
                                 {iframe}
                             </div>
                         </>
@@ -133,7 +135,7 @@ impl Component for DirectMeetingRoom {
             .unwrap_or_default();
         let toggle = html!{
             <div class="mt-5 mb-3">
-                <a onclick={&on_toggle_whiteboard} class="btn btn-outline-primary-blue-dark px-5 col-2">
+                <a onclick=&on_toggle_whiteboard class="btn btn-outline-primary-blue-dark px-5 col-2">
                     <i class="fas fa-chalkboard me-3"></i>
                     <span>{lang::dict("Whiteboard")}</span>
                 </a>
@@ -147,9 +149,9 @@ impl Component for DirectMeetingRoom {
                     {toggle}
                     <div class="d-flex flex-wrap">
                         {maybe_whiteboard.clone()}
-                        <DirectMeetSession user_profile={ctx.props().user_profile.clone()}
-                            domain={domain}
-                            group_id={ctx.props().group_id} />
+                        <DirectMeetSession user_profile=self.props.user_profile.clone()
+                            domain=domain
+                            group_id=self.props.group_id />
                     </div>
                 </div>
             </>

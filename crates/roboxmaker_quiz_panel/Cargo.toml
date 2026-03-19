@@ -1,0 +1,25 @@
+[package]
+name = "roboxmaker_quiz_panel"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+roboxmaker-graphql = { path = "../roboxmaker-graphql" }
+roboxmaker_main = { path = "../roboxmaker_main" }
+roboxmaker_models = { path = "../roboxmaker_models" }
+roboxmaker_types = { path = "../roboxmaker_types" }
+roboxmaker_loaders = { path = "../roboxmaker_loaders" }
+
+
+
+log = "0.4"
+uuid = { version = "1.2.2", features = ["serde", "v4", "v5", "wasm-bindgen"] }
+yew = { version = "0.18", features = ["default", "toml"] }
+serde_derive = "1.0.219"
+serde = { version = "1.0.219", features = ["derive"] }
+chrono = { version = "0.4.23", features = ["serde"] }
+wasm-bindgen = { version = "0.2", features = ["serde-serialize"]  }
+serde-wasm-bindgen = "0.6.1"
+code_location = "1.1.1"
+gloo-utils = "0.2.0"
+gloo-storage = "0.3.0"

@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 log = "0.4"
-yew = "0.21"
+yew = "0.18.0"

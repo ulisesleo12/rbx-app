@@ -1,11 +1,13 @@
 use log::*;
 use chrono::Local;
 use yew::prelude::*;
-use yew::{html, Component, Html};
-use yew_router::scope_ext::RouterScopeExt;
+use code_location::code_location;
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_main::lang;
-use roboxmaker_types::types::{GroupId, AppRoute, MeetingsProfile};
+use roboxmaker_models::{school_model, meetings_model};
+use roboxmaker_types::types::{GroupId, AppRoute, MeetingsId, MyUserProfile};
+use roboxmaker_graphql::{GraphQLService, GraphQLTask, Subscribe, SubscriptionTask};
 use roboxmaker_loaders::placeholders::card_meetings_home::CardMeetingssHomePlaceholder;
 
 #[derive(Debug, Clone)]
@@ -20,7 +22,23 @@ enum LoadMeetings {
     Load(LoadMeetingsFound),
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct MeetingsProfile {
+    pub title: String,
+    pub schedule_time: String,
+    pub start_of_meeting: String,
+    pub end_of_meeting: String,
+    pub meeting_id: MeetingsId,
+    pub author_name: String,
+    pub user_staff: bool,
+    pub user_teacher: bool,
+}
+
 pub struct MeetingsListHome {
+    link: ComponentLink<Self>,
+    props: MeetingsListHomeProps,
+    graphql_task: Option<GraphQLTask>,
+    meetings_sub: Option<SubscriptionTask>,
     meetings_list: Vec<MeetingsProfile>,
     list_meetings_state: LoadMeetings,
 }
@@ -28,37 +46,88 @@ pub struct MeetingsListHome {
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct MeetingsListHomeProps {
     pub group_id: GroupId,
-    pub meetings_list: Vec<MeetingsProfile>,
+    pub on_app_route: Callback<AppRoute>,
+    pub auth_school: Option<school_model::school_by_id::SchoolByIdSchoolByPk>,
+    pub user_profile: Option<MyUserProfile>,
 }
 
 #[derive(Debug)]
 pub enum MeetingsListHomeMessage {
+    AppRoute(AppRoute),
     FetchMeetingsByGroupId,
+    Meetings(Option<meetings_model::meetings_by_group_id::ResponseData>),
 }
 
 impl Component for MeetingsListHome {
     type Message = MeetingsListHomeMessage;
     type Properties = MeetingsListHomeProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(MeetingsListHomeMessage::FetchMeetingsByGroupId);
-        
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(MeetingsListHomeMessage::FetchMeetingsByGroupId);
         MeetingsListHome {
+            link,
+            props,
+            graphql_task: Some(GraphQLService::connect(&code_location!())),
+            meetings_sub: None,
             meetings_list: vec![],
             list_meetings_state: LoadMeetings::Loading,
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_render = true;
         match msg {
+            MeetingsListHomeMessage::AppRoute(route) => {
+                self.props.on_app_route.emit(route);
+            }
             MeetingsListHomeMessage::FetchMeetingsByGroupId => {
-                self.list_meetings_state = LoadMeetings::Loading;
+                if let Some(graphql_task) = self.graphql_task.as_mut() {
+                    self.list_meetings_state = LoadMeetings::Loading;
+                    let group_id = self.props.group_id;
+                    let scheduled_meetings = Local::now().date_naive();
 
-                self.meetings_list = ctx.props().meetings_list.clone();
+                    let vars = meetings_model::meetings_by_group_id::Variables {
+                        group_id: group_id.0,
+                        limit: 10,
+                        scheduled_meetings,
+                    };
 
-                if !self.meetings_list.is_empty() {
+                    let task = meetings_model::MeetingsByGroupId::subscribe(
+                            graphql_task,
+                            &self.link,
+                            vars,
+                            |response| {
+                                MeetingsListHomeMessage::Meetings(response)
+                            },
+                    );
+                    self.meetings_sub = Some(task);
+                }
+            }
+            MeetingsListHomeMessage::Meetings(response) => {
+                self.meetings_list = response
+                    .clone()
+                    .and_then(|data| Some(data.meetings_profile))
+                    .unwrap_or_default()
+                    .iter()
+                    .map(|meetings_profile| {
+                        let title = meetings_profile.title.clone();
+                        let meeting_id = meetings_profile.meet_id.clone();
+                        let author_name = meetings_profile.author_profile.clone().and_then(|data| Some(data.full_name)).unwrap_or("".to_string());
+                        let user_staff = meetings_profile.author_profile.clone().and_then(|data| data.user_staff).is_some();
+                        let user_teacher = meetings_profile.author_profile.clone().and_then(|data| data.user_teacher).is_some();
+                        MeetingsProfile {
+                            title: title,
+                            schedule_time: meetings_profile.schedule_time.format("%d-%m-%Y").to_string(),
+                            start_of_meeting: meetings_profile.start_of_meeting.unwrap().to_string(),
+                            end_of_meeting: meetings_profile.end_of_meeting.unwrap().to_string(),
+                            meeting_id: MeetingsId(meeting_id),
+                            author_name: author_name,
+                            user_staff: user_staff,
+                            user_teacher: user_teacher,
+                        }
+                    }).collect();
+                if !response.clone().and_then(|data| Some(data.meetings_profile)).unwrap_or(vec![]).is_empty() {
                     self.list_meetings_state = LoadMeetings::Load(LoadMeetingsFound::Found);
                 } else {
                     self.list_meetings_state = LoadMeetings::Load(LoadMeetingsFound::NotFound);
@@ -68,24 +137,27 @@ impl Component for MeetingsListHome {
         should_render
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        // info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        let mut schould_render = false;
 
-        if ctx.props().meetings_list != old_props.meetings_list {
-            ctx.link().send_message(MeetingsListHomeMessage::FetchMeetingsByGroupId);
+        if self.props.group_id != props.group_id {
+            self.link.send_message(MeetingsListHomeMessage::FetchMeetingsByGroupId);
         }
 
-        ctx.props() != old_props
+        if self.props != props {
+            self.props = props;
+            schould_render = true;
+        }
+        
+        schould_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let group_id  = ctx.props().group_id;
+    fn view(&self) -> Html {
+        let group_id  = self.props.group_id;
         let card_meetings_list = self.meetings_list.iter().map(|item| {
-            let meetings_id = item.meeting_id;
-
-            let navigator = ctx.link().navigator().unwrap();
-            let on_meet = Callback::from(move |_| navigator.push(&AppRoute::Meet{group_id, meetings_id}));
-
+            let meeting_id = item.meeting_id;
+            let on_meet = self.link.callback(move |_| MeetingsListHomeMessage::AppRoute(AppRoute::Meet(group_id, meeting_id)));
             let maybe_title = if item.title.len() == 0 {
                 html! {
                     <span class="text-primary-blue-dark noir-bold is-size-18 lh-22 order-0 mb-sm-2 mb-md-2 mb-lg-0 col-sm-8 col-md-8 col-lg-3">{"Reunión sin Titulo"}</span>
@@ -124,7 +196,7 @@ impl Component for MeetingsListHome {
             let maybe_status_btn = if naivedate_local.format("%d-%m-%Y").to_string() == item.schedule_time && naivetime_local.format("%H:%M:%S").to_string() < item.end_of_meeting ||
                 naivedate_local.format("%d-%m-%Y").to_string() < item.schedule_time {
                 html! {
-                    <a class="btn button-meet order-sm-1 order-md-1 order-lg-2 mb-sm-2 mb-md-2 mb-lg-0" onclick={&on_meet}>
+                    <a class="btn button-meet order-sm-1 order-md-1 order-lg-2 mb-sm-2 mb-md-2 mb-lg-0" onclick=&on_meet>
                         {lang::dict("Meet")}
                     </a>
                 }

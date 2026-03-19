@@ -2,8 +2,8 @@ use log::*;
 use uuid::Uuid;
 use yew::prelude::*;
 use code_location::code_location;
-use yew::{html, Component, Html};
 use serde_derive::{Deserialize, Serialize};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_models::user_model;
 use roboxmaker_types::types::UserId;
@@ -29,6 +29,8 @@ pub struct MessagesContent {
 }
 
 pub struct ContributionsAndComments {
+    link: ComponentLink<Self>,
+    props: ContributionsAndCommentsProperties,
     graphql_task: Option<GraphQLTask>,
     task_my_comments: Option<RequestTask>,
     messages: Vec<MessagesContent>,
@@ -50,21 +52,23 @@ impl Component for ContributionsAndComments {
     type Message = ContributionsAndCommentsMessage;
     type Properties = ContributionsAndCommentsProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(ContributionsAndCommentsMessage::FetchMyContributionsAndComments);
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(ContributionsAndCommentsMessage::FetchMyContributionsAndComments);
         ContributionsAndComments {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             task_my_comments: None,
             messages: vec![],
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
             ContributionsAndCommentsMessage::FetchMyContributionsAndComments => {
-                let author_id = ctx.props().user_id;
+                let author_id = self.props.user_id;
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
 
                     let vars = user_model::my_contributions_and_comments::Variables { 
@@ -73,7 +77,7 @@ impl Component for ContributionsAndComments {
 
                     let task = user_model::MyContributionsAndComments::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             ContributionsAndCommentsMessage::MyContributionsAndComments(response)
@@ -132,23 +136,24 @@ impl Component for ContributionsAndComments {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
-        
-        if ctx.props() != old_props {
+
+        if self.props != props {
+            self.props = props;
             should_render = true;
         }
         
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
 
         let all_messages = self.messages.iter().enumerate().map(|(idx, item)| {
             // let message_profile_reply_id = item.message_profile_reply_id;
             // let message_id = item.message_id;
-            let on_show_message = ctx.link().callback(move |_| ContributionsAndCommentsMessage::ShowMessage(idx));
+            let on_show_message = self.link.callback(move |_| ContributionsAndCommentsMessage::ShowMessage(idx));
             let maybe_view_content_reply = if item.show_message {
                 "module-message-universal-3 line-clamp-message-universal-4 pb-2"
             } else {
@@ -198,7 +203,7 @@ impl Component for ContributionsAndComments {
             };
             html! {
                 <>
-                    <div class={card_message_view}>
+                    <div class=card_message_view>
                         <div class="d-flex flex-column justify-content-between p-4">
                             <div
                                 class="d-flex flex-wrap align-items-center justify-content-between">
@@ -209,23 +214,21 @@ impl Component for ContributionsAndComments {
                                     <i class="fas fa-ellipsis-v"></i>
                                 </span>
                             </div>
-                            <div class={maybe_view_mensaje}>
-                                <div class={maybe_view_content}>
+                            <div class=maybe_view_mensaje>
+                                <div class=maybe_view_content>
                                     <span class="text-gray-purple noir-regular is-size-14 lh-18-2">
-                                        <MessageResponse content={item.content.clone()} 
-                                            user_message_profile={None} />
+                                        <MessageResponse content=item.content.clone() />
                                     </span>
                                 </div>
                             </div>
-                            <div class={maybe_view_content_reply}>
+                            <div class=maybe_view_content_reply>
                                 <span class="text-gray-purple noir-regular is-size-14 lh-18">
-                                    <MessageReply content_reply={item.content_reply.clone()} 
-                                        user_message_profile={None} />
+                                    <MessageReply content_reply=item.content_reply.clone() />
                                 </span>
                             </div>
                             <div class="d-flex flex-wrap justify-content-between">
                                 <span class="text-secondary-purple noir-bold is-size-14 lh-18">{&item.timestamp}</span>
-                                <a onclick={on_show_message} class="text-secondary-purple noir-bold is-size-14 lh-18">{"Ver Comentario"}</a>
+                                <a onclick=on_show_message class="text-secondary-purple noir-bold is-size-14 lh-18">{"Ver Comentario"}</a>
                             </div>
                         </div>
                     </div>

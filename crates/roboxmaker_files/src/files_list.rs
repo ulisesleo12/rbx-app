@@ -48,8 +48,8 @@ impl Component for FilesList {
     type Message = FilesListMessage;
     type Properties = FilesListProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        link().send_message(FilesListMessage::FetchInventoryGroupId);
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(FilesListMessage::FetchInventoryGroupId);
         FilesList {
             link,
             props,
@@ -60,14 +60,14 @@ impl Component for FilesList {
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let mut should_update = true;
         match msg {
             FilesListMessage::FetchInventoryGroupId => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let vars = school_model::inventory_group_id_by_school_id::Variables {
-                        school_id: ctx.props().school_id.0, 
+                        school_id: self.props.school_id.0, 
                     };
 
                     let task = school_model::InventoryGroupIdBySchoolId::request(
@@ -87,8 +87,8 @@ impl Component for FilesList {
             FilesListMessage::AddFiles(files_id) => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let vars = files_model::files_group_add::Variables {
-                        group_id: ctx.props().group_id.0,
-                        classes_id: ctx.props().classes_id.0,
+                        group_id: self.props.group_id.0,
+                        classes_id: self.props.classes_id.0,
                         files_id: files_id.0,
                     };
 
@@ -111,8 +111,8 @@ impl Component for FilesList {
             FilesListMessage::RemoveFiles(files_id) => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let vars = files_model::files_group_delete::Variables {
-                        group_id: ctx.props().group_id.0,
-                        classes_id: ctx.props().classes_id.0,
+                        group_id: self.props.group_id.0,
+                        classes_id: self.props.classes_id.0,
                         files_id: files_id.0,
                     };
 
@@ -140,8 +140,8 @@ impl Component for FilesList {
                 let inventory_group_id = self.inventory.iter()
                     .nth(0)
                     .map(|data| data.inventory_group.clone().and_then(|data| Some(data.group_id))).unwrap_or(Some(Uuid::default()));
-                let classes_id = ctx.props().classes_id;
-                let group_id = ctx.props().group_id;
+                let classes_id = self.props.classes_id;
+                let group_id = self.props.group_id;
                 let local = chrono::Local::now().naive_local();
 
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
@@ -174,14 +174,14 @@ impl Component for FilesList {
             }
             FilesListMessage::FilesAdded(files_id) => {
                 if let Some(files_id) = files_id {
-                    ctx.props().files.push(ClassGroupFiles { files_id });
+                    self.props.files.push(ClassGroupFiles { files_id });
                 } else {
                     should_update = true;
                 }
             }
             FilesListMessage::FilesRemoved(files_id) => {
                 if let Some(files_id) = files_id {
-                    ctx.props().files.retain(|u| u.files_id != files_id);
+                    self.props.files.retain(|u| u.files_id != files_id);
                 } else {
                     should_update = true;
                 }
@@ -190,8 +190,8 @@ impl Component for FilesList {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
 
         if self.props != props {
@@ -202,19 +202,19 @@ impl Component for FilesList {
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let auth_user = ctx.props().auth_user.clone();
+    fn view(&self) -> Html {
+        let auth_user = self.props.auth_user.clone();
         let maybe_files = |files_id: &ClassGroupFiles| {
             let on_files_delete = {
-                let callback = ctx.link().callback(|files_id| FilesListMessage::RemoveFiles(files_id));
+                let callback = self.link.callback(|files_id| FilesListMessage::RemoveFiles(files_id));
                 Some(callback)
             };
             html! {
                 <FilesCard auth_user=auth_user.clone() 
                     files=files_id.clone()
-                    on_app_route=ctx.props().on_app_route.clone()
+                    on_app_route=self.props.on_app_route.clone()
                     on_files_delete=on_files_delete
-                    group_id=ctx.props().group_id />
+                    group_id=self.props.group_id />
             }
         };
 
@@ -224,16 +224,16 @@ impl Component for FilesList {
             .as_ref()
             .and_then(|data| data.user_by_pk.as_ref())
             .and_then(|auth_user| {
-                let on_select = ctx.link().callback(|select_option| match select_option {
+                let on_select = self.link.callback(|select_option| match select_option {
                     FilesSelectOption::Files(files_id) => FilesListMessage::AddFiles(files_id),
                     FilesSelectOption::NewFiles => FilesListMessage::CreateFiles,
                 });
                 if auth_user.user_staff.is_some() || auth_user.user_teacher.is_some() || auth_user.user_student.is_some() {
                     Some(html! {
                         <FilesSelect on_select=on_select 
-                        group_id=Some(ctx.props().group_id)
-                        auth_user=ctx.props().auth_user.clone()
-                        on_app_route=ctx.props().on_app_route.clone() />
+                        group_id=Some(self.props.group_id)
+                        auth_user=self.props.auth_user.clone()
+                        on_app_route=self.props.on_app_route.clone() />
                     })
                 } else {
                     Some(html! {})
@@ -241,13 +241,13 @@ impl Component for FilesList {
             })
             .unwrap_or(html! {});
 
-        let maybe_files = if ctx.props().files.len() > 0 {
+        let maybe_files = if self.props.files.len() > 0 {
             html! {
                 <>
                     { maybe_files_add }
                     <div class="py-5 mt-2"><span class="text-primary-blue-dark noir-bold is-size-14 lh-18">{lang::dict("File List")}</span></div>
                     {                        
-                        ctx.props().files
+                        self.props.files
                         .iter()
                         .map(|files_id| {
                         maybe_files(files_id)

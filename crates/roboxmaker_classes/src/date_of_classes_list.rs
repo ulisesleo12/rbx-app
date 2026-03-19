@@ -1,13 +1,15 @@
 use log::*;
 use yew::prelude::*;
 use code_location::code_location;
-use yew::{html, Component, Html};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_models::classes_model;
 use roboxmaker_types::types::ClassesId;
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
 
 pub struct DateOfClassesList {
+    link: ComponentLink<Self>,
+    props: DateOfClassesListProps,
     graphql_task: Option<GraphQLTask>,
     date_classes_task: Option<RequestTask>,
     activity_date: Vec<classes_model::date_activity_classes_by_id::DateActivityClassesByIdActivityGroup>,
@@ -28,18 +30,18 @@ impl Component for DateOfClassesList {
     type Message = DateOfClassesListMessage;
     type Properties = DateOfClassesListProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
-
-        ctx.link().send_message(DateOfClassesListMessage::FetchActivityByClassesId(ctx.props().classes_id));
-
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(DateOfClassesListMessage::FetchActivityByClassesId(props.classes_id));
         DateOfClassesList {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             date_classes_task: None,
             activity_date: vec![],
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
@@ -53,7 +55,7 @@ impl Component for DateOfClassesList {
 
                     let task = classes_model::DateActivityClassesById::request(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             |response| {
                                 DateOfClassesListMessage::ActivityResponse(response)
@@ -69,22 +71,23 @@ impl Component for DateOfClassesList {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
 
-        if ctx.props().classes_id != old_props.classes_id {
-            ctx.link().send_message(DateOfClassesListMessage::FetchActivityByClassesId(ctx.props().classes_id));
+        if self.props.classes_id != props.classes_id {
+            self.link.send_message(DateOfClassesListMessage::FetchActivityByClassesId(props.classes_id));
         }
 
-        if ctx.props() != old_props {
+        if self.props != props {
+            self.props = props;
             should_render = true;
         } 
         
         should_render
     }
 
-    fn view(&self, _ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
         let date = self
             .activity_date
             .iter()

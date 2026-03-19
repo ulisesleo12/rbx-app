@@ -76,6 +76,39 @@ impl Request for PostGroupAdd {}
     response_derives = "Debug, Clone",
     normalization = "rust"
 )]
+pub struct PostGroupDelete;
+impl Request for PostGroupDelete {}
+
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "schema.graphql",
+    query_path = "query.graphql",
+    response_derives = "Debug",
+    normalization = "rust"
+)]
+pub struct PostGroupCreate;
+impl Request for PostGroupCreate {}
+
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "schema.graphql",
+    query_path = "query.graphql",
+    response_derives = "Debug, Clone",
+    normalization = "rust"
+)]
+pub struct DeletePostById;
+impl Request for DeletePostById {}
+
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "schema.graphql",
+    query_path = "query.graphql",
+    response_derives = "Debug, Clone",
+    normalization = "rust"
+)]
 pub struct UpdatePostGroupOptions;
 impl Request for UpdatePostGroupOptions {}
 
@@ -91,50 +124,23 @@ pub struct PostByGroupId;
 impl Subscribe for PostByGroupId {}
 
 
-
-
-// <------------------------ NEW QUERY------------------------> //
-
-
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "schema.graphql",
-    query_path = "post_sub.graphql",
+    query_path = "query.graphql",
     response_derives = "Clone, Debug",
     normalization = "rust"
 )]
-pub struct GetPostList;
-impl Subscribe for GetPostList {}
+pub struct PostsListByGroup;
+impl Subscribe for PostsListByGroup {}
 
 
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "schema.graphql",
-    query_path = "post_mut.graphql",
+    query_path = "query.graphql",
     response_derives = "Debug",
     normalization = "rust"
 )]
-pub struct PostClassAndGroupCreate;
-impl Request for PostClassAndGroupCreate {}
-
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "schema.graphql",
-    query_path = "post_mut.graphql",
-    response_derives = "Debug, Clone",
-    normalization = "rust"
-)]
-pub struct PostGroupDelete;
-impl Request for PostGroupDelete {}
-
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "schema.graphql",
-    query_path = "post_mut.graphql",
-    response_derives = "Debug, Clone",
-    normalization = "rust"
-)]
-pub struct DeletePost;
-impl Request for DeletePost {}
+pub struct ConvertPostToQuiz;
+impl Request for ConvertPostToQuiz {}

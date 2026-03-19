@@ -2,18 +2,17 @@ use log::*;
 use uuid::Uuid;
 use yew::prelude::*;
 use roboxmaker_main::lang;
-use yew::{html, Component, Html};
 use code_location::code_location;
 use crate::reply_message::MessageReply;
-use yew_router::scope_ext::RouterScopeExt;
 use serde_derive::{Deserialize, Serialize};
 use crate::response_message::MessageResponse;
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 use crate::{list_responses::MessageGroupCategoryByUser, list_responses::ResponseMessages};
 
-use roboxmaker_models::message_model;
+use roboxmaker_models::{message_model, school_model};
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
 use roboxmaker_loaders::placeholders::card_comments::CardCommentsPlaceholder;
-use roboxmaker_types::types::{LessonId, PostId, MessageId, GroupId, UserId, RobotId, AppRoute, SchoolId, MyUserProfile};
+use roboxmaker_types::types::{AppRoute, GroupId, LessonId, MessageId, MyUserProfile, PageMode, PostId, RobotId, SchoolId, UserId};
 
 #[derive(Debug, Clone)]
 enum LoadMessagesReplyFound {
@@ -60,6 +59,8 @@ pub struct MessagesContent {
 }
 
 pub struct MessagesByUserId {
+    link: ComponentLink<Self>,
+    props: MessagesByUserIdProperties,
     graphql_task: Option<GraphQLTask>,
     replies_list_task: Option<RequestTask>,
     messages: Vec<MessagesContent>,
@@ -69,12 +70,15 @@ pub struct MessagesByUserId {
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct MessagesByUserIdProperties {
     pub user_id: UserId,
+    pub on_app_route: Callback<AppRoute>,
     pub user_profile: Option<MyUserProfile>,
+    pub auth_school: Option<school_model::school_by_id::SchoolByIdSchoolByPk>,
 }
 
 
 #[derive(Debug)]
 pub enum MessagesByUserIdMessage {
+    AppRoute(AppRoute),
     FetchMessagesByReplies,
     MyMessagesReplies(Option<message_model::my_messages_with_replies::ResponseData>),
     ShowMessage(usize),
@@ -85,10 +89,11 @@ impl Component for MessagesByUserId {
     type Message = MessagesByUserIdMessage;
     type Properties = MessagesByUserIdProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(MessagesByUserIdMessage::FetchMessagesByReplies);
-        
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(MessagesByUserIdMessage::FetchMessagesByReplies);
         MessagesByUserId {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             replies_list_task: None,
             messages: vec![],
@@ -96,18 +101,21 @@ impl Component for MessagesByUserId {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
+            MessagesByUserIdMessage::AppRoute(route) => {
+                self.props.on_app_route.emit(route)
+            }
             MessagesByUserIdMessage::FetchMessagesByReplies => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let vars = message_model::my_messages_with_replies::Variables {
-                        author_id: ctx.props().user_id.0
+                        author_id: self.props.user_id.0
                     };
                     let task = message_model::MyMessagesWithReplies::request(
                         graphql_task, 
-                        &ctx, 
+                        &self.link, 
                         vars, 
                         |response| {
                             MessagesByUserIdMessage::MyMessagesReplies(response)
@@ -197,18 +205,27 @@ impl Component for MessagesByUserId {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        let mut should_render = false;
+
+        if self.props.user_id != props.user_id {
+            self.link.send_message(MessagesByUserIdMessage::FetchMessagesByReplies);
+        }
+        if self.props != props {
+            self.props = props;
+            should_render = true;
+        }
         
-        true
+        should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let user_id = ctx.props().user_id;
+    fn view(&self) -> Html {
+        let user_id = self.props.user_id;
         let all_messages = self.messages.iter()
             .enumerate().map(|(idx, item)| {
-            let on_show_message = ctx.link().callback(move |_| MessagesByUserIdMessage::ShowMessage(idx));
-            let on_show_modal_message = ctx.link().callback(move |_| MessagesByUserIdMessage::ShowModalMessage(idx));
+            let on_show_message = self.link.callback(move |_| MessagesByUserIdMessage::ShowMessage(idx));
+            let on_show_modal_message = self.link.callback(move |_| MessagesByUserIdMessage::ShowModalMessage(idx));
             let group_id = item.group_id;
             let post_id = item.post_id;
             let robot_id = item.robot_id;
@@ -221,12 +238,12 @@ impl Component for MessagesByUserId {
             let message_original = html! {
                 <>
                     <div class="d-flex align-items-start">
-                        <img class="img-card-48" src={item.author_reply_pic_path.clone()} />
+                        <img class="img-card-48" src=item.author_reply_pic_path.clone() />
                     </div>
                     <div class="d-flex flex-column ps-2">
                         <span class="text-primary-blue-dark noir-bold is-size-16 lh-19">{&item.author_reply_full_name}</span>
-                        <MessageReply content_reply={item.content_reply.clone()} 
-                            user_message_profile={item.clone()} />
+                        <MessageReply content_reply=item.content_reply.clone() 
+                            user_message_profile=item.clone() />
                     </div>
                 </>
             };
@@ -240,18 +257,20 @@ impl Component for MessagesByUserId {
                     html! {
                         <>
                             <ResponseMessages
-                                user_id={ctx.props().user_id.clone()}
-                                message_id={MessageId(item.message_id)}
-                                group_id={GroupId(group_id)}
-                                post_id={Some(PostId(post_id))}
-                                robot_id={Some(RobotId(Uuid::default()))}
-                                lesson_id={Some(LessonId(Uuid::default()))}
-                                reply_id={reply_id}
-                                user_profile={ctx.props().user_profile.clone()}
-                                replying_to={MessageId(message_profile_reply_id)}
-                                response_to={post_topic}
-                                school_id={item.school_id}
-                                category={MessageGroupCategoryByUser::Posts} />
+                                user_id=self.props.user_id.clone()
+                                message_id=MessageId(item.message_id)
+                                group_id=GroupId(group_id)
+                                post_id=Some(PostId(post_id))
+                                robot_id=Some(RobotId(Uuid::default()))
+                                lesson_id=Some(LessonId(Uuid::default()))
+                                reply_id=reply_id
+                                on_app_route=self.props.on_app_route.clone()
+                                user_profile=self.props.user_profile.clone()
+                                auth_school=self.props.auth_school.clone()
+                                replying_to=MessageId(message_profile_reply_id)
+                                response_to=post_topic
+                                school_id=item.school_id
+                                category=MessageGroupCategoryByUser::Posts />
                         </>
                     }
                 } else {
@@ -265,18 +284,20 @@ impl Component for MessagesByUserId {
                     html! {
                         <>
                             <ResponseMessages
-                                user_id={ctx.props().user_id.clone()}
-                                message_id={MessageId(item.message_id)}
-                                group_id={GroupId(group_id)}
-                                post_id={Some(PostId(Uuid::default()))}
-                                robot_id={Some(RobotId(Uuid::default()))}
-                                lesson_id={Some(LessonId(lesson_id))}
-                                reply_id={reply_id}
-                                user_profile={ctx.props().user_profile.clone()}
-                                replying_to={MessageId(message_profile_reply_id)}
-                                response_to={lesson_title}
-                                school_id={item.school_id}
-                                category={MessageGroupCategoryByUser::Lessons} />
+                                user_id=self.props.user_id.clone()
+                                message_id=MessageId(item.message_id)
+                                group_id=GroupId(group_id)
+                                post_id=Some(PostId(Uuid::default()))
+                                robot_id=Some(RobotId(Uuid::default()))
+                                lesson_id=Some(LessonId(lesson_id))
+                                reply_id=reply_id
+                                on_app_route=self.props.on_app_route.clone()
+                                user_profile=self.props.user_profile.clone()
+                                auth_school=self.props.auth_school.clone()
+                                replying_to=MessageId(message_profile_reply_id)
+                                response_to=lesson_title
+                                school_id=item.school_id
+                                category=MessageGroupCategoryByUser::Lessons />
                         </>
                     }
                 } else {
@@ -290,18 +311,20 @@ impl Component for MessagesByUserId {
                     html! {
                         <>
                             <ResponseMessages
-                                user_id={ctx.props().user_id.clone()}
-                                message_id={MessageId(item.message_id)}
-                                group_id={GroupId(group_id)}
-                                post_id={Some(PostId(Uuid::default()))}
-                                robot_id={Some(RobotId(robot_id))}
-                                lesson_id={Some(LessonId(Uuid::default()))}
-                                reply_id={reply_id}
-                                user_profile={ctx.props().user_profile.clone()}
-                                replying_to={MessageId(message_profile_reply_id)}
-                                response_to={robot_name}
-                                school_id={item.school_id}
-                                category={MessageGroupCategoryByUser::Robots} />
+                                user_id=self.props.user_id.clone()
+                                message_id=MessageId(item.message_id)
+                                group_id=GroupId(group_id)
+                                post_id=Some(PostId(Uuid::default()))
+                                robot_id=Some(RobotId(robot_id))
+                                lesson_id=Some(LessonId(Uuid::default()))
+                                reply_id=reply_id
+                                on_app_route=self.props.on_app_route.clone()
+                                user_profile=self.props.user_profile.clone()
+                                auth_school=self.props.auth_school.clone()
+                                replying_to=MessageId(message_profile_reply_id)
+                                response_to=robot_name
+                                school_id=item.school_id
+                                category=MessageGroupCategoryByUser::Robots />
                         </>
                     }
                 } else {
@@ -325,12 +348,9 @@ impl Component for MessagesByUserId {
             let maybe_post_to_go = if item.post {
                 if let Some(post_id) = post_id {
                     let post_id = PostId(post_id);
-
-                    let navigator = ctx.link().navigator().unwrap();
-                    let on_post = Callback::from(move |_| navigator.push(&AppRoute::PostView{school_id, group_id, post_id}));
-                    // let on_post = ctx.link().callback(move |_| MessagesByUserIdMessage::AppRoute(AppRoute::PostView{school_id, group_id , post_id}));
+                    let on_post = self.link.callback(move |_| MessagesByUserIdMessage::AppRoute(AppRoute::Post(school_id, group_id , post_id, PageMode::View)));
                     html! {
-                        <a class="text-secondary-purple noir-medium is-size-14 lh-17 col-2 text-truncate text-end" onclick={on_post}>{lang::dict("Come in for ")}{&item.post_topic.clone()}</a>
+                        <a class="text-secondary-purple noir-medium is-size-14 lh-17 col-2 text-truncate text-end" onclick=on_post>{lang::dict("Come in for ")}{&item.post_topic.clone()}</a>
                     }
                 } else {
                     html! {}
@@ -341,13 +361,10 @@ impl Component for MessagesByUserId {
             let maybe_post_to_go_two = if item.post {
                 if let Some(post_id) = post_id {
                     let post_id = PostId(post_id);
-
-                    let navigator = ctx.link().navigator().unwrap();
-                    let on_post = Callback::from(move |_| navigator.push(&AppRoute::PostView{school_id, group_id, post_id}));
-                    // let on_post = ctx.link().callback(move |_| MessagesByUserIdMessage::AppRoute(AppRoute::PostView{school_id, group_id , post_id}));
+                    let on_post = self.link.callback(move |_| MessagesByUserIdMessage::AppRoute(AppRoute::Post(school_id, group_id , post_id, PageMode::View)));
                     html! {
                         <div class="d-flex align-items-center justify-content-end bg-white-bis px-2 py-3">
-                            <a onclick={on_post}>
+                            <a onclick=on_post>
                                 <span class="text-primary-blue-dark noir-bold is-size-16 lh-19">{lang::dict("Come in for ")}{&item.post_topic.clone()}</span>
                             </a>
                         </div>
@@ -362,12 +379,9 @@ impl Component for MessagesByUserId {
             let maybe_lesson_to_go = if item.lesson {
                 if let Some(lesson_id) = lesson_id {
                     let lesson_id = LessonId(lesson_id);
-
-                    let navigator = ctx.link().navigator().unwrap();
-                    let on_lesson = Callback::from(move |_| navigator.push(&AppRoute::LessonView{school_id, group_id, lesson_id}));
-                    // let on_lesson = ctx.link().callback(move |_| MessagesByUserIdMessage::AppRoute(AppRoute::LessonView{school_id, group_id, lesson_id}));
+                    let on_lesson = self.link.callback(move |_| MessagesByUserIdMessage::AppRoute(AppRoute::LessonView(school_id, group_id, lesson_id)));
                     html! {
-                        <a class="text-secondary-purple noir-medium is-size-14 lh-17 col-2 text-truncate text-end" onclick={on_lesson}>{lang::dict("Come in for ")}{&item.lesson_title.clone()}</a>
+                        <a class="text-secondary-purple noir-medium is-size-14 lh-17 col-2 text-truncate text-end" onclick=on_lesson>{lang::dict("Come in for ")}{&item.lesson_title.clone()}</a>
                     }
                 } else {
                     html! {}
@@ -378,13 +392,10 @@ impl Component for MessagesByUserId {
             let maybe_lesson_to_go_two = if item.lesson {
                 if let Some(lesson_id) = lesson_id {
                     let lesson_id = LessonId(lesson_id);
-
-                    let navigator = ctx.link().navigator().unwrap();
-                    let on_lesson = Callback::from(move |_| navigator.push(&AppRoute::LessonView{school_id, group_id, lesson_id}));
-                    // let on_lesson = ctx.link().callback(move |_| MessagesByUserIdMessage::AppRoute(AppRoute::LessonView{school_id, group_id, lesson_id}));
+                    let on_lesson = self.link.callback(move |_| MessagesByUserIdMessage::AppRoute(AppRoute::LessonView(school_id, group_id, lesson_id)));
                     html! {
                         <div class="d-flex align-items-center justify-content-end bg-white-bis px-2 py-3">
-                            <a onclick={on_lesson}>
+                            <a onclick=on_lesson>
                                 <span class="text-primary-blue-dark noir-bold is-size-16 lh-19">{lang::dict("Come in for ")}{&item.lesson_title.clone()}</span>
                             </a>
                         </div>
@@ -399,12 +410,9 @@ impl Component for MessagesByUserId {
                 if let Some(robot_id) = robot_id {
                     let user_id = UserId(Uuid::default());
                     let robot_id = RobotId(robot_id);
-
-                    let navigator = ctx.link().navigator().unwrap();
-                    let on_robot = Callback::from(move |_| navigator.push(&AppRoute::Robot{robot_id, group_id, user_id}));
-                    // let on_robot = ctx.link().callback(move |_| MessagesByUserIdMessage::AppRoute(AppRoute::Robot{robot_id, group_id, user_id}));
+                    let on_robot = self.link.callback(move |_| MessagesByUserIdMessage::AppRoute(AppRoute::Robot(robot_id, group_id, user_id)));
                     html! {
-                        <a class="text-secondary-purple noir-medium is-size-14 lh-17 col-2 text-truncate text-end" onclick={on_robot}>{lang::dict("Come in for ")}{&item.robot_name.clone()}</a>
+                        <a class="text-secondary-purple noir-medium is-size-14 lh-17 col-2 text-truncate text-end" onclick=on_robot>{lang::dict("Come in for ")}{&item.robot_name.clone()}</a>
                     }
                 } else {
                     html! {}
@@ -416,13 +424,10 @@ impl Component for MessagesByUserId {
                 if let Some(robot_id) = robot_id {
                     let user_id = UserId(Uuid::default());
                     let robot_id = RobotId(robot_id);
-
-                    let navigator = ctx.link().navigator().unwrap();
-                    let on_robot = Callback::from(move |_| navigator.push(&AppRoute::Robot{robot_id, group_id, user_id}));
-                    // let on_robot = ctx.link().callback(move |_| MessagesByUserIdMessage::AppRoute(AppRoute::Robot{robot_id, group_id, user_id}));
+                    let on_robot = self.link.callback(move |_| MessagesByUserIdMessage::AppRoute(AppRoute::Robot(robot_id, group_id, user_id)));
                     html! {
                         <div class="d-flex align-items-center justify-content-end bg-white-bis px-2 py-3">
-                            <a onclick={on_robot}>
+                            <a onclick=on_robot>
                                 <span class="text-primary-blue-dark noir-bold is-size-16 lh-19">{lang::dict("Come in for ")}{&item.robot_name.clone()}</span>
                             </a>
                         </div>
@@ -437,7 +442,7 @@ impl Component for MessagesByUserId {
                 html! {
                     <div class="card-comments-user d-flex align-items-center mb-4 w-100">
                         <div class="p-4 d-flex flex-row w-100">
-                            <img class="img-card-48" src={item.author_pic_path.clone()} />
+                            <img class="img-card-48" src=item.author_pic_path.clone() />
                             <div class="d-flex flex-column w-100 ps-2">
                                 <div class="d-flex align-items-center justify-content-between">
                                     <span class="text-primary-blue-dark noir-bold is-size-16 lh-19">{&item.author_full_name}{" te ha respondido"}</span>
@@ -446,13 +451,13 @@ impl Component for MessagesByUserId {
                                     {maybe_robot_to_go}
                                 </div>
                                 <span class="text-brown noir-light is-size-16 lh-19">
-                                    <MessageResponse content={item.content.clone()}
-                                        user_message_profile={item.clone()} />
+                                    <MessageResponse content=item.content.clone()
+                                        user_message_profile=item.clone() />
                                 </span>
                                 <div class="d-flex align-items-center flex-row">
                                     <span class="text-secondary-purple noir-medium is-size-14 lh-17 pe-5 me-2">{&item.timestamp}</span>
-                                    <a onclick={&on_show_message} class="btn btn-white text-secondary-purple noir-medium is-size-14 lh-17 pe-5 me-2">{"Ver Comentario"}</a>
-                                    <a class="btn btn-white text-primary-blue-dark noir-medium is-size-14 lh-17" onclick={&on_show_modal_message}>{"Responder"}</a>
+                                    <a onclick=&on_show_message class="btn btn-white text-secondary-purple noir-medium is-size-14 lh-17 pe-5 me-2">{"Ver Comentario"}</a>
+                                    <a class="btn btn-white text-primary-blue-dark noir-medium is-size-14 lh-17" onclick=&on_show_modal_message>{"Responder"}</a>
                                 </div>
                             </div>
                         </div>
@@ -463,14 +468,14 @@ impl Component for MessagesByUserId {
             };
             html! {
                 <>
-                    <div class={maybe_message_original}>{message_original}</div>
+                    <div class=maybe_message_original>{message_original}</div>
                     {maybe_original_message}
-                    <div class={class_modal_response} id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style={class_reponse_scroll} aria-modal="true" role="dialog">
+                    <div class=class_modal_response id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style=class_reponse_scroll aria-modal="true" role="dialog">
                         <div class="modal-dialog modal-dialog-scrollable modal-xl">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="text-primary-blue-dark noir-bold is-size-36 lh-43 text-uppercase m-0">{lang::dict("Answer")}</h1>
-                                    <a class="btn bg-purple-on ms-5" onclick={&on_show_modal_message}>
+                                    <a class="btn bg-purple-on ms-5" onclick=&on_show_modal_message>
                                         <span class="text-white">
                                             <i class="fas fa-times"></i>
                                         </span>
@@ -479,25 +484,25 @@ impl Component for MessagesByUserId {
                                 <div class="modal-body px-5 vh-100">
                                     <div class="d-flex flex-row">
                                         <div class="d-flex align-items-start">
-                                            <img class="img-card-48" src={item.author_reply_pic_path.clone()} />
+                                            <img class="img-card-48" src=item.author_reply_pic_path.clone() />
                                         </div>
                                         <div class="d-flex flex-column ps-2">
                                             <span class="text-primary-blue-dark noir-bold is-size-16 lh-19">{&item.author_reply_full_name}</span>
                                             <span class="text-brown noir-light is-size-16 lh-19">
-                                                <MessageReply content_reply={item.content_reply.clone()}
-                                                    user_message_profile={item.clone()} />
+                                                <MessageReply content_reply=item.content_reply.clone()
+                                                    user_message_profile=item.clone() />
                                             </span>
                                         </div>
                                     </div>
                                     <div class="d-flex align-items-center m-4 ms-5 p-4 border rounded bg-lavanda-light">
                                         <div class="box d-flex flex-row w-100">
-                                            <img class="img-card-48" src={item.author_pic_path.clone()} />
+                                            <img class="img-card-48" src=item.author_pic_path.clone() />
                                             <div class="d-flex flex-column ps-2">
                                                 <span class="text-primary-blue-dark noir-bold is-size-16 lh-19">{&item.author_full_name}{" te ha
                                                     respondido"}</span>
                                                     <div class="text-brown noir-light is-size-16 lh-19">
-                                                        <MessageResponse content={item.content.clone()}
-                                                            user_message_profile={item.clone()} />
+                                                        <MessageResponse content=item.content.clone()
+                                                            user_message_profile=item.clone() />
                                                     </div>
                                                 <div class="d-flex flex-row">
                                                     <span class="text-secondary-purple noir-medium is-size-14 lh-17 pe-5 me-2">{&item.timestamp}</span>

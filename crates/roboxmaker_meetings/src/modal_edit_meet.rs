@@ -48,7 +48,7 @@ impl Component for EditMeet {
     type Message = EditMeetMessage;
     type Properties = EditMeetProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         EditMeet {
             link,
             props,
@@ -58,7 +58,7 @@ impl Component for EditMeet {
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
@@ -72,8 +72,8 @@ impl Component for EditMeet {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         if self.props != props {
             self.props = props;
             true
@@ -82,9 +82,9 @@ impl Component for EditMeet {
         }
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_title = ctx.link().callback(|data: InputData| EditMeetMessage::Title(data.value));
-        let on_duration = ctx.link().callback(|data: InputData| EditMeetMessage::Duration(data.value));
+    fn view(&self) -> Html {
+        let on_title = self.link.callback(|data: InputData| EditMeetMessage::Title(data.value));
+        let on_duration = self.link.callback(|data: InputData| EditMeetMessage::Duration(data.value));
         html! { 
             <>
                 <div class="d-flex flex-column justify-content-center py-4">

@@ -15,7 +15,6 @@ roboxmaker_activity = { path = "crates/roboxmaker_activity" }
 roboxmaker_ckeditor = { path = "crates/roboxmaker_ckeditor" }
 roboxmaker_classes = { path = "crates/roboxmaker_classes" }
 roboxmaker_degree = { path = "crates/roboxmaker_degree" }
-roboxmaker_utils = { path = "crates/roboxmaker_utils" }
 roboxmaker_files = { path = "crates/roboxmaker_files" }
 roboxmaker_home = { path = "crates/roboxmaker_home" }
 roboxmaker_lesson = { path = "crates/roboxmaker_lesson" }
@@ -34,30 +33,37 @@ roboxmaker_types = { path = "crates/roboxmaker_types" }
 roboxmaker_user = { path = "crates/roboxmaker_user" }
 roboxmaker_whiteboard = { path = "crates/roboxmaker_whiteboard" }
 roboxmaker_storage = { path = "crates/roboxmaker_storage" }
+roboxmaker_teacher_resource = { path = "crates/roboxmaker_teacher_resource" }
+roboxmaker_quizzes = { path = "crates/roboxmaker_quizzes" }
+roboxmaker_quiz_panel = { path = "crates/roboxmaker_quiz_panel" }
 roboxmaker-graphql = { path = "crates/roboxmaker-graphql" }
 
 log = "0.4"
-anyhow = "1"
+anyhow = "1.0.68"
 maplit = "1.0.2"
-gloo-file = "0.3"
-regex = "1.10"
+gloo-file = "0.2.3"
+regex = "1.7.1"
 lazy_static = "1.4.0"
-dyn-fmt = "0.4"
-uuid = { version = "1.6.1", features = ["serde", "v4", "v5", "wasm-bindgen"] }
-chrono = { version = "0.4", features = ["serde"] }
+dyn-fmt = "0.3.0"
+uuid = { version = "1.2.2", features = ["serde", "v4", "v5", "wasm-bindgen"] }
+chrono = { version = "0.4.23", features = ["serde"] }
 serde_urlencoded = "0.7.1"
-yew = { version = "0.21", features = ["csr"] }
-# yew-router = { version = "0.15.0", features = ["service", "web_sys"], default-features = false }
-yew-router = { version = "0.18"}
-serde_derive = "1"
+# graphql_client = { version = "0.9", features = ["web"] }
+# graphql_client = "0.12.0"
+yew = { version = "0.18", features = ["default", "toml"] }
+yew-router = { version = "0.15.0", features = ["service", "web_sys"], default-features = false }
+# yew-router = { version = "0.17"}
+serde_derive = "1.0.152"
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"]  }
-js-sys = "0.3"
-wasm-bindgen-futures = "0.4"
+js-sys = "0.3.60"
+wasm-bindgen-futures = "0.4.33"
 wasm-logger = "0.2.0"
+gloo = "0.11"
 
 serde = { version = "1.0.143", features = ["derive"] }
-serde_json = "1"
+serde_json = "1.0.91"
 # yewprint = "0.1.1"
+
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
 # all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
@@ -69,8 +75,8 @@ console_error_panic_hook = { version = "0.1.7", optional = true }
 # allocator, however.
 wee_alloc = { version = "0.4.5", optional = true }
 code_location = "1.1"
-gloo-utils = "0.2"
-gloo-storage = "0.3"
+gloo-utils = "0.1.6"
+gloo-storage = "0.2.2"
 
 [dependencies.web-sys]
 version = "0.3.60"
@@ -92,11 +98,11 @@ features = [
 [dev-dependencies]
 wasm-bindgen-test = "0.3.33"
 
-# [features]
-# default = ["web_sys", "common", "wee_alloc"]
-# common = ["console_error_panic_hook"]
+[features]
+default = ["web_sys", "common", "wee_alloc"]
+common = ["console_error_panic_hook"]
+web_sys = ["web-sys", "yew/web_sys"]
 
-# web_sys = ["web-sys", "yew/web_sys"]
 
 [profile.release]
 # less code to include into binary

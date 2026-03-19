@@ -1,9 +1,11 @@
 use log::*;
 use yew::prelude::*;
-use yew::{html, Component, Html};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 
 pub struct ImgView {
+    _link: ComponentLink<Self>,
+    props: ImgViewProperties,
 }
 
 #[derive(Debug, Properties, Clone, PartialEq)]
@@ -18,21 +20,31 @@ impl Component for ImgView {
     type Message = ImgViewMessage;
     type Properties = ImgViewProperties;
 
-    fn create(_ctx: &Context<Self>) -> Self {
-        ImgView { }
+    fn create(props: Self::Properties, _link: ComponentLink<Self>) -> Self {
+        ImgView {
+            _link,
+            props,
+        }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         match msg {}
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
-        true
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        let mut should_render = false;
+
+        if self.props != props {
+            self.props = props;
+            should_render = true;
+        } 
+
+        should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
         // let maybe_user_profile_pic = self
         //     .props
         //     .auth_user
@@ -49,7 +61,7 @@ impl Component for ImgView {
         //     });
 
         html! { 
-            <img class="img-card-72" src={ctx.props().pic_path.clone()} alt="" />
+            <img class="img-card-72" src={self.props.pic_path.clone()} alt="" />
         }
     }
 }

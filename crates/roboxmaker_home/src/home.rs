@@ -3,27 +3,29 @@ use uuid::Uuid;
 use yew::prelude::*;
 use gloo_storage::Storage;
 use code_location::code_location;
-use yew::{html, Component, Html};
-use yew_router::scope_ext::RouterScopeExt;
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
+
 
 use roboxmaker_main::lang;
-use roboxmaker_models::group_model;
 use roboxmaker_user::user_robots::UserRobots;
 use roboxmaker_user::my_profile::MyProfilePage;
 use roboxmaker_user::last_robots_card::UserStyle;
 use roboxmaker_searches::search_home::SearchView;
 use roboxmaker_post::post_list_home::PostListHome;
+use roboxmaker_models::{school_model, group_model};
 use roboxmaker_robot::robot_list_home::RobotListHome;
 use roboxmaker_user::members_list_home::MembersListHome;
+use roboxmaker_quizzes::quiz_list_home::QuizzesListHome;
 use roboxmaker_lesson::lesson_list_home::LessonListHome;
-use roboxmaker_classes::classes_list_home::ClassesListHome;
+// use roboxmaker_classes::classes_list_home::ClassesListHome;
 use roboxmaker_loaders::fullscreen_loader::FullScreenLoader;
 use roboxmaker_meetings::meetings_list_home::MeetingsListHome;
-use roboxmaker_utils::functions::{user_profile_data, school_profile_data};
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
-use roboxmaker_types::types::{GroupId, SchoolId, UserId, AppRoute, NewClassGroup, ClassGroupCategory, LoadFullScreen, LoadFullScreenFound, MyUserProfile, DataSchoolProfile};
+use roboxmaker_types::types::{GroupId, SchoolId, UserId, AppRoute, NewClassGroup, ClassGroupCategory, LoadFullScreen, LoadFullScreenFound, MyUserProfile};
 
 pub struct Home {
+    link: ComponentLink<Self>,
+    props: HomeProps,
     graphql_task: Option<GraphQLTask>,
     list_degree_task: Option<RequestTask>,
     class_groups: Vec<NewClassGroup>,
@@ -32,22 +34,22 @@ pub struct Home {
     user_section_on: bool,
     user_selected: Option<UserId>,
     loading_screen: LoadFullScreen,
-    saved_sidebar_state: bool,
-    user_profile: Option<MyUserProfile>,
-    school_profile: Option<DataSchoolProfile>,
-    school_selected: Option<SchoolId>,
 }
 
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct HomeProps {
+    pub on_app_route: Callback<AppRoute>,
     pub user_id: UserId,
-    #[prop_or(None)]
+    pub user_profile: Option<MyUserProfile>,
+    pub auth_school: Option<school_model::school_by_id::SchoolByIdSchoolByPk>,
+    pub saved_sidebar_state: bool,
     pub on_user_profile: Option<Callback<UserId>>,
     pub school_id: SchoolId,
 }
 
 #[derive(Debug)]
 pub enum HomeMessage {
+    AppRoute(AppRoute),
     FetchClassGroups,
     ClassGroups(Option<group_model::class_group_by_user_id::ResponseData>),
     SelectClassGroup(GroupId),
@@ -62,20 +64,17 @@ impl Component for Home {
     type Message = HomeMessage;
     type Properties = HomeProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(HomeMessage::FetchClassGroups);
+    fn create(mut props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(HomeMessage::FetchClassGroups);
         
-        let saved_sidebar_state = if let Ok(value) = gloo_storage::LocalStorage::get("saved_sidebar_state") {
+        props.saved_sidebar_state = if let Ok(value) = gloo_storage::LocalStorage::get("saved_sidebar_state") {
             value 
         } else {
             true
         };
-        let user_profile = user_profile_data();
-        let school_profile = school_profile_data();
-
-        roboxmaker_utils::functions::home_state();
-
         Home { 
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             list_degree_task: None,
             class_groups: vec![],
@@ -84,19 +83,18 @@ impl Component for Home {
             user_section_on: false,
             user_selected: None,
             loading_screen: LoadFullScreen::Loading,
-            saved_sidebar_state,
-            user_profile,
-            school_profile,
-            school_selected: None,
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
+            HomeMessage::AppRoute(route) => {
+                self.props.on_app_route.emit(route);
+            }
             HomeMessage::FetchClassGroups => {
-                let user_id = ctx.props().user_id;
+                let user_id = self.props.user_id;
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let vars = group_model::class_group_by_user_id::Variables {
                         user_id: user_id.0,
@@ -104,7 +102,7 @@ impl Component for Home {
 
                     let task = group_model::ClassGroupByUserId::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             HomeMessage::ClassGroups(response)
@@ -134,11 +132,6 @@ impl Component for Home {
                     None => None,
                 };
 
-                self.school_selected = match self.class_groups.first() {
-                    Some(school) => Some(school.school_id),
-                    None => None,
-                };
-
                 if !class_groups.clone().and_then(|data| Some(data.class_group)).unwrap_or(vec![]).is_empty() {
                     self.loading_screen = LoadFullScreen::Load(LoadFullScreenFound::Found);
                 } else {
@@ -157,7 +150,7 @@ impl Component for Home {
             }
             HomeMessage::ShowUser(user_id) => {
                 self.user_selected = Some(user_id);
-                if let Some(on_user_profile) = &ctx.props().on_user_profile {
+                if let Some(on_user_profile) = &self.props.on_user_profile {
                     on_user_profile.emit(user_id)
                 }
             }
@@ -169,13 +162,13 @@ impl Component for Home {
             }
             HomeMessage::ChangeSidebarState => {
                 if let Some(element) = gloo_utils::document().get_element_by_id("show-sidebar-right") {
-                    if self.saved_sidebar_state {
+                    if self.props.saved_sidebar_state {
                         let _ = gloo_storage::LocalStorage::set("saved_sidebar_state", false);
-                        self.saved_sidebar_state = false;
+                        self.props.saved_sidebar_state = false;
                         let _ = element.set_attribute("class", "fa-angle-double-left fa-w-14 fa-2x");
                     } else {
                         let _ = gloo_storage::LocalStorage::set("saved_sidebar_state", true);
-                        self.saved_sidebar_state = true;
+                        self.props.saved_sidebar_state = true;
                         let _ = element.set_attribute("class", "fa fa-angle-double-right fa-w-14 fa-2x");
                     }
                 }
@@ -184,21 +177,21 @@ impl Component for Home {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        trace!("{:?} => {:?}", ctx.props(), old_props);
-        
-        self.user_profile = user_profile_data();
-        self.school_profile = school_profile_data();
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        trace!("{:?} => {:?}", self.props, props);
+        let mut should_render = false;
 
-        true
+        if self.props != props {
+            self.props = props;
+            should_render = true;
+        } 
+        should_render
     }
-    fn view(&self, ctx: &Context<Self>) -> Html {
-
-
+    fn view(&self) -> Html {
         let alls_class_groups = self.class_groups.iter().map(|class_group| {
             let group_id = class_group.group_id;
             let class_id_select = format!("{:?}", group_id);
-            let on_show_list_degrees = ctx.link().callback(move |_| HomeMessage::SelectClassGroup(group_id));
+            let on_show_list_degrees = self.link.callback(move |_| HomeMessage::SelectClassGroup(group_id));
             let class_group_selected = if self
                 .group_id_selected
                 .and_then(|id| Some(id.0))
@@ -219,8 +212,8 @@ impl Component for Home {
                 };
             html! {
                 <li>
-                    <a class={class_selected} onclick={on_show_list_degrees}>
-                        <input class="bg-checkbox me-1 d-flex align-items-center" type="checkbox" value={class_id_select} checked={class_group_selected} />
+                    <a class=class_selected onclick=on_show_list_degrees>
+                        <input class="bg-checkbox me-1 d-flex align-items-center" type="checkbox" value=class_id_select checked=class_group_selected />
                         {&class_group.class_name}
                     </a>
                 </li>
@@ -249,13 +242,11 @@ impl Component for Home {
             }
         })
         .collect::<Html>();
-
-        let on_show_sidebar = ctx.link().callback(move |_| HomeMessage::ChangeSidebarState);
-
-        let btn_sidebar_show = if self.saved_sidebar_state {
+        let on_show_sidebar = self.link.callback(move |_| HomeMessage::ChangeSidebarState);
+        let btn_sidebar_show = if self.props.saved_sidebar_state {
             html! {
                 <>
-                    <button type="button" class="btn btn-outline-primary-blue-dark rounded-start rounded-0" onclick={&on_show_sidebar}>
+                    <button type="button" class="btn btn-outline-primary-blue-dark rounded-start rounded-0" onclick=&on_show_sidebar>
                         <i class="fas fa-angle-double-right fas fa-2x" id="show-sidebar-right"></i>
                     </button>
                 </>
@@ -263,14 +254,14 @@ impl Component for Home {
         } else {
             html! {
                 <>
-                    <button type="button" class="btn btn-outline-primary-blue-dark rounded-start rounded-0" onclick={&on_show_sidebar}>
+                    <button type="button" class="btn btn-outline-primary-blue-dark rounded-start rounded-0" onclick=&on_show_sidebar>
                         <i class="fas fa-angle-double-left fas fa-2x" id="show-sidebar-right"></i>
                     </button>
                 </>
             }
         };
-        let on_dropdown = ctx.link().callback(|_| HomeMessage::ShowDropdown);
-        let user_profile_name = self.user_profile.as_ref()
+        let on_dropdown = self.link.callback(|_| HomeMessage::ShowDropdown);
+        let user_profile_name = self.props.user_profile.as_ref()
             .and_then(|item| {
             Some(html! {
                 <div class="d-flex justify-content-between">
@@ -292,19 +283,18 @@ impl Component for Home {
         } else {
             "dropdown-menu dropdown-menu-home"
         };
-
         let maybe_option_user = self
-            .user_profile
+            .props.user_profile
             .as_ref()
             .and_then(|item|{
                 if item.user_teacher.is_some() {
                     Some(html! {
                         <div class="dropdown dropdown-h">
-                            <button class={class_dropdown} type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false" onclick={on_dropdown}>
+                            <button class=class_dropdown type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false" onclick=on_dropdown>
                                 <img src="/icons/graduation_1.svg" style="height: 18px;" />
                                 {change_class_group}
                             </button>
-                            <ul class={class_dropdown_list} aria-labelledby="dropdownMenuButton2">
+                            <ul class=class_dropdown_list aria-labelledby="dropdownMenuButton2">
                                 {alls_class_groups}
                             </ul>
                         </div>
@@ -317,15 +307,31 @@ impl Component for Home {
             })
             .unwrap_or(html! {});
 
-        let class_group_posts = |class_group: &NewClassGroup| {
-            let school_selected = self.school_selected.and_then(|id| Some(id.0)).unwrap_or_default();
-
+        let class_group_quizzes = |class_group: &NewClassGroup| {
             if self.group_id_selected == Some(class_group.group_id) {
                 html! {
                     <div class="scroll-x-home">
-                        // <PostListHome group_id={class_group.group_id}
-                        //         user_profile={self.user_profile.clone()} 
-                        //         school_id={SchoolId(school_selected)} />
+                        <QuizzesListHome group_id=class_group.group_id
+                            user_profile=self.props.user_profile.clone() 
+                            school_id={ self.props.school_id }
+                            auth_school=self.props.auth_school.clone()
+                            on_app_route=self.props.on_app_route.clone() />
+                    </div>
+                }
+            } else {
+                html! {}
+            }
+        };
+        let class_group_posts = |class_group: &NewClassGroup| {
+            if self.group_id_selected == Some(class_group.group_id) {
+                html! {
+                    <div class="scroll-x-home">
+                        <PostListHome
+                            group_id=class_group.group_id
+                            school_id=self.props.school_id 
+                            user_profile=self.props.user_profile.clone() 
+                            auth_school=self.props.auth_school.clone()
+                            on_app_route=self.props.on_app_route.clone() />
                     </div>
                 }
             } else {
@@ -337,9 +343,10 @@ impl Component for Home {
             if self.group_id_selected == Some(class_group.group_id) {
                 html! {
                     <div class="scroll-x-home">
-                        // <RobotListHome
-                        //     group_id={class_group.group_id}
-                        //     user_profile={self.user_profile.clone()} />
+                        <RobotListHome
+                            group_id=class_group.group_id
+                            user_profile=self.props.user_profile.clone()
+                            on_app_route=self.props.on_app_route.clone() />
                     </div>
                 }
             } else {
@@ -347,30 +354,34 @@ impl Component for Home {
                 }
         };
                     
-        let class_group_classes = |class_group: &NewClassGroup| {
-            if self.group_id_selected == Some(class_group.group_id) {
-                html! {
-                    <div class="scroll-x-home">
-                        // <ClassesListHome
-                        //     group_id={class_group.group_id}
-                        //     user_profile={self.user_profile.clone()} 
-                        //     school_id={ctx.props().school_id} />
-                    </div>
-                }
-            } else {
-                html! {}
-            }
-        };
+        // let class_group_classes = |class_group: &NewClassGroup| {
+        //     if self.group_id_selected == Some(class_group.group_id) {
+        //         html! {
+        //             <div class="scroll-x-home">
+        //                 <ClassesListHome
+        //                     group_id=class_group.group_id
+        //                     user_profile=self.props.user_profile.clone() 
+        //                     auth_school=self.props.auth_school.clone()
+        //                     on_app_route=self.props.on_app_route.clone() 
+        //                     school_id=self.props.school_id />
+        //             </div>
+        //         }
+        //     } else {
+        //         html! {}
+        //     }
+        // };
 
         let class_group_lessons = |class_group: &NewClassGroup| {
             if self.group_id_selected == Some(class_group.group_id) {
                 html! {
                     <div class="scroll-x-home">
-                        // <LessonListHome group_id={class_group.group_id}
-                        //     user_profile={self.user_profile.clone()} 
-                        //     school_id={ctx.props().school_id }
-                        //     filter_lessons={false}
-                        //     maybe_author={true} />
+                        <LessonListHome group_id=class_group.group_id
+                            user_profile=self.props.user_profile.clone() 
+                            auth_school=self.props.auth_school.clone()
+                            on_app_route=self.props.on_app_route.clone()
+                            school_id=self.props.school_id 
+                            filter_lessons={false}
+                            maybe_author={true} />
                     </div>
                 }
             } else {
@@ -382,7 +393,11 @@ impl Component for Home {
             if self.group_id_selected == Some(class_group.group_id) {
                 html! {
                     <div class="d-flex flex-column">
-                        // <MeetingsListHome group_id={class_group.group_id} />
+                        <MeetingsListHome
+                            group_id=class_group.group_id
+                            user_profile=self.props.user_profile.clone() 
+                            auth_school=self.props.auth_school.clone()
+                            on_app_route=self.props.on_app_route.clone() />
                     </div>
                 }
             } else {
@@ -394,16 +409,19 @@ impl Component for Home {
             if self.group_id_selected == Some(class_group.group_id) {
                 html! {
                     <div class="d-flex flex-column">
-                        // <MembersListHome user_profile={self.user_profile.clone()}
-                            // group_id={class_group.group_id} />
+                        <MembersListHome
+                            user_profile=self.props.user_profile.clone()
+                            group_id=class_group.group_id
+                            on_app_route=self.props.on_app_route.clone() />
                     </div>
                 }
             } else {
                 html! {}
             }
         };
-        let on_user_section = ctx.link().callback(move |_| HomeMessage::ShowUserHiddenSection);
+        let on_user_section = self.link.callback(move |_| HomeMessage::ShowUserHiddenSection);
         let maybe_user_profile_pic = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|item| {
@@ -420,9 +438,9 @@ impl Component for Home {
                     }
                 };
                 Some(html! {
-                    <a onclick={&on_user_section}>
+                    <a onclick=&on_user_section>
                         <div class="card" style="height: 72px; width: 72px; border-radius: 150px;">
-                            <img src={pic_path} class="img-card-72" alt={name} />
+                            <img src=pic_path class="img-card-72" alt={name} />
                             <div class="card-img-overlay d-flex justify-content-end align-items-end p-0">
                                 {maybe_icon}
                             </div>
@@ -431,12 +449,14 @@ impl Component for Home {
                 })
             }).unwrap_or(html! {});
         let maybe_section_user = self
+            .props
             .user_profile
             .as_ref()
             .zip(
-                self.school_profile
+                self.props
+                    .auth_school
                     .as_ref()
-                    .and_then(|auth_school| Some(auth_school.clone())),
+                    .and_then(|auth_school| auth_school.school_profile.as_ref()),
             )
             .and_then(|(item, school_profile)| {
 
@@ -452,7 +472,7 @@ impl Component for Home {
                     })
                 } .unwrap_or(html! {});
 
-                let close_modal_callback = ctx.link().callback(|_| HomeMessage::OnShowModalUser(false));
+                let close_modal_callback = self.link.callback(|_| HomeMessage::OnShowModalUser(false));
 
                 let maybe_email = item.email.clone();
 
@@ -479,11 +499,13 @@ impl Component for Home {
                 Some(html! {
                     <>
                         <div class="d-none d-sm-none d-md-none d-lg-block">
-                            <MyProfilePage user_id={ctx.props().user_id.clone()} 
-                                user_profile={self.user_profile.clone()}
-                                on_user_profile={ctx.props().on_user_profile.clone()}
-                                show_user={self.user_section_on.clone()} 
-                                close_modal_callback={close_modal_callback.clone()} />
+                            <MyProfilePage user_id=self.props.user_id.clone() 
+                                user_profile=self.props.user_profile.clone()
+                                on_app_route=self.props.on_app_route.clone()
+                                auth_school=self.props.auth_school.clone()
+                                on_user_profile=self.props.on_user_profile.clone()
+                                show_user=self.user_section_on.clone() 
+                                close_modal_callback=close_modal_callback.clone() />
                             <div class="d-flex justify-content-center">{maybe_user_type}</div>
                             // <span class="text-primary-blue-dark noir-bold is-size-14 lh-17 pb-2">{lang::dict("License")}</span>
                             // <div class="mb-4"><span class="text-brown noir-light is-size-18 lh-22">{&licence}</span></div>
@@ -504,7 +526,7 @@ impl Component for Home {
             let group_id = class_group.group_id;
             let school_id = class_group.school_id;
             let class_group_id = format!("class-group-{}", group_id);
-            let user_id = self.user_profile.clone().and_then(|data| Some(data.user_id)).unwrap_or(UserId(Uuid::default()));
+            let user_id = self.props.user_profile.clone().and_then(|data| Some(data.user_id)).unwrap_or(UserId(Uuid::default()));
             let class_name = class_group.class_name.clone().to_uppercase();
             let _class_lesson_view = if class_name.contains("KINDER") 
                 || class_name.contains("PREPARATORIA") {
@@ -513,58 +535,38 @@ impl Component for Home {
                 false
             };
 
-            let category = ClassGroupCategory::Posts;
-            let navigator = ctx.link().navigator().unwrap();
-            let on_class_group_post = Callback::from(move |_| navigator.push(&AppRoute::SchoolGroupSection{school_id, group_id, category}));
-            // let on_class_group_post = ctx.link().callback(move |_| {
-            //     HomeMessage::AppRoute(AppRoute::SchoolGroupSection{school_id, group_id, category})
+            let on_class_group_quizzes = self.link.callback(move |_| {
+                HomeMessage::AppRoute(AppRoute::SchoolGroupSection(school_id.clone(), group_id.clone(), ClassGroupCategory::Quizzes))
+            });
+            let on_class_group_post = self.link.callback(move |_| {
+                HomeMessage::AppRoute(AppRoute::SchoolGroupSection(school_id.clone(), group_id.clone(), ClassGroupCategory::Posts))
+            });
+            // let on_class_group_classes = self.link.callback(move |_| {
+            //     HomeMessage::AppRoute(AppRoute::SchoolGroupSection(school_id.clone(), group_id.clone(), ClassGroupCategory::Classes))
             // });
-            let category = ClassGroupCategory::Classes;
-            let navigator = ctx.link().navigator().unwrap();
-            let on_class_group_classes = Callback::from(move |_| navigator.push(&AppRoute::SchoolGroupSection{school_id, group_id, category}));
-            // let on_class_group_classes = ctx.link().callback(move |_| {
-            //     HomeMessage::AppRoute(AppRoute::SchoolGroupSection{school_id, group_id, category})
+            let on_class_group_lessons = self.link.callback(move |_| {
+                HomeMessage::AppRoute(AppRoute::SchoolGroupSection(school_id.clone(), group_id.clone(), ClassGroupCategory::Lessons))
+            });
+            let on_class_group_robot = self.link.callback(move |_| {
+                HomeMessage::AppRoute(AppRoute::SchoolGroupSection(school_id.clone(), group_id.clone(), ClassGroupCategory::Robots))
+            });
+            let on_class_group_quizzes_st = self.link.callback(move |_| {
+                HomeMessage::AppRoute(AppRoute::GroupSectionStudent(school_id.clone(), user_id.clone(), ClassGroupCategory::Quizzes))
+            });
+            let on_class_group_post_st = self.link.callback(move |_| {
+                HomeMessage::AppRoute(AppRoute::GroupSectionStudent(school_id.clone(), user_id.clone(), ClassGroupCategory::Posts))
+            });
+            // let on_class_group_classes_st = self.link.callback(move |_| {
+            //     HomeMessage::AppRoute(AppRoute::GroupSectionStudent(school_id.clone(), user_id.clone(), ClassGroupCategory::Classes))
             // });
-            let category = ClassGroupCategory::Lessons;
-            let navigator = ctx.link().navigator().unwrap();
-            let on_class_group_lessons = Callback::from(move |_| navigator.push(&AppRoute::SchoolGroupSection{school_id, group_id, category}));
-            // let on_class_group_lessons = ctx.link().callback(move |_| {
-            //     HomeMessage::AppRoute(AppRoute::SchoolGroupSection{school_id, group_id, category})
-            // });
-            let category = ClassGroupCategory::Robots;
-            let navigator = ctx.link().navigator().unwrap();
-            let on_class_group_robot = Callback::from(move |_| navigator.push(&AppRoute::SchoolGroupSection{school_id, group_id, category}));
-            // let on_class_group_robot = ctx.link().callback(move |_| {
-            //     HomeMessage::AppRoute(AppRoute::SchoolGroupSection{school_id, group_id, category})
-            // });
-            let category = ClassGroupCategory::Posts;
-            let navigator = ctx.link().navigator().unwrap();
-            let on_class_group_post_st = Callback::from(move |_| navigator.push(&AppRoute::SchoolGroupSection{school_id, group_id, category}));
-            // let on_class_group_post_st = ctx.link().callback(move |_| {
-            //     HomeMessage::AppRoute(AppRoute::GroupSectionStudent{school_id, user_id, category})
-            // });
-            let category = ClassGroupCategory::Classes;
-            let navigator = ctx.link().navigator().unwrap();
-            let on_class_group_classes_st = Callback::from(move |_| navigator.push(&AppRoute::SchoolGroupSection{school_id, group_id, category}));
-            // let on_class_group_classes_st = ctx.link().callback(move |_| {
-            //     HomeMessage::AppRoute(AppRoute::GroupSectionStudent{school_id, user_id, category})
-            // });
-            let category = ClassGroupCategory::Lessons;
-            let navigator = ctx.link().navigator().unwrap();
-            let on_class_group_lessons_st = Callback::from(move |_| navigator.push(&AppRoute::SchoolGroupSection{school_id, group_id, category}));
-            // let on_class_group_lessons_st = ctx.link().callback(move |_| {
-            //     HomeMessage::AppRoute(AppRoute::GroupSectionStudent{school_id, user_id, category})
-            // });
-            let category = ClassGroupCategory::Robots;
-            let navigator = ctx.link().navigator().unwrap();
-            let on_class_group_robot_st = Callback::from(move |_| navigator.push(&AppRoute::SchoolGroupSection{school_id, group_id, category}));
-            // let on_class_group_robot_st = ctx.link().callback(move |_| {
-            //     HomeMessage::AppRoute(AppRoute::GroupSectionStudent{school_id, user_id, category})
-            // });
-            let navigator = ctx.link().navigator().unwrap();
-            let on_meetings = Callback::from(move |_| navigator.push(&AppRoute::Meetings));
-            // let on_meetings = ctx.link().callback(move |_| HomeMessage::AppRoute(AppRoute::Meetings));
-            let maybe_members = self.user_profile.as_ref().and_then(|user| {
+            let on_class_group_lessons_st = self.link.callback(move |_| {
+                HomeMessage::AppRoute(AppRoute::GroupSectionStudent(school_id.clone(), user_id.clone(), ClassGroupCategory::Lessons))
+            });
+            let on_class_group_robot_st = self.link.callback(move |_| {
+                HomeMessage::AppRoute(AppRoute::GroupSectionStudent(school_id.clone(), user_id.clone(), ClassGroupCategory::Robots))
+            });
+            let on_meetings = self.link.callback(move |_| HomeMessage::AppRoute(AppRoute::Meetings));
+            let maybe_members = self.props.user_profile.as_ref().and_then(|user| {
                 if user.user_staff.is_some() || user.user_teacher.is_some() {
                     Some(html! {
                         <>
@@ -587,27 +589,29 @@ impl Component for Home {
                     <>
                         <div>
                             <span class="text-primary-blue-dark noir-bold is-size-24 lh-29">{lang::dict("Latest Robots")}</span>
-                            <UserRobots user_id={user_id.clone()} 
-                                user_profile={self.user_profile.clone()}
-                                maybe_style={UserStyle::ListHome} />
+                            <UserRobots user_id=user_id.clone() 
+                                user_profile=self.props.user_profile.clone()
+                                on_app_route=self.props.on_app_route.clone() 
+                                on_list_change=None
+                                maybe_style=UserStyle::ListHome />
                         </div>
                         {maybe_members}
                     </>
                 }
             };
-            let class_right_sidebar = if self.saved_sidebar_state {
+            let class_right_sidebar = if self.props.saved_sidebar_state {
                 "bg-silver col col-sm-3 col-md-3 col-lg-5 col-xl-4 col-xxl-3 d-none d-sm-none d-md-none d-lg-block p-5"
             } else {
                 "d-none"
             };
-            let maybe_post = self.user_profile.clone()
+            let maybe_post = self.props.user_profile.clone()
                 .and_then(|user| {
                     if user.user_teacher.is_some() {
                         Some(html! {
                             <div class="d-flex justify-content-between align-items-center py-home-sections">
                                 <span class="text-primary-blue-dark noir-medium is-size-20 lh-24">{lang::dict("Posts")}</span>
                                 <span class="icon-text d-flex align-items-center">
-                                    <a onclick={on_class_group_post}>
+                                    <a onclick=on_class_group_post>
                                         <span class="text-cyan-sky noir-medium is-size-16 lh-19 me-2">{"Ver todo"}</span>
                                     </a>
                                     <span class="text-cyan-sky noir-medium is-size-16 lh-19">
@@ -621,7 +625,7 @@ impl Component for Home {
                             <div class="d-flex justify-content-between align-items-center py-home-sections">
                                 <span class="text-primary-blue-dark noir-medium is-size-20 lh-24">{lang::dict("Posts")}</span>
                                 <span class="icon-text d-flex align-items-center">
-                                    <a onclick={on_class_group_post_st}>
+                                    <a onclick=on_class_group_post_st>
                                         <span class="text-cyan-sky noir-medium is-size-16 lh-19 me-2">{"Ver todo"}</span>
                                     </a>
                                     <span class="text-cyan-sky noir-medium is-size-16 lh-19">
@@ -632,15 +636,14 @@ impl Component for Home {
                         })
                     }
                 }).unwrap_or(html! {});
-
-            let maybe_classes = self.user_profile.clone()
+            let maybe_quiz = self.props.user_profile.clone()
                 .and_then(|user| {
                     if user.user_teacher.is_some() {
                         Some(html! {
                             <div class="d-flex justify-content-between align-items-center py-home-sections">
-                                <span class="text-primary-blue-dark noir-medium is-size-20 lh-24">{lang::dict("Classes")}</span>
+                                <span class="text-primary-blue-dark noir-medium is-size-20 lh-24">{"Evaluaciones"}</span>
                                 <span class="icon-text d-flex align-items-center">
-                                    <a onclick={on_class_group_classes}>
+                                    <a onclick=on_class_group_quizzes>
                                         <span class="text-cyan-sky noir-medium is-size-16 lh-19 me-2">{"Ver todo"}</span>
                                     </a>
                                     <span class="text-cyan-sky noir-medium is-size-16 lh-19">
@@ -652,9 +655,9 @@ impl Component for Home {
                     } else {
                         Some(html! {
                             <div class="d-flex justify-content-between align-items-center py-home-sections">
-                                <span class="text-primary-blue-dark noir-medium is-size-20 lh-24">{lang::dict("Classes")}</span>
+                                <span class="text-primary-blue-dark noir-medium is-size-20 lh-24">{"Evaluaciones"}</span>
                                 <span class="icon-text d-flex align-items-center">
-                                    <a onclick={on_class_group_classes_st}>
+                                    <a onclick=on_class_group_quizzes_st>
                                         <span class="text-cyan-sky noir-medium is-size-16 lh-19 me-2">{"Ver todo"}</span>
                                     </a>
                                     <span class="text-cyan-sky noir-medium is-size-16 lh-19">
@@ -666,14 +669,47 @@ impl Component for Home {
                     }
                 }).unwrap_or(html! {});
 
-            let maybe_lessons = self.user_profile.clone()
+            // let maybe_classes = self.props.user_profile.clone()
+            //     .and_then(|user| {
+            //         if user.user_teacher.is_some() {
+            //             Some(html! {
+            //                 <div class="d-flex justify-content-between align-items-center py-home-sections">
+            //                     <span class="text-primary-blue-dark noir-medium is-size-20 lh-24">{lang::dict("Classes")}</span>
+            //                     <span class="icon-text d-flex align-items-center">
+            //                         <a onclick=on_class_group_classes>
+            //                             <span class="text-cyan-sky noir-medium is-size-16 lh-19 me-2">{"Ver todo"}</span>
+            //                         </a>
+            //                         <span class="text-cyan-sky noir-medium is-size-16 lh-19">
+            //                             <i class="fas fa-arrow-right"></i>
+            //                         </span>
+            //                     </span>
+            //                 </div>
+            //             })
+            //         } else {
+            //             Some(html! {
+            //                 <div class="d-flex justify-content-between align-items-center py-home-sections">
+            //                     <span class="text-primary-blue-dark noir-medium is-size-20 lh-24">{lang::dict("Classes")}</span>
+            //                     <span class="icon-text d-flex align-items-center">
+            //                         <a onclick=on_class_group_classes_st>
+            //                             <span class="text-cyan-sky noir-medium is-size-16 lh-19 me-2">{"Ver todo"}</span>
+            //                         </a>
+            //                         <span class="text-cyan-sky noir-medium is-size-16 lh-19">
+            //                             <i class="fas fa-arrow-right"></i>
+            //                         </span>
+            //                     </span>
+            //                 </div>
+            //             })
+            //         }
+            //     }).unwrap_or(html! {});
+
+            let maybe_lessons = self.props.user_profile.clone()
                 .and_then(|user| {
                     if user.user_teacher.is_some() {
                         Some(html! {
                             <div class="d-flex justify-content-between align-items-center py-home-sections">
                                 <span class="text-primary-blue-dark noir-medium is-size-20 lh-24">{lang::dict("Lessons")}</span>
                                 <span class="icon-text d-flex align-items-center">
-                                    <a onclick={&{on_class_group_lessons}}>
+                                    <a onclick={&on_class_group_lessons}>
                                         <span class="text-cyan-sky noir-medium is-size-16 lh-19 me-2">{"Ver todo"}</span>
                                     </a>
                                     <span class="text-cyan-sky noir-medium is-size-16 lh-19">
@@ -687,7 +723,7 @@ impl Component for Home {
                             <div class="d-flex justify-content-between align-items-center py-home-sections">
                                 <span class="text-primary-blue-dark noir-medium is-size-20 lh-24">{lang::dict("Lessons")}</span>
                                 <span class="icon-text d-flex align-items-center">
-                                    <a onclick={&{on_class_group_lessons_st}}>
+                                    <a onclick={&on_class_group_lessons_st}>
                                         <span class="text-cyan-sky noir-medium is-size-16 lh-19 me-2">{"Ver todo"}</span>
                                     </a>
                                     <span class="text-cyan-sky noir-medium is-size-16 lh-19">
@@ -699,14 +735,14 @@ impl Component for Home {
                     }
                 }).unwrap_or(html! {});
 
-            let maybe_robots = self.user_profile.clone()
+            let maybe_robots = self.props.user_profile.clone()
                 .and_then(|user| {
                     if user.user_teacher.is_some() {
                         Some(html! {
                             <div class="d-flex justify-content-between align-items-center py-home-sections">
                                 <span class="text-primary-blue-dark noir-medium is-size-20 lh-24">{lang::dict("Robots")}</span>
                                 <span class="icon-text d-flex align-items-center">
-                                    <a onclick={on_class_group_robot}>
+                                    <a onclick=on_class_group_robot>
                                         <span class="text-cyan-sky noir-medium is-size-16 lh-19 me-2">{"Ver todo"}</span>
                                     </a>
                                     <span class="text-cyan-sky noir-medium is-size-16 lh-19">
@@ -720,7 +756,7 @@ impl Component for Home {
                             <div class="d-flex justify-content-between align-items-center py-home-sections">
                                 <span class="text-primary-blue-dark noir-medium is-size-20 lh-24">{lang::dict("Robots")}</span>
                                 <span class="icon-text d-flex align-items-center">
-                                    <a onclick={on_class_group_robot_st}>
+                                    <a onclick=on_class_group_robot_st>
                                         <span class="text-cyan-sky noir-medium is-size-16 lh-19 me-2">{"Ver todo"}</span>
                                     </a>
                                     <span class="text-cyan-sky noir-medium is-size-16 lh-19">
@@ -731,14 +767,13 @@ impl Component for Home {
                         })
                     }
                 }).unwrap_or(html! {});
-
-            let maybe_meets = self.user_profile.clone()
+            let maybe_meets = self.props.user_profile.clone()
                 .and_then(|user| {
                     if user.user_teacher.is_some() {
                         Some(html! {
                             <div class="d-flex justify-content-between align-items-center py-home-sections">
                                 <span class="text-primary-blue-dark noir-medium is-size-20 lh-24">{lang::dict("Meetings")}</span>
-                                <a onclick={on_meetings}>
+                                <a onclick=on_meetings>
                                     <span class="d-flex align-items-center">
                                         <span class="text-cyan-sky noir-medium is-size-16 lh-19 me-2">{"Ver todo"}</span>
                                         <span class="icon text-cyan-sky noir-medium is-size-16 lh-19">
@@ -764,10 +799,12 @@ impl Component for Home {
                             {user_profile_name}
                             {maybe_option_user}
                             <div id={ class_group_id.clone() }>
+                                {maybe_quiz}
+                                {class_group_quizzes(class_group)}
                                 {maybe_post}
                                 {class_group_posts(class_group)}
-                                {maybe_classes}
-                                {class_group_classes(class_group)}
+                                // {maybe_classes}
+                                // {class_group_classes(class_group)}
                                 {maybe_lessons}
                                 // {
                                 //     if class_lesson_view {
@@ -783,11 +820,12 @@ impl Component for Home {
                             </div>
                         </div>
                     </div>
-                    <div class={class_right_sidebar}>
+                    <div class=class_right_sidebar>
                         <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
-                            <SearchView group_id={Some(group_id)}
-                                user_profile={self.user_profile.clone()}
-                                school_id={school_id.clone()} />
+                            <SearchView group_id=Some(group_id) auth_school=self.props.auth_school.clone()
+                                user_profile=self.props.user_profile.clone()
+                                school_id=school_id.clone()
+                                on_app_route=self.props.on_app_route.clone() />
                             {maybe_user_profile_pic}
                         </div>
                         {maybe_option.clone()}
@@ -797,10 +835,10 @@ impl Component for Home {
         };
         let right_sidebar = |class_group_data: &NewClassGroup|{
             let group_id = class_group_data.group_id;
-            // let school_id = ctx.props().auth_school.as_ref().and_then(|data| Some(data.id)).unwrap_or(Uuid::default());
-            let school_id = Uuid::default();
-            let on_user_section = ctx.link().callback(move |_| HomeMessage::ShowUserHiddenSection);
+            let school_id = self.props.auth_school.as_ref().and_then(|data| Some(data.id)).unwrap_or(Uuid::default());
+            let on_user_section = self.link.callback(move |_| HomeMessage::ShowUserHiddenSection);
             let maybe_user_profile_pic = self
+                .props
                 .user_profile
                 .as_ref()
                 .and_then(|item| {
@@ -817,9 +855,9 @@ impl Component for Home {
                         }
                     };
                     Some(html! {
-                        <a onclick={&on_user_section}>
+                        <a onclick=&on_user_section>
                             <div class="card" style="height: 72px; width: 72px; border-radius: 150px;">
-                                <img src={pic_path} class="img-card-72" alt={name} />
+                                <img src=pic_path class="img-card-72" alt={name} />
                                 <div class="card-img-overlay d-flex justify-content-end align-items-end p-0">
                                     {maybe_icon}
                                 </div>
@@ -827,9 +865,8 @@ impl Component for Home {
                         </a>
                     })
                 }).unwrap_or(html! {});
-
-            let close_modal_callback = ctx.link().callback(|_| HomeMessage::OnShowModalUser(false));
-            let maybe_members = self.user_profile.as_ref().and_then(|user| {
+            let close_modal_callback = self.link.callback(|_| HomeMessage::OnShowModalUser(false));
+            let maybe_members = self.props.user_profile.as_ref().and_then(|user| {
                 if user.user_staff.is_some() || user.user_teacher.is_some() {
                     Some(html! {
                         <>
@@ -845,32 +882,36 @@ impl Component for Home {
             }).unwrap_or(html! {});
             let maybe_option = if self.user_section_on {
                 html! {
-                    <MyProfilePage user_id={ctx.props().user_id}
-                        user_profile={self.user_profile.clone()}
-                        on_user_profile={ctx.props().on_user_profile.clone()}
-                        show_user={self.user_section_on}
-                        close_modal_callback={close_modal_callback} />
+                    <MyProfilePage user_id=self.props.user_id
+                        user_profile=self.props.user_profile.clone()
+                        auth_school=self.props.auth_school.clone()
+                        on_user_profile=self.props.on_user_profile.clone()
+                        on_app_route=self.props.on_app_route.clone()
+                        show_user=self.user_section_on
+                        close_modal_callback=close_modal_callback />
                 }
             } else {
                 html! {
                     <>
                         <div>
                             <span class="text-primary-blue-dark noir-bold is-size-24 lh-29">{lang::dict("Latest Robots")}</span>
-                            <UserRobots user_id={ctx.props().user_id }
-                                user_profile={self.user_profile.clone()}
-                                maybe_style={UserStyle::ListHome} />
+                            <UserRobots user_id=self.props.user_id user_profile=self.props.user_profile.clone()
+                                on_app_route=self.props.on_app_route.clone() on_list_change=None
+                                maybe_style=UserStyle::ListHome />
                         </div>
                         {maybe_members}
                     </>
                 }
             };
-            let mayber_sidebar = if self.saved_sidebar_state {
+            let mayber_sidebar = if self.props.saved_sidebar_state {
                 html! {
                     <div class="d-flex flex-column justify-content-between w-100">
                         <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
-                            <SearchView group_id={Some(group_id)}
-                                user_profile={self.user_profile.clone()}
-                                school_id={SchoolId(school_id)} />
+                            <SearchView group_id=Some(group_id)
+                                auth_school=self.props.auth_school.clone()
+                                user_profile=self.props.user_profile.clone()
+                                school_id=SchoolId(school_id)
+                                on_app_route=self.props.on_app_route.clone() />
                             {maybe_user_profile_pic.clone()}
                         </div>
                         {maybe_option}
@@ -883,12 +924,12 @@ impl Component for Home {
                 {mayber_sidebar}
             }
         };
-        let class_sidebar_mobile = if self.saved_sidebar_state {
+        let class_sidebar_mobile = if self.props.saved_sidebar_state {
             "offcanvas offcanvas-end show bg-silver d-block d-sm-block d-md-block d-lg-none d-xl-none d-xxl-none"
         } else {
             "offcanvas offcanvas-end"
         };
-        let style_sidebar_mobile = if self.saved_sidebar_state {
+        let style_sidebar_mobile = if self.props.saved_sidebar_state {
             "visibility: visible;"
         } else {
             "display: none;"
@@ -910,9 +951,9 @@ impl Component for Home {
                                     class_group_level.clone()(class_group)
                                 }).collect::<Html>()
                         }
-                        <div class={class_sidebar_mobile} data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel" aria-modal="true" role="dialog" style={style_sidebar_mobile}>
+                        <div class=class_sidebar_mobile data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel" aria-modal="true" role="dialog" style=style_sidebar_mobile>
                             <div class="offcanvas-header d-flex justify-content-end">
-                                <button type="button" class="btn btn-outline-danger" data-bs-dismiss="offcanvas" onclick={&on_show_sidebar}>
+                                <button type="button" class="btn btn-outline-danger" data-bs-dismiss="offcanvas" onclick=&on_show_sidebar>
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>

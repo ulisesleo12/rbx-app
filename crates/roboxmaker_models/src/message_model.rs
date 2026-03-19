@@ -56,7 +56,7 @@ impl Request for MessageContentById {}
 #[graphql(
     schema_path = "schema.graphql",
     query_path = "query.graphql",
-    response_derives = "Clone, Debug, PartialEq, Serialize",
+    response_derives = "Clone, Debug, PartialEq",
     normalization = "rust"
 )]
 pub struct MessageLessonGroupCreate;

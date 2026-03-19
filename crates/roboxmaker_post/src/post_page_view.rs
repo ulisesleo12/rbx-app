@@ -1,25 +1,27 @@
-use log::*;
-use uuid::Uuid;
 use chrono::Local;
+use log::*;
+use roboxmaker_quizzes::quizresponder;
+use uuid::Uuid;
+use std::vec;
 use yew::prelude::*;
+use web_sys::window;
+use yew::services::Task;
 use std::time::Duration;
 use gloo_storage::Storage;
 use yew::virtual_dom::VNode;
-use web_sys::{window, Node};
+use yew::web_sys::{Node, self};
 use code_location::code_location;
-use yew::{html, Component, Html};
-use gloo_timers::callback::Interval;
-use yew_router::scope_ext::RouterScopeExt;
+use yew::services::interval::IntervalService;
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_ckeditor::ckeditor;
-use roboxmaker_models::post_model;
 use roboxmaker_main::{lang, config};
 // use roboxmaker_message::message_list_post::MessageListPost;
-use roboxmaker_utils::functions::get_value_from_input_event;
+use roboxmaker_models::{school_model, post_model};
 use roboxmaker_searches::search_posts_group::SearchPostsGroup;
 use roboxmaker_message::{message_list::MessageList, MessageGroupCategory};
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask, Subscribe, SubscriptionTask};
-use roboxmaker_types::types::{PostId, SchoolId, GroupId, AppRoute, ClassGroupCategory, UserId, MyUserProfile};
+use roboxmaker_types::types::{PostId, SchoolId, GroupId, AppRoute, ClassGroupPost, ClassGroupCategory, UserId, MyUserProfile};
 
 #[derive(Debug)]
 pub enum PostPageViewEdit {
@@ -29,6 +31,8 @@ pub enum PostPageViewEdit {
     Save,
 }
 pub struct PostPageView {
+    link: ComponentLink<Self>,
+    props: PostPageViewProperties,
     graphql_task: Option<GraphQLTask>,
     load_task: Option<SubscriptionTask>,
     post_task: Option<RequestTask>,
@@ -40,25 +44,30 @@ pub struct PostPageView {
     topic: String,
     content: String,
     save_status: bool,
-    job: Option<Interval>,
+    job: Option<Box<dyn Task>>,
     on_dropdown_menu: bool,
     class_name: String,
     del_post_entirely_modal: bool,
     maybe_load_spinner: bool,
-    saved_sidebar_state: bool,
 }
 
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct PostPageViewProperties {
+    pub on_app_route: Callback<AppRoute>,
     pub user_profile: Option<MyUserProfile>,
+    pub auth_school: Option<school_model::school_by_id::SchoolByIdSchoolByPk>,
     pub post_id: PostId,
     pub group_id: GroupId,
+    pub posts: Option<ClassGroupPost>,
+    pub on_list_change: Option<Callback<()>>,
+    pub saved_sidebar_state: bool,
     pub school_id: SchoolId,
+    pub pic_path: String,
 }
 
 #[derive(Debug)]
 pub enum PostPageViewMessage {
-    // AppRoute(AppRoute),
+    AppRoute(AppRoute),
     StartAutoSave,
     StopAutoSave,
     FetchPostById(PostId, GroupId),
@@ -78,7 +87,7 @@ pub enum PostPageViewMessage {
     OnDropdownMenu,
     ChangeSidebarState,
     DeletePostEntirely(PostId),
-    PostDeletedEnt(Option<post_model::delete_post::ResponseData>),
+    PostDeletedEnt(Option<post_model::delete_post_by_id::ResponseData>),
     OnDeletePostEntirely,
 }
 
@@ -86,18 +95,17 @@ impl Component for PostPageView {
     type Message = PostPageViewMessage;
     type Properties = PostPageViewProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(PostPageViewMessage::FetchPostById(ctx.props().post_id, ctx.props().group_id));
-
-        let saved_sidebar_state = if let Ok(value) = gloo_storage::LocalStorage::get("saved_sidebar_state") {
+    fn create(mut props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(PostPageViewMessage::FetchPostById(props.post_id, props.group_id));
+        props.saved_sidebar_state = if let Ok(value) = gloo_storage::LocalStorage::get("saved_sidebar_state") {
             value 
         } else {
             true
         };
 
-        roboxmaker_utils::functions::school_state();
-
         PostPageView {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             load_task: None,
             post_task: None,
@@ -114,26 +122,27 @@ impl Component for PostPageView {
             class_name: String::from(""),
             del_post_entirely_modal: false,
             maybe_load_spinner: false,
-            saved_sidebar_state,
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-        info!("{:?}", msg);
-
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+        match msg {
+            PostPageViewMessage::Content(_) => trace!("{:?}", msg),
+            _ => info!("{:?}", msg),
+        }
         let mut should_update = true;
         match msg {
-            // PostPageViewMessage::AppRoute(route) => {
-            //     ctx.props().on_app_route.emit(route);
-            //     should_update = true;
-            // }
+            PostPageViewMessage::AppRoute(route) => {
+                self.props.on_app_route.emit(route);
+                should_update = true;
+            }
             PostPageViewMessage::StartAutoSave => {
-                let duration = Duration::from_millis(600).as_millis() as u32;
-                let link = ctx.link().clone();
-                let handle = Interval::new( duration, move || {
-                    link.send_message(PostPageViewMessage::Edit(PostPageViewEdit::Save))
-                });
-                self.job = Some(handle);
+                let handle = IntervalService::spawn(
+                    Duration::from_secs(600),
+                    self.link
+                        .callback(|_| PostPageViewMessage::Edit(PostPageViewEdit::Save)),
+                );
+                self.job = Some(Box::new(handle));
                 should_update = true;
             }
             PostPageViewMessage::StopAutoSave => {
@@ -148,7 +157,7 @@ impl Component for PostPageView {
 
                     let task = post_model::PostById::subscribe(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             PostPageViewMessage::Post(response)
@@ -186,31 +195,30 @@ impl Component for PostPageView {
                     }
                 }
 
-                let user_id = ctx.props().user_profile.clone().and_then(|item| Some(item.user_id)).unwrap_or(UserId(Uuid::default()));
-                
-                let school_id = ctx.props().school_id;
-                let group_id = ctx.props().group_id;
-                let category = ClassGroupCategory::Posts;
+                let user_id = self.props.user_profile.clone().and_then(|item| Some(item.user_id)).unwrap_or(UserId(Uuid::default()));
+
+                let school_id = self.props.school_id;
+                let group_id = self.props.group_id;
                 
                 if response.clone().and_then(|data| data.post_group_by_pk).is_none() {
-                    if ctx.props().user_profile.clone().and_then(|item| Some(item.user_staff.is_some() || item.user_teacher.is_some())).unwrap_or(false) {
-                        ctx.link().navigator().unwrap().push(&AppRoute::SchoolGroupSection{school_id, group_id, category});
+                    if self.props.user_profile.clone().and_then(|item| Some(item.user_staff.is_some() || item.user_teacher.is_some())).unwrap_or(false) {
+                        self.link.send_message(PostPageViewMessage::AppRoute(AppRoute::SchoolGroupSection(school_id, group_id, ClassGroupCategory::Posts)));
                     } else {
                         
-                        ctx.link().navigator().unwrap().push(&AppRoute::GroupSectionStudent{school_id, user_id, category});
+                        self.link.send_message(PostPageViewMessage::AppRoute(AppRoute::GroupSectionStudent(school_id, user_id, ClassGroupCategory::Posts)));
                     }
                 }
             }
             PostPageViewMessage::DeletePostById(post_id) => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let vars = post_model::post_group_delete::Variables { 
-                        group_id: ctx.props().group_id.0,
+                        group_id: self.props.group_id.0,
                         post_id: post_id.0,
                     };
 
                     let task = post_model::PostGroupDelete::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             PostPageViewMessage::PostDeleted(response)
@@ -220,19 +228,17 @@ impl Component for PostPageView {
                 }
             }
             PostPageViewMessage::PostDeleted(lesson_deleted) => {
-                let user_id = ctx.props().user_profile.clone().and_then(|item| Some(item.user_id)).unwrap_or(UserId(Uuid::default()));
+                let user_id = self.props.user_profile.clone().and_then(|item| Some(item.user_id)).unwrap_or(UserId(Uuid::default()));
 
-                let school_id = ctx.props().school_id;
-                let group_id = ctx.props().group_id;
-                let category = ClassGroupCategory::Posts;
-
+                let school_id = self.props.school_id;
+                let group_id = self.props.group_id;
                 if lesson_deleted.clone().and_then(|data| data.delete_post_group).is_some() {
 
-                    if ctx.props().user_profile.clone().and_then(|item| Some(item.user_staff.is_some() || item.user_teacher.is_some())).unwrap_or(false) {
-                        ctx.link().navigator().unwrap().push(&AppRoute::SchoolGroupSection{school_id, group_id, category});
+                    if self.props.user_profile.clone().and_then(|item| Some(item.user_staff.is_some() || item.user_teacher.is_some())).unwrap_or(false) {
+                        self.link.send_message(PostPageViewMessage::AppRoute(AppRoute::SchoolGroupSection(school_id, group_id, ClassGroupCategory::Posts)));
                     } else {
                         
-                        ctx.link().navigator().unwrap().push(&AppRoute::GroupSectionStudent{school_id, user_id, category});
+                        self.link.send_message(PostPageViewMessage::AppRoute(AppRoute::GroupSectionStudent(school_id, user_id, ClassGroupCategory::Posts)));
                     }
 
                     info!("{:?} del", lesson_deleted);
@@ -252,26 +258,26 @@ impl Component for PostPageView {
             PostPageViewMessage::Edit(edit) => {
                 self.edit = edit;
                 match self.edit {
-                    PostPageViewEdit::Edit => ctx.link().send_message(PostPageViewMessage::StartAutoSave),
+                    PostPageViewEdit::Edit => self.link.send_message(PostPageViewMessage::StartAutoSave),
                     PostPageViewEdit::None => {
                         self.save_status = true;
-                        ctx.link().send_message(PostPageViewMessage::StopAutoSave)
+                        self.link.send_message(PostPageViewMessage::StopAutoSave)
                     }
                     PostPageViewEdit::Done => {
                         self.save_status = true;
-                        ctx.link().send_message(PostPageViewMessage::StopAutoSave)
+                        self.link.send_message(PostPageViewMessage::StopAutoSave)
                     }
                     PostPageViewEdit::Save => {
                         if let Some(graphql_task) = self.graphql_task.as_mut() {
                             let vars = post_model::post_by_id_update::Variables { 
-                                post_id: ctx.props().post_id.0,
+                                post_id: self.props.post_id.0,
                                 post_topic: self.topic.clone(),
                                 post_content: self.content.clone(),
                             };
         
                             let task = post_model::PostByIdUpdate::request(
                                 graphql_task,
-                                &ctx,
+                                &self.link,
                                 vars,
                                 |response| {
                                     PostPageViewMessage::Saved(response)
@@ -285,7 +291,7 @@ impl Component for PostPageView {
                 }
             }
             PostPageViewMessage::Saved(profile) => {
-                ctx.link()
+                self.link
                     .send_message(PostPageViewMessage::Edit(PostPageViewEdit::Edit));
                 if profile.is_some() {
                     self.save_status = true;
@@ -295,10 +301,14 @@ impl Component for PostPageView {
                 let _ = window().expect("no windows").window().history().unwrap().back();
             }
             PostPageViewMessage::SaveDraftToggle(response) => {
-                response.clone().and_then(|data| data.update_post_group_by_pk).clone().and_then(|data| Some(data.published)).unwrap_or(false);
+                if let Some(mut posts) = self.props.posts.clone() {
+                    posts.published = response.clone().and_then(|data| data.update_post_group_by_pk).clone().and_then(|data| Some(data.published)).unwrap_or(false);
+                } 
             }
             PostPageViewMessage::ArchivedToggle(response) => {
-                response.clone().and_then(|data| data.update_post_group_by_pk).clone().and_then(|data| Some(data.archived)).unwrap_or(false);
+                if let Some(mut posts) = self.props.posts.clone() {
+                    posts.archived = response.clone().and_then(|data| data.update_post_group_by_pk).clone().and_then(|data| Some(data.archived)).unwrap_or(false);
+                }
             }
             PostPageViewMessage::ArchivedPost(post_id) => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
@@ -306,7 +316,7 @@ impl Component for PostPageView {
 
                     let vars = post_model::update_post_group_options::Variables { 
                         post_id: post_id.0,
-                        group_id: ctx.props().group_id.0,
+                        group_id: self.props.group_id.0,
                         published: true,
                         archived: false,
                         maybe_timestamp,
@@ -314,7 +324,7 @@ impl Component for PostPageView {
 
                     let task = post_model::UpdatePostGroupOptions::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             PostPageViewMessage::ArchivedToggle(response)
@@ -329,7 +339,7 @@ impl Component for PostPageView {
 
                     let vars = post_model::update_post_group_options::Variables { 
                         post_id: post_id.0,
-                        group_id: ctx.props().group_id.0,
+                        group_id: self.props.group_id.0,
                         published: true,
                         archived: false,
                         maybe_timestamp,
@@ -337,7 +347,7 @@ impl Component for PostPageView {
 
                     let task = post_model::UpdatePostGroupOptions::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             PostPageViewMessage::SaveDraftToggle(response)
@@ -353,7 +363,7 @@ impl Component for PostPageView {
 
                     let vars = post_model::update_post_group_options::Variables { 
                         post_id: post_id.0,
-                        group_id: ctx.props().group_id.0,
+                        group_id: self.props.group_id.0,
                         published: false,
                         archived: false,
                         maybe_timestamp,
@@ -361,7 +371,7 @@ impl Component for PostPageView {
 
                     let task = post_model::UpdatePostGroupOptions::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             PostPageViewMessage::SaveDraftToggle(response)
@@ -376,26 +386,26 @@ impl Component for PostPageView {
             }
             PostPageViewMessage::ChangeSidebarState => {
                 if let Some(element) = gloo_utils::document().get_element_by_id("show-sidebar-right") {
-                    if self.saved_sidebar_state {
+                    if self.props.saved_sidebar_state {
                         let _ = gloo_storage::LocalStorage::set("saved_sidebar_state", false);
-                        self.saved_sidebar_state = false;
+                        self.props.saved_sidebar_state = false;
                         let _ = element.set_attribute("class", "fa-angle-double-left fa-w-14 fa-2x");
                     } else {
                         let _ = gloo_storage::LocalStorage::set("saved_sidebar_state", true);
-                        self.saved_sidebar_state = true;
+                        self.props.saved_sidebar_state = true;
                         let _ = element.set_attribute("class", "fa fa-angle-double-right fa-w-14 fa-2x");
                     }
                 }
             }
             PostPageViewMessage::DeletePostEntirely(post_id) => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
-                    let vars = post_model::delete_post::Variables { 
+                    let vars = post_model::delete_post_by_id::Variables { 
                         post_id: post_id.0,
                     };
 
-                    let task = post_model::DeletePost::request(
+                    let task = post_model::DeletePostById::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             PostPageViewMessage::PostDeletedEnt(response)
@@ -405,19 +415,17 @@ impl Component for PostPageView {
                 }
             }
             PostPageViewMessage::PostDeletedEnt(response) => {
-                let user_id = ctx.props().user_profile.clone().and_then(|item| Some(item.user_id)).unwrap_or(UserId(Uuid::default()));
+                let user_id = self.props.user_profile.clone().and_then(|item| Some(item.user_id)).unwrap_or(UserId(Uuid::default()));
 
-                let school_id = ctx.props().school_id;
-                let group_id = ctx.props().group_id;
-                let category = ClassGroupCategory::Posts;
-
+                let school_id = self.props.school_id;
+                let group_id = self.props.group_id;
                 if response.clone().and_then(|data| data.delete_post_by_pk).is_some() {
-                    if ctx.props().user_profile.clone().and_then(|item| Some(item.user_staff.is_some() || item.user_teacher.is_some())).unwrap_or(false) {
-                        ctx.link().navigator().unwrap().push(&AppRoute::SchoolGroupSection{school_id, group_id, category});
+                    if self.props.user_profile.clone().and_then(|item| Some(item.user_staff.is_some() || item.user_teacher.is_some())).unwrap_or(false) {
+                        self.link.send_message(PostPageViewMessage::AppRoute(AppRoute::SchoolGroupSection(school_id, group_id, ClassGroupCategory::Posts)));
                     } else {
-                        ctx.link().navigator().unwrap().push(&AppRoute::GroupSectionStudent{school_id, user_id, category});
+                        self.link.send_message(PostPageViewMessage::AppRoute(AppRoute::GroupSectionStudent(school_id, user_id, ClassGroupCategory::Posts)));
                     }
-                
+                    
                     info!("{:?} del", response);
                 }
             }
@@ -428,43 +436,42 @@ impl Component for PostPageView {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
 
-        if ctx.props() != old_props {
+        if self.props != props {
+            self.props = props;
             should_render = true;
-        } 
-
+        }
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_show_del_post = ctx.link().callback(move |_| PostPageViewMessage::OnDeletePostEntirely);
+    fn view(&self) -> Html {
+        let on_show_del_post = self.link.callback(move |_| PostPageViewMessage::OnDeletePostEntirely);
 
-        let on_show_sidebar = ctx.link().callback(move |_| PostPageViewMessage::ChangeSidebarState);
+        let on_show_sidebar = self.link.callback(move |_| PostPageViewMessage::ChangeSidebarState);
         
-        let btn_sidebar_show = if self.saved_sidebar_state {
+        let btn_sidebar_show = if self.props.saved_sidebar_state {
             html! {
-                <button type="button" class="btn btn-outline-primary-blue-dark rounded-start rounded-0" onclick={&on_show_sidebar}>
+                <button type="button" class="btn btn-outline-primary-blue-dark rounded-start rounded-0" onclick=&on_show_sidebar>
                     <i class="fas fa-angle-double-right fas fa-2x" id="show-sidebar-right"></i>
                 </button>
             }
         } else {
             html! {
-                <button type="button" class="btn btn-outline-primary-blue-dark rounded-start rounded-0" onclick={&on_show_sidebar}>
+                <button type="button" class="btn btn-outline-primary-blue-dark rounded-start rounded-0" onclick=&on_show_sidebar>
                     <i class="fas fa-angle-double-left fas fa-2x" id="show-sidebar-right"></i>
                 </button>
             }
         };
+        let post_id = self.props.post_id;
+        let group_id = self.props.group_id;
+        let on_archived_post = self.link.callback(move |_| PostPageViewMessage::ArchivedPost(post_id));        
+        let on_published_post = self.link.callback(move |_| PostPageViewMessage::PublishedPost(post_id)); 
+        let on_no_published_post = self.link.callback(move |_| PostPageViewMessage::NoPublishedPost(post_id)); 
 
-        let post_id = ctx.props().post_id;
-        let group_id = ctx.props().group_id;
-        let on_archived_post = ctx.link().callback(move |_| PostPageViewMessage::ArchivedPost(post_id));        
-        let on_published_post = ctx.link().callback(move |_| PostPageViewMessage::PublishedPost(post_id)); 
-        let on_no_published_post = ctx.link().callback(move |_| PostPageViewMessage::NoPublishedPost(post_id)); 
-
-        let on_del_post_entirely = ctx.link().callback(move |_| PostPageViewMessage::DeletePostEntirely(post_id));
+        let on_del_post_entirely = self.link.callback(move |_| PostPageViewMessage::DeletePostEntirely(post_id));
 
 
         let author_post = self
@@ -477,7 +484,7 @@ impl Component for PostPageView {
                 Some(html! {
                     <div class="d-flex flex-wrap align-items-center justify-content-between mb-6">
                         <div class="d-flex align-items-center">
-                            <img class="img-card-32" src={pic_path} alt="" />
+                            <img class="img-card-32" src=pic_path alt="" />
                             <span class="text-dark noir-light is-size-18 lh-22 ps-2">{&author_profile.full_name}</span>
                         </div>
                         <span class="text-gray-purple-two noir-light is-size-18 lh-22 d-flex align-items-center">
@@ -508,25 +515,25 @@ impl Component for PostPageView {
         if let Some(post) = &self.post {
             let maybe_edit_options = match self.edit {
                 PostPageViewEdit::Edit => {
-                    let on_done = ctx
-                        .link()
+                    let on_done = self
+                        .link
                         .callback(move |_| PostPageViewMessage::Edit(PostPageViewEdit::Done));
-                    let on_save = ctx
-                        .link()
+                    let on_save = self
+                        .link
                         .callback(move |_| PostPageViewMessage::Edit(PostPageViewEdit::Save));
-                    let on_data = ctx
-                        .link()
-                        .callback(|data: InputEvent| PostPageViewMessage::Topic(get_value_from_input_event(data)));
+                    let on_data = self
+                        .link
+                        .callback(|data: InputData| PostPageViewMessage::Topic(data.value));
                     html! {
                         <>
-                            <input class="input input-style-universal px-3 mb-4 mb-md-4 mb-lg-0 mb-xl-0 col-sm-12 col-md-12 col-lg-6" type="text" placeholder={lang::dict("Publication Title")} value={self.topic.clone()} oninput={on_data} />
-                            <a class="btn button-cancel-lesson px-4 mx-3 d-flex align-items-center justify-content-center" onclick={on_done}>
+                            <input class="input input-style-universal px-3 mb-4 mb-md-4 mb-lg-0 mb-xl-0 col-sm-12 col-md-12 col-lg-6" type="text" placeholder={lang::dict("Publication Title")} value=self.topic.clone() oninput=on_data />
+                            <a class="btn button-cancel-lesson px-4 mx-3 d-flex align-items-center justify-content-center" onclick=on_done>
                                 <span class="text-white">
                                     <i class="fas fa-times fas fa-lg"></i>
                                 </span>
                             </a>
                             {status_save}
-                            <a class="btn button-save-lesson px-4 mx-3 d-flex align-items-center justify-content-center" onclick={on_save}>
+                            <a class="btn button-save-lesson px-4 mx-3 d-flex align-items-center justify-content-center" onclick=on_save>
                                 <span class="text-white">
                                     <i class="fas fa-cloud-upload-alt fas fa-lg"></i>
                                 </span>
@@ -572,8 +579,8 @@ impl Component for PostPageView {
                     }
                 }
                 PostPageViewEdit::None => {
-                    let maybe_post_edit = ctx
-                        .props()
+                    let maybe_post_edit = self
+                        .props
                         .user_profile
                         .as_ref()
                         .zip(
@@ -583,15 +590,15 @@ impl Component for PostPageView {
                         )
                         .and_then(|(item, post_profile)| {
                             let post_id = post_profile.post_id;
-                            let on_edit = ctx
-                                .link()
+                            let on_edit = self
+                                .link
                                 .callback(move |_| PostPageViewMessage::Edit(PostPageViewEdit::Edit));
-                            let on_delete = ctx
-                                .link()
+                            let on_delete = self
+                                .link
                                 .callback( move |_| PostPageViewMessage::DeletePostById(PostId(post_id)));
 
-                            let on_dropdown = ctx
-                                .link()
+                            let on_dropdown = self
+                                .link
                                 .callback( move |_| PostPageViewMessage::OnDropdownMenu);
                             let maybe_menu = if self.on_dropdown_menu {
                                 "btn btn-outline-secondary dropdown-toggle menu-hidden-toggle show border-0"
@@ -675,12 +682,12 @@ impl Component for PostPageView {
                                 Some(html! {
                                     <>
                                         <div class="dropdown">
-                                            <a class={maybe_menu} onclick={on_dropdown} role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <a class=maybe_menu onclick=on_dropdown role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
                                                 <i class="fas fa-ellipsis-v"></i>
                                             </a>
-                                            <ul class={maybe_item} aria-labelledby="dropdownMenuLink" style="top: 40px; right: 0px;">
+                                            <ul class=maybe_item aria-labelledby="dropdownMenuLink" style="top: 40px; right: 0px;">
                                                 <li>   
-                                                    <a class="dropdown-item drop-hover-filter text-gray-purple-two" onclick={on_edit}>
+                                                    <a class="dropdown-item drop-hover-filter text-gray-purple-two" onclick=on_edit>
                                                         <i class="fas fa-edit me-2"></i>
                                                         <span>{lang::dict("Edit")}</span>
                                                     </a>
@@ -704,7 +711,7 @@ impl Component for PostPageView {
                                                     }
                                                 }
                                                 <li>   
-                                                    <a class="dropdown-item drop-hover-filter text-gray-purple-two" onclick={on_archived_post}>
+                                                    <a class="dropdown-item drop-hover-filter text-gray-purple-two" onclick=on_archived_post>
                                                         <i class="fas fa-archive me-2"></i>
                                                         <span>{lang::dict("File")}</span>
                                                     </a>
@@ -740,18 +747,17 @@ impl Component for PostPageView {
             };
 
             let maybe_post_content = {
-                let on_data = ctx
-                    .link()
+                let on_data = self
+                    .link
                     .callback(move |data| PostPageViewMessage::Content(data));
                 let upload_url = format!("{}/upload.php", config::AKER_FILES_URL);
                 match self.edit {
                     PostPageViewEdit::Edit => {
                         html! {
                             <div class="mb-6" style="border: 1px solid #C8C1CD; border-radius: 10px;">
-                                <ckeditor::CKEditor user_profile={ctx.props().user_profile.clone()}
-                                    content={self.content.clone()}
-                                    upload_url={upload_url} 
-                                    on_data={on_data} />
+                                <ckeditor::CKEditor user_profile=self.props.user_profile.clone()
+                                    content=self.content.clone()
+                                    upload_url=upload_url on_data=on_data />
                             </div>
                         }
                     }
@@ -765,34 +771,29 @@ impl Component for PostPageView {
                 }
             };
 
-            let user_id = ctx.props().user_profile.clone().and_then(|item| Some(item.user_id)).unwrap_or(UserId(Uuid::default()));
+            let user_id = self.props.user_profile.clone().and_then(|item| Some(item.user_id)).unwrap_or(UserId(Uuid::default()));
 
-            let school_id = ctx.props().school_id;
-            let category = ClassGroupCategory::Posts;
-            let navigator = ctx.link().navigator().unwrap();
-
-            let on_class_group_posts = Callback::from(move |_| {
-                navigator.push(&AppRoute::SchoolGroupSection{
-                    school_id,
-                    group_id,
-                    category,
-                })
+            let school_id = self.props.school_id;
+            let on_class_group_posts = self.link.callback(move |_| {
+                PostPageViewMessage::AppRoute(AppRoute::SchoolGroupSection(
+                    school_id.clone(),
+                    group_id.clone(),
+                    ClassGroupCategory::Posts,
+                ))
             });
-            let navigator = ctx.link().navigator().unwrap();
-
-            let on_class_group_posts_st = Callback::from(move |_| {
-                navigator.push(&AppRoute::GroupSectionStudent{
-                    school_id,
-                    user_id,
-                    category,
-                })
+            let on_class_group_posts_st = self.link.callback(move |_| {
+                PostPageViewMessage::AppRoute(AppRoute::GroupSectionStudent(
+                    school_id.clone(),
+                    user_id.clone(),
+                    ClassGroupCategory::Posts,
+                ))
             });
 
-            let go_back_grade = ctx.props().user_profile.clone()
+            let go_back_grade = self.props.user_profile.clone()
             .and_then(|item| {
                 if item.user_teacher.is_some() || item.user_staff.is_some() {
                     Some(html! {
-                        <a onclick={on_class_group_posts}>
+                        <a onclick=on_class_group_posts>
                             <span class="icon-text text-gray-strong noir-medium is-size-16 lh-19 d-flex align-items-center">
                                 <span class="icon">
                                     <i class="fas fa-arrow-left"></i>
@@ -804,7 +805,7 @@ impl Component for PostPageView {
                     })
                 } else {
                     Some(html! {
-                        <a onclick={on_class_group_posts_st}>
+                        <a onclick=on_class_group_posts_st>
                             <span class="icon-text text-gray-strong noir-medium is-size-16 lh-19 d-flex align-items-center">
                                 <span class="icon">
                                     <i class="fas fa-arrow-left"></i>
@@ -816,22 +817,21 @@ impl Component for PostPageView {
                     })
                 }
             }).unwrap_or(html! {});
+            let pic_path = self.props.pic_path.clone();
 
-            let pic_path = ctx.props().user_profile.clone().and_then(|d| Some(d.pic_path)).unwrap_or_default();
-
-            let class_right_sidebar = if self.saved_sidebar_state {
+            let class_right_sidebar = if self.props.saved_sidebar_state {
                 "bg-silver col col-sm-3 col-md-3 col-lg-5 col-xl-4 col-xxl-3 d-none d-sm-none d-md-none d-lg-block p-5"
             } else {
                 "d-none"
             };
 
-            let class_sidebar_mobile = if self.saved_sidebar_state {
+            let class_sidebar_mobile = if self.props.saved_sidebar_state {
                 "offcanvas offcanvas-end show bg-silver d-block d-sm-block d-md-block d-lg-none d-xl-none d-xxl-none"
             } else {
                 "offcanvas offcanvas-end"
             };
             
-            let style_sidebar_mobile = if self.saved_sidebar_state {
+            let style_sidebar_mobile = if self.props.saved_sidebar_state {
                 "visibility: visible;"
             } else {
                 "display: none;"
@@ -873,72 +873,82 @@ impl Component for PostPageView {
             } else {
                 html! {}
             };
-            html! {
-                <>
-                    <div class="w-100 h-100 d-flex flex-row justify-content-between scroll-y scroll-x-hidden">
-                        <div class="w-100 ps-3 pt-3 ps-md-5 pt-md-5 ps-lg-7 pt-lg-7">
-                            <div class="d-flex flex-wrap alig-items-center justify-content-between mb-6">
-                                {go_back_grade}
-                                {btn_sidebar_show}
+
+            if let Some(quiz_json) = self.post.as_ref().and_then(|data| data.post_profile.as_ref()).and_then(|post_profile| post_profile.maybe_quiz.as_ref()) {
+                let quiz = quizresponder::get_quiz(quiz_json.clone());
+                html! {
+                    <quizresponder::QuizResponder quiz=quiz />
+                }
+            } else {
+                html! {
+                    <>
+                        <div class="w-100 h-100 d-flex flex-row justify-content-between scroll-y scroll-x-hidden">
+                            <div class="w-100 ps-3 pt-3 ps-md-5 pt-md-5 ps-lg-7 pt-lg-7">
+                                <div class="d-flex flex-wrap alig-items-center justify-content-between mb-6">
+                                    {go_back_grade}
+                                    {btn_sidebar_show}
+                                </div>
+                                <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
+                                    {maybe_edit_options}
+                                </div>
+                                {author_post}
+                                {maybe_post_content}
                             </div>
-                            <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
-                                {maybe_edit_options}
-                            </div>
-                            {author_post}
-                            {maybe_post_content}
                         </div>
-                    </div>
-                    <div class={class_right_sidebar}>
-                        <div class="d-flex align-items-center justify-content-between pb-5">
-                            <SearchPostsGroup user_profile={ctx.props().user_profile.clone()}
-                                group_id={ctx.props().group_id}
-                                school_id={ctx.props().school_id} />
-                            <img class="img-card-72" src={pic_path.clone()} alt="photo of user" />
-                        </div>
-                        <span class="text-primary-blue-dark noir-bold is-size-24 lh-29">{lang::dict("Discussions")}</span>
-                        <div class="section-right-post pt-3 scroll-messages-y mh-80">
-                            <MessageList
-                                user_profile={ctx.props().user_profile.clone()} 
-                                user_id={None}
-                                group_category={MessageGroupCategory::Posts(ctx.props().group_id, 
-                                ctx.props().post_id)} />
-                            // <MessageListPost on_app_route=ctx.props().on_app_route.clone() 
-                            //     auth_user=ctx.props().auth_user.clone() 
-                            //     user_id=None
-                            //     group_id=ctx.props().group_id
-                            //     post_id=ctx.props().post_id />
-                        </div>
-                    </div>
-                    <div class={class_sidebar_mobile} data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel" aria-modal="true" role="dialog" style={style_sidebar_mobile}>
-                        <div class="offcanvas-header d-flex justify-content-end">
-                            <button type="button" class="btn btn-outline-danger" data-bs-dismiss="offcanvas" onclick={&on_show_sidebar}>
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="offcanvas-body pt-0">
+                        <div class=class_right_sidebar>
                             <div class="d-flex align-items-center justify-content-between pb-5">
-                                <SearchPostsGroup user_profile={ctx.props().user_profile.clone()}
-                                    group_id={ctx.props().group_id}
-                                    school_id={ctx.props().school_id} />
-                                <img class="img-card-72" src={pic_path.clone()} alt="photo of user" />
+                                <SearchPostsGroup on_app_route=self.props.on_app_route.clone()
+                                    user_profile=self.props.user_profile.clone()
+                                    group_id=self.props.group_id
+                                    school_id=self.props.school_id />
+                                <img class="img-card-72" src=pic_path.clone() alt="photo of user" />
                             </div>
                             <span class="text-primary-blue-dark noir-bold is-size-24 lh-29">{lang::dict("Discussions")}</span>
                             <div class="section-right-post pt-3 scroll-messages-y mh-80">
-                                // <MessageList on_app_route=ctx.props().on_app_route.clone() 
-                                //     auth_user=ctx.props().auth_user.clone() 
+                                <MessageList on_app_route=self.props.on_app_route.clone() 
+                                    user_profile=self.props.user_profile.clone() 
+                                    user_id=None
+                                    group_category=MessageGroupCategory::Posts(self.props.group_id, 
+                                    self.props.post_id) />
+                                // <MessageListPost on_app_route=self.props.on_app_route.clone() 
+                                //     auth_user=self.props.auth_user.clone() 
                                 //     user_id=None
-                                //     group_category=MessageGroupCategory::Posts(ctx.props().group_id, 
-                                //     ctx.props().post_id) />
-                                // <MessageListPost on_app_route=ctx.props().on_app_route.clone() 
-                                //     auth_user=ctx.props().auth_user.clone() 
-                                //     user_id=None
-                                //     group_id=ctx.props().group_id
-                                //     post_id=ctx.props().post_id />
+                                //     group_id=self.props.group_id
+                                //     post_id=self.props.post_id />
                             </div>
                         </div>
-                    </div>
-                    {modal_del_lesson_entirely}
-                </>
+                        <div class=class_sidebar_mobile data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel" aria-modal="true" role="dialog" style=style_sidebar_mobile>
+                            <div class="offcanvas-header d-flex justify-content-end">
+                                <button type="button" class="btn btn-outline-danger" data-bs-dismiss="offcanvas" onclick=&on_show_sidebar>
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="offcanvas-body pt-0">
+                                <div class="d-flex align-items-center justify-content-between pb-5">
+                                    <SearchPostsGroup on_app_route=self.props.on_app_route.clone()
+                                        user_profile=self.props.user_profile.clone()
+                                        group_id=self.props.group_id
+                                        school_id=self.props.school_id />
+                                    <img class="img-card-72" src=pic_path.clone() alt="photo of user" />
+                                </div>
+                                <span class="text-primary-blue-dark noir-bold is-size-24 lh-29">{lang::dict("Discussions")}</span>
+                                <div class="section-right-post pt-3 scroll-messages-y mh-80">
+                                    // <MessageList on_app_route=self.props.on_app_route.clone() 
+                                    //     auth_user=self.props.auth_user.clone() 
+                                    //     user_id=None
+                                    //     group_category=MessageGroupCategory::Posts(self.props.group_id, 
+                                    //     self.props.post_id) />
+                                    // <MessageListPost on_app_route=self.props.on_app_route.clone() 
+                                    //     auth_user=self.props.auth_user.clone() 
+                                    //     user_id=None
+                                    //     group_id=self.props.group_id
+                                    //     post_id=self.props.post_id />
+                                </div>
+                            </div>
+                        </div>
+                        {modal_del_lesson_entirely}
+                    </>
+                }
             }
         } else {
             html! {

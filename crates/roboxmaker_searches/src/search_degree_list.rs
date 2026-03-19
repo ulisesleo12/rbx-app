@@ -1,16 +1,16 @@
 use log::*;
-use yew::prelude::*;
+use yew::{prelude::*, web_sys};
 use code_location::code_location;
-use yew::{html, Component, Html};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_main::lang;
 use roboxmaker_models::grade_model;
-use roboxmaker_utils::functions::get_value_from_input_event;
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
 use roboxmaker_types::types::{GroupId, SchoolId, AppRoute, ClassGroupCategory, LoadResponse, LoadResponseFound};
-use yew_router::scope_ext::RouterScopeExt;
 
 pub struct SearchDegreeList {
+    link: ComponentLink<Self>,
+    props: SearchDegreeListProps,
     graphql_task: Option<GraphQLTask>,
     degree_list_task: Option<RequestTask>,
     search_node: NodeRef,
@@ -21,13 +21,13 @@ pub struct SearchDegreeList {
 
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct SearchDegreeListProps {
-    // pub on_app_route: Callback<AppRoute>,
+    pub on_app_route: Callback<AppRoute>,
     pub school_id: SchoolId,
 }
 
 #[derive(Debug)]
 pub enum SearchDegreeListMessage {
-    // AppRoute(AppRoute),
+    AppRoute(AppRoute),
     FetchGradesByName(String),
     GradesSearch(Option<grade_model::grades_by_name::ResponseData>),
     OnFocus,
@@ -39,8 +39,10 @@ impl Component for SearchDegreeList {
     type Message = SearchDegreeListMessage;
     type Properties = SearchDegreeListProps;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         SearchDegreeList { 
+            link, 
+            props, 
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             degree_list_task: None,
             search_node: NodeRef::default(),
@@ -50,23 +52,23 @@ impl Component for SearchDegreeList {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
-            // SearchDegreeListMessage::AppRoute(route) => {
-            //     ctx.props().on_app_route.emit(route.clone());
-            // }
+            SearchDegreeListMessage::AppRoute(route) => {
+                self.props.on_app_route.emit(route.clone());
+            }
             SearchDegreeListMessage::FetchGradesByName(search) => {
-                let school_id = ctx.props().school_id;
+                let school_id = self.props.school_id;
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let vars = grade_model::grades_by_name::Variables {
-                        search: format!("%{}%", search), 
+                        search, 
                         school_id: school_id.0, 
                     };
                     let task = grade_model::GradesByName::request(
                         graphql_task, 
-                        &ctx, 
+                        &self.link, 
                         vars, 
                         |response| {
                             SearchDegreeListMessage::GradesSearch(response)
@@ -102,34 +104,45 @@ impl Component for SearchDegreeList {
         }
         should_update
     }
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
-        
-        true
-    }
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_focus = ctx.link().callback(move |_| SearchDegreeListMessage::OnFocus);
-        let on_blur = ctx.link().callback(move |_| SearchDegreeListMessage::OnBlur);
-        let on_hidden_modal = ctx.link().callback(move |_| SearchDegreeListMessage::HiddenModal);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        trace!("{:?} => {:?}", self.props, props);
+        let mut should_render = false;
 
-        let on_search = ctx.link().callback(|search: InputEvent| SearchDegreeListMessage::FetchGradesByName(get_value_from_input_event(search)));
+        if self.props != props {
+            self.props = props;
+            should_render = true;
+        }
+
+        should_render
+    }
+    fn view(&self) -> Html {
+        let on_focus = self.link.callback(move |_| SearchDegreeListMessage::OnFocus);
+        let on_blur = self.link.callback(move |_| SearchDegreeListMessage::OnBlur);
+        let on_hidden_modal = self.link.callback(move |_| SearchDegreeListMessage::HiddenModal);
+
+        let on_search = self.link.callback(|search: InputData| {
+            info!("search: {:?}", search);
+            let search = if search.value.len() > 0 {
+                format!("%{}%", search.value)
+            } else {
+                search.value
+            };
+            SearchDegreeListMessage::FetchGradesByName(search)
+        });
         
         let grades = self
             .grades
             .iter()
             .map(|grade| {
                 let group_id = GroupId(grade.group_id);
-                let navigator = ctx.link().navigator().unwrap();
-
                 let name = grade.class_profile.clone().and_then(|data| Some(data.name)).unwrap_or("".to_string());
-                let school_id = ctx.props().school_id;
-                let category = ClassGroupCategory::Posts;
-                let on_menu_school_class_groups = Callback::from(move |_| {
-                    navigator.push(&AppRoute::SchoolGroupSection{
-                        school_id,
-                        group_id,
-                        category,
-                    })
+                let school_id = self.props.school_id;
+                let on_menu_school_class_groups = self.link.callback(move |_| {
+                    SearchDegreeListMessage::AppRoute(AppRoute::SchoolGroupSection(
+                        school_id.clone(),
+                        group_id.clone(),
+                        ClassGroupCategory::Posts,
+                    ))
                 });
                 html! {
                     <div class="m-4">
@@ -140,7 +153,7 @@ impl Component for SearchDegreeList {
                                 </span>
                             </div>
                             <div class="card-body border-top d-flex px-5 py-2">
-                                <a class="btn btn-outline-secondary btn-sm mx-auto" onmousedown={&on_menu_school_class_groups}>
+                                <a class="btn btn-outline-secondary btn-sm mx-auto" onclick={&on_menu_school_class_groups}>
                                     <span>
                                         {lang::dict("View")}
                                     </span>
@@ -185,7 +198,7 @@ impl Component for SearchDegreeList {
         };
         html! {
             <>
-                <a class="button-search-univeral mt-3 me-5" onclick={&on_hidden_modal}>
+                <a class="button-search-univeral mt-3 me-5" onclick=&on_hidden_modal>
                     <span class="icon-text-search-universal">
                         <span>{lang::dict("Search")}</span>
                         <span class="icon">
@@ -193,7 +206,7 @@ impl Component for SearchDegreeList {
                         </span>
                     </span>
                 </a>
-                <div class={class_search_modal} id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style={class_search_scroll} aria-modal="true" role="dialog">
+                <div class=class_search_modal id="exampleModalScrollable" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style=class_search_scroll aria-modal="true" role="dialog">
                     <div class="modal-dialog modal-dialog-scrollable modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -201,10 +214,10 @@ impl Component for SearchDegreeList {
                                     <span class="input-group-text text-primary-blue-dark input-group-search">
                                         <i class="fas fa-search"></i>
                                     </span>
-                                    <input type="text" class="form-control input-style-class" ref={self.search_node.clone()}
-                                        oninput={on_search.clone()} onfocus={on_focus.clone()} onblur={on_blur.clone()} placeholder={lang::dict("Search")} />
+                                    <input type="text" class="form-control input-style-class" ref=self.search_node.clone()
+                                        oninput=on_search.clone() onfocus=on_focus.clone() onblur=on_blur.clone() placeholder=lang::dict("Search") />
                                 </div>
-                                <a class="btn bg-purple-on ms-5" onclick={&on_hidden_modal}>
+                                <a class="btn bg-purple-on ms-5" onclick=&on_hidden_modal>
                                     <span class="text-white">
                                         <i class="fas fa-times"></i>
                                     </span>

@@ -1,5 +1,40 @@
 # <-----------------------------QUERIES----------------------------->
 
+subscription user_by_id($user_id: uuid!) {
+  user_by_pk(id: $user_id) {
+    user_profile {
+      email
+      full_name
+      pic_path
+      user_id
+      group_member {
+        school_group {
+          school {
+            school_profile {
+              name
+            }
+          }
+        }
+      }
+    }
+    user_staff {
+      user_id
+    }
+    user_student {
+      user_id
+    }
+    user_teacher {
+      user_id
+    }
+    license {
+      license
+    }
+    id
+    group_member {
+      group_id
+    }
+  }
+}
 
 query users_by_full_name($search: String!) {
   user(where: {user_profile: {full_name: {_ilike: $search}}}, order_by: {user_profile: {full_name: asc}}) {
@@ -14,6 +49,31 @@ query users_by_full_name($search: String!) {
       }
     }
     id
+  }
+}
+
+subscription posts_list_by_group($group_id: uuid!, $maybe_timestamp: order_by, $timestamp: order_by) {
+  post_group(where: {group_id: {_eq: $group_id}}, order_by: {maybe_timestamp: $maybe_timestamp, post_profile: {timestamp: $timestamp}}) {
+    post_profile {
+      timestamp
+      topic
+      post_id
+      author_id
+      author_profile {
+        full_name
+        pic_path
+      }
+      quiz_id
+      maybe_quiz {
+        title
+      }
+    }
+    maybe_timestamp
+    published
+    archived
+    message_posts(where: {group_id: {_eq: $group_id}}) {
+      post_id
+    }
   }
 }
 
@@ -46,6 +106,19 @@ subscription users_list_by_group($group_id: uuid!) {
   }
 }
 
+subscription robots_list_by_group($group_id: uuid!) {
+  robot_group(where: {group_id: {_eq: $group_id}}, order_by: {robot_profile: {name: asc}}) {
+    enabled
+    robot_type
+    robot_profile {
+      name
+      path
+      timestamp
+      robot_id
+    }
+  }
+}
+
 subscription lessons_list_by_group($group_id: uuid!) {
   lesson_group(where: {group_id: {_eq: $group_id}}, order_by: {lesson_profile: {title: asc}}) {
     archived
@@ -56,6 +129,7 @@ subscription lessons_list_by_group($group_id: uuid!) {
       timestamp
       author_id
       lesson_type
+      order
       author {
         user_staff {
           user_id
@@ -79,6 +153,17 @@ subscription lessons_list_by_group($group_id: uuid!) {
     }
     lesson_content {
       content
+    }
+  }
+}
+
+subscription classes_list_by_group($group_id: uuid!) {
+  classes_group(where: {group_id: {_eq: $group_id}}, order_by: {classes_profile: {timestamp: asc}}) {
+    archived
+    classes_id
+    published
+    classes_profile {
+      topic
     }
   }
 }
@@ -123,29 +208,29 @@ query search_school_by_name($search: String!) {
   }
 }
 
-# query school_by_id($school_id: uuid!) {
-#   school_by_pk(id: $school_id) {
-#     school_profile {
-#       school_id
-#       code
-#       name
-#       address
-#       biography
-#       logo
-#       mission
-#       motto
-#       telephone
-#       vision
-#       we_are
-#     }
-#     id
-#     school_groups(where: {inventory_group: {}}) {
-#       inventory_group {
-#         group_id
-#       }
-#     }
-#   }
-# }
+query school_by_id($school_id: uuid!) {
+  school_by_pk(id: $school_id) {
+    school_profile {
+      school_id
+      code
+      name
+      address
+      biography
+      logo
+      mission
+      motto
+      telephone
+      vision
+      we_are
+    }
+    id
+    school_groups(where: {inventory_group: {}}) {
+      inventory_group {
+        group_id
+      }
+    }
+  }
+}
 
 query school_id_by_school_code($school_code: String!) {
   school_profile(where: {code: {_eq: $school_code}}) {
@@ -975,6 +1060,40 @@ subscription post_by_id($post_id: uuid!, $group_id: uuid!) {
         full_name
         pic_path
       }
+      # quiz_id
+      # maybe_quiz {
+      #   quiz_id
+      #   title
+      #   description
+      #   created_at
+      #   state
+      #   question_sections(order_by: {section_order: asc}) {
+      #     title
+      #     description
+      #     observation
+      #     section_id
+      #     quiz_id
+      #     questions(order_by: {question_order: asc}) {
+      #       question
+      #       points
+      #       question_type
+      #       question_id
+      #       section_id
+      #       answer_options(order_by: {option_order: asc}) {
+      #         option
+      #         is_correct
+      #         id
+      #         question_id
+      #       }
+      #     }
+      #   }
+      #   quiz_responses {
+      #     quiz_response_id
+      #     quiz_id
+      #     user_id
+      #     status
+      #   }
+      # }
     }
     post_content {
       content
@@ -988,6 +1107,7 @@ subscription post_by_id($post_id: uuid!, $group_id: uuid!) {
     }
   }
 }
+
 
 query files_by_id($files_id: uuid!) {
   files_by_pk(id: $files_id) {
@@ -1089,11 +1209,8 @@ query groups_by_school_id_list_class($school_id: uuid!) {
   class_group(where: {school_group: {school_id: {_eq: $school_id}}}, order_by: {class_profile: {order: asc}}) {
     class_profile {
       name
-      class_id
-      section_id
     }
     group_id
-    class_id
   }
 }
 
@@ -1311,8 +1428,8 @@ mutation update_classes_group_options($group_id: uuid!, $classes_id: uuid!, $pub
   }
 }
 
-mutation lesson_by_id_update($lesson_id: uuid!, $lesson_title: String!, $lesson_content: String!) {
-  update_lesson_profile_by_pk(pk_columns: {lesson_id: $lesson_id}, _set: {title: $lesson_title}) {
+mutation lesson_by_id_update($lesson_id: uuid!, $lesson_title: String!, $lesson_content: String!, $lesson_type: robox_lesson_type_enum!) {
+  update_lesson_profile_by_pk(pk_columns: {lesson_id: $lesson_id}, _set: {title: $lesson_title, lesson_type: $lesson_type}) {
     lesson_id
   }
   update_lesson_content_by_pk(pk_columns: {lesson_id: $lesson_id}, _set: {content: $lesson_content}) {
@@ -1409,7 +1526,13 @@ mutation group_member_delete($group_id: uuid!, $user_id: uuid!) {
   }
 }
 
-
+mutation robot_group_add($group_id: uuid!, $robot_id: uuid!, $robot_type: robox_robot_type_enum!) {
+  insert_robot_group_one(object: {group_id: $group_id, robot_id: $robot_id, robot_type: $robot_type}) {
+    group_id
+    robot_id
+    robot_type
+  }
+}
 
 mutation robot_group_create($name: String!, $path: String!, $group_id: uuid!, $robot_inventor_group: uuid!, $robot_id: uuid!) {
   insert_robot_profile_one(object: {name: $name, path: $path, robot_group: {data: {group_id: $group_id, robot: {data: {id: $robot_id}}}}}) {
@@ -1420,6 +1543,34 @@ mutation robot_group_create($name: String!, $path: String!, $group_id: uuid!, $r
   }
 }
 
+mutation robot_group_delete($group_id: uuid!, $robot_id: uuid!) {
+  delete_robot_group(where: {group_id: {_eq: $group_id}, robot_id: {_eq: $robot_id}}) {
+    returning {
+      group_id
+      robot_id
+    }
+  }
+}
+
+# mutation archives_add_by_classes($activity_id: uuid!, $group_id: uuid!, $classes_id: uuid!) {
+#   insert_activity_group_one(object: {activity_id: $activity_id, classes_id: $classes_id, group_id: $group_id}) {
+#     activity_id
+#     classes_id
+#     group_id
+#   }
+# }
+
+mutation delete_lesson_by_id($lesson_id: uuid!) {
+  delete_lesson_by_pk(id: $lesson_id) {
+    id
+  }
+}
+
+mutation delete_lesson_group($group_id: uuid!, $lesson_id: uuid!) {
+  delete_lesson_group_by_pk(group_id: $group_id, lesson_id: $lesson_id) {
+    group_id
+  }
+}
 
 mutation delete_meetings_by_id($meet_id: uuid!) {
   delete_meetings_by_pk(id: $meet_id) {
@@ -1427,6 +1578,20 @@ mutation delete_meetings_by_id($meet_id: uuid!) {
   }
 }
 
+# mutation delete_archives_by_id($archives_id: uuid!) {
+#   delete_files_by_pk(id: $archives_id) {
+#     id
+#   }
+# }
+
+mutation delete_post_by_id($post_id: uuid!) {
+  delete_post_by_pk(id: $post_id) {
+    id
+    post_profile {
+      quiz_id
+    }
+  }
+}
 
 mutation delete_meet_by_id($meetings_id: uuid!) {
   delete_meetings_by_pk(id: $meetings_id) {
@@ -1447,10 +1612,17 @@ mutation lesson_group_add($group_id: uuid!, $lesson_id: uuid!) {
   }
 }
 
+mutation lesson_group_delete($group_id: uuid!, $lesson_id: uuid!) {
+  delete_lesson_group(where: {group_id: {_eq: $group_id}, lesson_id: {_eq: $lesson_id}}) {
+    returning {
+      group_id
+      lesson_id
+    }
+  }
+}
 
-
-mutation lesson_group_create($title: String!, $content: String!, $group_id: uuid!, $inventory_group_id: uuid!, $lesson_id: uuid!, $timestamp: timestamp!, $lesson_type: robox_lesson_type_enum!) {
-  insert_lesson_content_one(object: {content: $content, lesson_profile: {data: {title: $title, lesson_group: {data: {group_id: $group_id, lesson: {data: {id: $lesson_id}}}}, timestamp: $timestamp, lesson_type: $lesson_type}}}) {
+mutation lesson_group_create($title: String!, $summary: String!, $content: String!, $group_id: uuid!, $inventory_group_id: uuid!, $lesson_id: uuid!, $timestamp: timestamp!, $lesson_type: robox_lesson_type_enum!) {
+  insert_lesson_content_one(object: {content: $content, lesson_profile: {data: {summary: $summary, title: $title, lesson_group: {data: {group_id: $group_id, lesson: {data: {id: $lesson_id}}}}, timestamp: $timestamp, lesson_type: $lesson_type}}}) {
     lesson_id
   }
   insert_lesson_group_one(object: {group_id: $inventory_group_id, lesson_id: $lesson_id}) {
@@ -1458,8 +1630,8 @@ mutation lesson_group_create($title: String!, $content: String!, $group_id: uuid
   }
 }
 
-mutation full_lesson_add($title: String!, $content: String!, $author_id: uuid!) {
-  insert_lesson_content_one(object: {content: $content, lesson_profile: {data: {title: $title, author_id: $author_id, lesson: {data: {}}}}}) {
+mutation full_lesson_add($title: String!, $summary: String!, $content: String!, $author_id: uuid!) {
+  insert_lesson_content_one(object: {content: $content, lesson_profile: {data: {summary: $summary, title: $title, author_id: $author_id, lesson: {data: {}}}}}) {
     lesson_id
   }
 }
@@ -1503,6 +1675,21 @@ mutation meetings_group_add($group_id: uuid!, $meet_id: uuid!) {
   }
 }
 
+mutation classes_group_add($group_id: uuid!, $classes_id: uuid!) {
+  insert_classes_group_one(object: {group_id: $group_id, classes_id: $classes_id}) {
+    group_id
+    classes_id
+  }
+}
+
+mutation post_group_delete($group_id: uuid!, $post_id: uuid!) {
+  delete_post_group(where: {group_id: {_eq: $group_id}, post_id: {_eq: $post_id}}) {
+    returning {
+      group_id
+      post_id
+    }
+  }
+}
 
 mutation files_group_delete($classes_id: uuid!, $files_id: uuid!, $group_id: uuid!) {
   delete_files_group(where: {classes_id: {_eq: $classes_id}, files_id: {_eq: $files_id}, group_id: {_eq: $group_id}}) {
@@ -1523,6 +1710,42 @@ mutation meetings_group_delete($group_id: uuid!, $meet_id: uuid!) {
   }
 }
 
+mutation classes_group_delete($group_id: uuid!, $classes_id: uuid!) {
+  delete_classes_group(where: {group_id: {_eq: $group_id}, classes_id: {_eq: $classes_id}}) {
+    returning {
+      group_id
+      classes_id
+    }
+  }
+}
+
+# mutation archives_group_delete($group_id: uuid!, $classes_id: uuid!, $archives: uuid!) {
+#   delete_archives_group(where: {archives_id: {_eq: $archives}, classes_id: {_eq: $classes_id}, group_id: {_eq: $group_id}}) {
+#     returning {
+#       archives_id
+#       classes_id
+#       group_id
+#     }
+#   }
+# }
+
+# mutation archives_group_create($archives_id: uuid!, $classes_id: uuid!, $inventory_group_id: uuid!, $group_id: uuid!, $title: String!) {
+#   insert_archives_content_one(object: {archives_profile: {data: {archives_group: {data: {archives: {data: {id: $archives_id}}, classes_id: $classes_id, group_id: $group_id}}, title: $title}}}) {
+#     archives_id
+#   }
+#   insert_archives_group_one(object: {archives_id: $archives_id, classes_id: $classes_id, group_id: $inventory_group_id, archives_profile: {data: {}}}) {
+#     archives_id
+#   }
+# }
+
+mutation post_group_create($topic: String!, $content: String!, $group_id: uuid!, $inventory_group_id: uuid!, $post_id: uuid!, $timestamp: timestamp!) {
+  insert_post_content_one(object: {content: $content, post_profile: {data: {topic: $topic, post_group: {data: {group_id: $group_id, post: {data: {id: $post_id}}}}, timestamp: $timestamp}}}) {
+    post_id
+  }
+  insert_post_group_one(object: {group_id: $inventory_group_id, post_id: $post_id}) {
+    post_id
+  }
+}
 
 mutation files_group_create($title: String!, $files_id: uuid!, $classes_id: uuid!, $inventory_group_id: uuid!, $group_id: uuid!, $timestamp: timestamp!) {
   insert_files_content_one(object: {files_profile: {data: {title: $title, files_group: {data: {group_id: $group_id, files: {data: {id: $files_id}}, classes_id: $classes_id}}, timestamp: $timestamp}}}) {
@@ -1551,6 +1774,14 @@ mutation meetings_group_create($title: String!, $content: String!, $group_id: uu
   }
 }
 
+mutation classes_group_create($topic: String!, $content: String!, $group_id: uuid!, $inventory_group_id: uuid!, $classes_id: uuid!, $timestamp: timestamp!) {
+  insert_classes_content_one(object: {content: $content, classes_profile: {data: {topic: $topic, classes_group: {data: {group_id: $group_id, classes: {data: {id: $classes_id}}}}, timestamp: $timestamp}}}) {
+    classes_id
+  }
+  insert_classes_group_one(object: {group_id: $inventory_group_id, classes_id: $classes_id}) {
+    classes_id
+  }
+}
 
 mutation message_post_group_create($content: String!, $group_id: uuid!, $post_id: uuid!, $reply_id: uuid, $replies_private: Boolean!, $timestamp: timestamp!) {
   insert_message_content_one(object: {content: $content, message_profile: {data: {message_group: {data: {group_id: $group_id, message: {data: {}}, post_id: $post_id}}, reply_id: $reply_id, replies_private: $replies_private, timestamp: $timestamp}}}) {
@@ -1861,126 +2092,97 @@ mutation delete_class_group_by_id($group_id: uuid!) {
 #   }
 # }
 
-mutation update_class_profile($class_id: uuid!, $section_id: uuid!) {
-  update_class_profile(where: {class_id: {_eq: $class_id}}, _set: {section_id: $section_id}) {
-    affected_rows
-    returning {
-      name
-      class_id
-    }
+
+## TEACHER RESOURCES
+mutation teacher_resource_group_create($title: String!, $group_id: uuid!, $inventory_group_id: uuid!, $resource_id: uuid!, $timestamp: timestamp!, $teacher_resource_type: robox_teacher_resource_type_enum!) {
+  insert_teacher_resource_content_one(object: {teacher_resource_profile: {data: {title: $title, timestamp: $timestamp, teacher_resource_type: $teacher_resource_type, teacher_resource_group: {data: {group_id: $group_id, resource_id: $resource_id}}, teacher_resource: {data: {id: $resource_id}}}}}) {
+    resource_id
+  }
+  insert_teacher_resource_group_one(object: {group_id: $inventory_group_id, resource_id: $resource_id}) {
+    resource_id
   }
 }
 
-
-mutation update_section_id_lesson($lesson_id: uuid!, $section_id: uuid!) {
-  # update_lesson_profile(where: {lesson_id: {_eq: $lesson_id}}, _set: {section_id: $section_id}) {
-  #   returning {
-  #     title
-  #     lesson_id
-  #   }
-  #   affected_rows
-  # }
-  update_lesson_content(where: {lesson_id: {_eq: $lesson_id}}, _set: {section_id: $section_id}) {
-    returning {
-      lesson_id
-      section_id
-    }
-    affected_rows
+mutation teacher_resource_group_add($group_id: uuid!, $resource_id: uuid!) {
+  insert_teacher_resource_group_one(object: {group_id: $group_id, resource_id: $resource_id}) {
+    group_id
+    resource_id
   }
 }
 
-mutation insert_class_lesson($lesson_id: uuid!, $section_id: uuid!) {
-  insert_class_lesson_one(object: {lesson_id: $lesson_id, section_id: $section_id}) {
-    lesson_id
-    section_id
-    id
-  }
-}
-
-
-mutation insert_class_robot($robot_id: uuid!, $section_id: uuid!) {
-  insert_class_robot_one(object: {robot_id: $robot_id, section_id: $section_id}) {
-    robot_id
-    section_id
-    id
-  }
-}
-
-subscription get_class_group_by_group_id($group_id: uuid!, $timestamp: order_by!, $schedule_time: date!) {
-  class_profile(where: {class_groups: {group_id: {_eq: $group_id}}}) {
-    name
-    class_id
-    section_id
-    class_lesson(order_by: {lesson_profile: {title: asc}}, where: {_not: {lesson_profile: {lesson_type: {_eq: TEACHING_CARDS}}}}) {
-      lesson_profile {
-        title
-        timestamp
-        lesson_id
-        lesson_type
-        author_profile {
-          full_name
-          pic_path
-          user_id
-        }
-      }
-    }
-    class_post(limit: 10, order_by: {post_profile: {timestamp: $timestamp, post_group: {}}}) {
-      post_profile {
-        topic
-        timestamp
-        post_id
-        post_group {
-          maybe_timestamp
-        }
-        author_profile {
-          full_name
-          pic_path
-        }
-      }
-    }
-    class_classes(limit: 10, order_by: {classes_profile: {timestamp: desc}}) {
-      classes_profile {
-        topic
-        timestamp
-        classes_id
-      }
-    }
-    class_robot(limit: 10, order_by: {robot_profile: {name: asc}}) {
-      robot_profile {
-        name
-        path
-        timestamp
-        robot_id
-      }
-    }
-    class_meet(order_by: {meetings_profile: {schedule_time: asc}}, limit: 10, where: {meetings_profile: {schedule_time: {_gte: $schedule_time}}}) {
-      meetings_profile {
-        meet_id
-        title
-        schedule_time
-        start_of_meeting
-        end_of_meeting
-        author_profile {
-          full_name
-          user_staff {
-            user_id
-          }
-          user_teacher {
-            user_id
-          }
-        }
-      }
-    }
-    class_users(order_by: {user_profile: {full_name: asc}}) {
-      user_profile {
-        full_name
-        email
-        pic_path
-        user_id
+subscription teacher_resource_list_by_group($group_id: uuid!) {
+  teacher_resource_group(where: {group_id: {_eq: $group_id}}, order_by: {teacher_resource_profile: {title: asc}}) {
+    archived
+    resource_id
+    send_to_grade
+    teacher_resource_profile {
+      title
+      timestamp
+      author_id
+      teacher_resource_type
+      author {
         user_staff {
           user_id
         }
+        user_teacher {
+          user_id
+        }
         user_student {
+          user_id
+        }
+        user_profile {
+          full_name
+          pic_path
+        }
+      }
+    }
+    school_group {
+      school {
+        school_profile {
+          name
+          logo
+        }
+      }
+    }
+  }
+}
+
+mutation teacher_resource_group_delete($group_id: uuid!, $resource_id: uuid!) {
+  delete_teacher_resource_group(where: {group_id: {_eq: $group_id}, resource_id: {_eq: $resource_id}}) {
+    returning {
+      group_id
+      resource_id
+    }
+  }
+}
+
+
+mutation delete_teacher_resource_by_id($resource_id: uuid!) {
+  delete_teacher_resources_by_pk(id: $resource_id) {
+    id
+  }
+}
+
+mutation update_teacher_resource_group_options($group_id: uuid!, $resource_id: uuid!, $send_to_grade: Boolean!, $archived: Boolean!) {
+  update_teacher_resource_group_by_pk(pk_columns: {group_id: $group_id, resource_id: $resource_id}, _set: {send_to_grade: $send_to_grade, archived: $archived}) {
+    send_to_grade
+    archived
+  }
+}
+
+subscription teacher_resource_by_id($group_id: uuid!, $resource_id: uuid!) {
+  teacher_resource_group_by_pk(resource_id: $resource_id, group_id: $group_id) {
+    teacher_resource_profile {
+      title
+      timestamp
+      author_id
+      resource_id
+      teacher_resource_type
+      author_profile {
+        full_name
+        user_id
+        pic_path
+        user_staff {
           user_id
         }
         user_teacher {
@@ -1988,13 +2190,77 @@ subscription get_class_group_by_group_id($group_id: uuid!, $timestamp: order_by!
         }
       }
     }
+    send_to_grade
+    archived
+    class_profile {
+      class_profile {
+        name
+      }
+    }
   }
 }
 
-mutation update_robot_type($robot_id: uuid!, $robot_type: String!) {
-  update_robot_profile_by_pk(pk_columns: {robot_id: $robot_id}, _set: {robot_type: $robot_type}) {
-    name
-    robot_type
-    robot_id
+
+mutation teacher_resource_by_id_update($resource_id: uuid!, $resource_title: String!, $teacher_resource_type: robox_teacher_resource_type_enum) {
+  update_teacher_resource_profile_by_pk(pk_columns: {resource_id: $resource_id}, _set: {title: $resource_title, teacher_resource_type: $teacher_resource_type}) {
+    resource_id
+    teacher_resource_type
+    title
+  }
+}
+
+query getTeacherResourceType {
+  robox_teacher_resource_type {
+    teacher_resource_type
+  }
+}
+
+query resources_by_name($search: String!) {
+  teacher_resources(where: {teacher_resource_profile: {title: {_ilike: $search}}}, order_by: {teacher_resource_profile: {title: asc}}) {
+    teacher_resource_profile {
+      title
+      teacher_resource_group {
+        group_id
+      }
+    }
+    id
+  }
+}
+
+mutation add_to_class_group_user($group_id: uuid!, $user_id: uuid!) {
+  insert_group_member_one(object: {group_id: $group_id, user_id: $user_id}) {
+    group_id
+    user_id
+    user_profile {
+      full_name
+      pic_path
+      email
+    }
+  }
+}
+
+query getLessonType {
+  robox_lesson_type {
+    lesson_type
+  }
+}
+
+mutation ConvertPostToQuiz($post_id: uuid!, $quiz_id: uuid!) {
+  update_post_profile_by_pk(pk_columns: {post_id: $post_id}, _set: {quiz_id: $quiz_id}) {
+    post_id
+    quiz_id
+  }
+  insert_quizzes_one(object: {quiz_id: $quiz_id, state: "CREATE"}) {
+    quiz_id
+  }
+}
+
+mutation UpdateLessonOrder($lesson_id: uuid!, $order: String!) {
+  update_lesson_profile(where: {lesson_id: {_eq: $lesson_id}}, _set: {order: $order}) {
+    affected_rows
+    returning {
+      title
+      lesson_id
+    }
   }
 }

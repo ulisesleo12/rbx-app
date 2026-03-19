@@ -1,14 +1,13 @@
+use crate::login::PageMode;
+use dyn_fmt::AsStrFormatExt;
 use log::*;
 use regex::Regex;
 use uuid::Uuid;
-use crate::login::PageMode;
-use dyn_fmt::AsStrFormatExt;
-use yew::{html, Component, Html};
 use wasm_bindgen_futures::spawn_local;
-use yew::prelude::*;
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
+use yew::{prelude::*, web_sys};
 
 use roboxmaker_main::{config, lang};
-use roboxmaker_utils::functions::get_value_from_input_event;
 use roboxmaker_models::registration::{
     self, class_name_group, inventory_group_id, new_user_add, user_exist, check_school_by_license
 };
@@ -24,6 +23,8 @@ pub struct SchoolDataCheck {
 }
 
 pub struct SignUp {
+    link: ComponentLink<Self>,
+    props: Properties,
     url_photo: String,
     show_password: bool,
     show_confirmation_password: bool,
@@ -56,7 +57,7 @@ pub struct SignUp {
     license_used: bool,
 }
 
-#[derive(Properties, Clone, PartialEq)]
+#[derive(Properties, Clone)]
 pub struct Properties {
     pub on_page_mode: Callback<PageMode>,
     pub on_created_status: Callback<i32>,
@@ -109,8 +110,10 @@ impl Component for SignUp {
     type Message = Message;
     type Properties = Properties;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         SignUp {
+            link,
+            props,
             page_mode: PageModeSignUp::VerifyLicense,
             show_password: false,
             show_confirmation_password: false,
@@ -143,11 +146,11 @@ impl Component for SignUp {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let mut should_render = false;
         match msg {
-            Message::ChangePageMode(page_mode) => ctx.props().on_page_mode.emit(page_mode),
+            Message::ChangePageMode(page_mode) => self.props.on_page_mode.emit(page_mode),
             Message::PageMode(mode) => {
                 self.page_mode = mode;
                 self.user_created_status = 0;
@@ -190,10 +193,10 @@ impl Component for SignUp {
                     }
                     info!("{}", self.grade)
                 }
-                // if license.len() < 15 {
+                // if license.len() < 17 {
                 // }
-                if license.len() <= 15 {
-                    ctx.link().send_message(Message::FetchSchoolIdByLicense)
+                if license.len() <= 17 {
+                    self.link.send_message(Message::FetchSchoolIdByLicense)
                 } else {
                     self.license_verify_status = 102;
                 }
@@ -211,7 +214,7 @@ impl Component for SignUp {
                 let email_regex = Regex::new(r"^([a-z0-9_+]([a-z0-9_+.]*[a-z0-9_+])?)@([a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6})").unwrap();
                 if email_regex.is_match(&email) {
                     self.validate_email = true;
-                    ctx.link().send_message(Message::VerifyEmail);
+                    self.link.send_message(Message::VerifyEmail);
                 } else {
                     self.validate_email = false;
                 }
@@ -228,7 +231,7 @@ impl Component for SignUp {
                 self.username = username;
                 should_render = true;
                 if self.username.len() > 5 {
-                    ctx.link().send_message(Message::VerifyUsername);
+                    self.link.send_message(Message::VerifyUsername);
                 }
             }
             Message::UpdatePassword(password) => {
@@ -273,7 +276,7 @@ impl Component for SignUp {
                 };
                 let license = self.license.clone();
 
-                let link = ctx.link().clone();
+                let link = self.link.clone();
                 spawn_local(async move {
                     let response = check_school_by_license(vars, license).await;
                     match response {
@@ -290,7 +293,7 @@ impl Component for SignUp {
                         class_name: format!("{}-{}", self.grade.clone(), self.section.clone()),
                         school_id: self.school_id.unwrap().0,
                     };
-                    let link = ctx.link().clone();
+                    let link = self.link.clone();
                     spawn_local(async move {
                         let response = class_name_group(vars).await;
                         match response {
@@ -334,7 +337,7 @@ impl Component for SignUp {
                 let vars = registration::inventory_group_id_by_school_id::Variables {
                     school_id: school_id.0,
                 };
-                let link = ctx.link().clone();
+                let link = self.link.clone();
                 spawn_local(async move {
                     let response = inventory_group_id(vars).await;
                     match response {
@@ -372,7 +375,7 @@ impl Component for SignUp {
                     inventory_group_id: inventory_group_id,
                 };
                 let license = self.license.clone();
-                let link = ctx.link().clone();
+                let link = self.link.clone();
                 spawn_local(async move {
                     let response = new_user_add(vars, license).await;
                     match response {
@@ -388,16 +391,16 @@ impl Component for SignUp {
                     .unwrap_or(000)
                     == 201
                 {
-                    ctx.link()
+                    self.link
                         .send_message(Message::ChangePageMode(PageMode::Login));
 
                     self.verify_license = false;
                     self.license = "".to_string();
                     self.grade = "".to_string();
                     self.user_created_status = 201;
-                    ctx.props().on_created_status.emit(201);
+                    self.props.on_created_status.emit(201);
                 } else {
-                    ctx.props().on_created_status.emit(404);
+                    self.props.on_created_status.emit(404);
                     self.user_created_status = 404;
                 }
                 should_render = true;
@@ -413,7 +416,7 @@ impl Component for SignUp {
                         let _ = element.set_attribute("class", "far fa-eye");
                     }
                 }
-                ctx.link().send_message(Message::ShowPassword);
+                self.link.send_message(Message::ShowPassword);
                 should_render = true;
             }
             Message::ChangeIconEyeConfirmation => {
@@ -428,7 +431,7 @@ impl Component for SignUp {
                         let _ = element.set_attribute("class", "far fa-eye");
                     }
                 }
-                ctx.link().send_message(Message::ShowConfirmationPassword);
+                self.link.send_message(Message::ShowConfirmationPassword);
                 should_render = true;
             }
             Message::VerifyUsername => {
@@ -436,7 +439,7 @@ impl Component for SignUp {
                     username: self.username.clone(),
                     email: String::from(""),
                 };
-                let link = ctx.link().clone();
+                let link = self.link.clone();
                 spawn_local(async move {
                     let response = user_exist(vars).await;
                     match response {
@@ -466,7 +469,7 @@ impl Component for SignUp {
                     username: String::from(""),
                     email: self.email.clone(),
                 };
-                let link = ctx.link().clone();
+                let link = self.link.clone();
                 spawn_local(async move {
                     let response = user_exist(vars).await;
                     match response {
@@ -496,50 +499,49 @@ impl Component for SignUp {
         }
         should_render
     }
-    fn changed(&mut self, _ctx: &Context<Self>, _old_props: &Self::Properties) -> bool {
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        self.props = props;
         true
     }
-    fn view(&self, ctx: &Context<Self>) -> Html {
-
-        let on_update_license = ctx
-            .link()
-            .callback(|e: InputEvent| Message::UpdateLicense(get_value_from_input_event(e)));
-        let on_update_first_name = ctx
-            .link()
-            .callback(|e| Message::UpdateFirstName(get_value_from_input_event(e)));
-        let on_update_last_name = ctx
-            .link()
-            .callback(|e| Message::UpdateLastName(get_value_from_input_event(e)));
-        let on_update_email = ctx
-            .link()
-            .callback(|e| Message::UpdateEmail(get_value_from_input_event(e)));
-        let on_update_username = ctx
-            .link()
-            .callback(|e| Message::UpdateUsername(get_value_from_input_event(e)));
-        let on_update_password = ctx
-            .link()
-            .callback(|e| Message::UpdatePassword(get_value_from_input_event(e)));
-
-        let on_update_confirmation_password = ctx.link().callback(|e: InputEvent| {
-            Message::UpdateConfimationPassword(get_value_from_input_event(e))
+    fn view(&self) -> Html {
+        let on_update_license = self
+            .link
+            .callback(|e: InputData| Message::UpdateLicense(e.value));
+        let on_update_first_name = self
+            .link
+            .callback(|e: InputData| Message::UpdateFirstName(e.value));
+        let on_update_last_name = self
+            .link
+            .callback(|e: InputData| Message::UpdateLastName(e.value));
+        let on_update_email = self
+            .link
+            .callback(|e: InputData| Message::UpdateEmail(e.value.trim().to_string()));
+        let on_update_username = self
+            .link
+            .callback(|e: InputData| Message::UpdateUsername(e.value.trim().to_string()));
+        let on_update_password = self
+            .link
+            .callback(|e: InputData| Message::UpdatePassword(e.value.trim().to_string()));
+        let on_update_confirmation_password = self.link.callback(|e: InputData| {
+            Message::UpdateConfimationPassword(e.value.trim().to_string())
         });
-        let on_change_section = ctx.link().callback(move |_| Message::UpdateSection);
-        let maybe_user_create = ctx.link().callback(|_| Message::FetchGroupId);
-        let on_login_page_mode = ctx
-            .link()
+        let on_change_section = self.link.callback(|_: ChangeData| Message::UpdateSection);
+        let maybe_user_create = self.link.callback(|_| Message::FetchGroupId);
+        let on_login_page_mode = self
+            .link
             .callback(move |_| Message::ChangePageMode(PageMode::Login));
-        let on_select_institution = ctx
-            .link()
+        let on_select_institution = self
+            .link
             .callback(move |_| Message::PageMode(PageModeSignUp::SelectInstitution));
 
         let maybe_license = {
-            if !self.license_exist && self.license_verify_status == 200 && self.license.len() == 15 {
+            if !self.license_exist && self.license_verify_status == 200 && self.license.len() == 17 {
                 html! {
                     <span class="text-danger bg-white w-100 rounded-3 p-3">
                         {"Esta licencia no existe"}
                     </span>
                 }
-            } else if self.license_used && self.license_verify_status == 200 && self.license.len() == 15 {
+            } else if self.license_used && self.license_verify_status == 200 && self.license.len() == 17 {
                 html! {
                     <span class="text-danger bg-white w-100 rounded-3 p-3">
                         {"Esta licencia ya fue ocupada"}
@@ -570,10 +572,10 @@ impl Component for SignUp {
                 //             {lang::dict("Verifying License...")}
                 //         </span>
                 //     }
-                // } else if !self.verify_license && self.license.len() > 0 && self.license.len() < 15 {
-                if !self.verify_license && self.license.len() > 0 && self.license.len() < 15 {
+                // } else if !self.verify_license && self.license.len() > 0 && self.license.len() < 17 {
+                if !self.verify_license && self.license.len() > 0 && self.license.len() < 17 {
                     let license_len = lang::dict("License needs {} more characters")
-                        .format(&[15 - self.license.len()]);
+                        .format(&[17 - self.license.len()]);
                     html! {
                         <span class="text-warning bg-white w-100 rounded-3 p-3">
                             {license_len}
@@ -717,7 +719,7 @@ impl Component for SignUp {
                 <div class="field mb-4">
                     <span class="text-white noir-bold is-size-16 lh-20">{lang::dict("Section")}</span>
                     <div class="select mt-2" style="width: 100%; height: 50px;">
-                        <select ref={self.select_node.clone()} onchange={on_change_section} class="input-style-l is-fullwidth" style="width: 100%; border-color: #DBDBFF; color: #BCBDFD; top: auto; padding-left: 16px;">
+                        <select ref=self.select_node.clone() onchange=on_change_section class="input-style-l is-fullwidth" style="width: 100%; border-color: #DBDBFF; color: #BCBDFD; top: auto; padding-left: 16px;">
                             <option value="A">{"A"}</option>
                             <option value="B">{"B"}</option>
                             <option value="C">{"C"}</option>
@@ -737,7 +739,7 @@ impl Component for SignUp {
                             <span class="input-group-text">
                                 <i class="far fa-id-badge"></i>
                             </span>
-                            <input type="text" class="form-control input-style-l" placeholder="Alexa Esmeralda" oninput={&on_update_first_name} value={self.firstname.clone()} required=true />
+                            <input type="text" class="form-control input-style-l" placeholder="Alexa Esmeralda" oninput=&on_update_first_name required=true />
                         </div>
                     </div>
                     <div class="mt-3">
@@ -746,7 +748,7 @@ impl Component for SignUp {
                             <span class="input-group-text">
                                 <i class="far fa-id-badge"></i>
                             </span>
-                            <input type="text" class="form-control input-style-l" placeholder="Hernández Gutiérrez" oninput={&on_update_last_name} value={self.lastname.clone()} required=true />
+                            <input type="text" class="form-control input-style-l" placeholder="Hernández Gutiérrez" oninput=&on_update_last_name required=true />
                         </div>
                     </div>
                     <div class="mt-3">
@@ -755,7 +757,7 @@ impl Component for SignUp {
                             <span class="input-group-text">
                                 <i class="far fa-user"></i>
                             </span>
-                            <input type="text" class="form-control input-style-l" placeholder="alexahrdz01" oninput={&on_update_username} value={self.username.clone()} required=true />
+                            <input type="text" class="form-control input-style-l" placeholder="alexahrdz01" oninput=&on_update_username value=self.username.clone() required=true />
                         </div>
                     </div>
                     <div class="mt-3">
@@ -764,7 +766,7 @@ impl Component for SignUp {
                             <span class="input-group-text">
                                 <i class="far fa-user"></i>
                             </span>
-                            <input type="text" class="form-control input-style-l" placeholder="alexa@example.com" oninput={&on_update_email} value={self.email.clone()} required=true />
+                            <input type="text" class="form-control input-style-l" placeholder="alexa@example.com" oninput=&on_update_email value=self.email.clone() required=true />
                         </div>
                     </div>
                 </>
@@ -776,20 +778,20 @@ impl Component for SignUp {
                     !self.license_used 
                     && self.license_exist
                     && self.license_verify_status == 200 
-                    && self.license.len() == 15 || 
+                    && self.license.len() == 17 || 
                     self.license_exist 
                     && !self.license_used
                     && self.license_verify_status == 200 
-                    && self.license.len() == 15 {
+                    && self.license.len() == 17 {
                     false
                 } else {
                     true
                 };
 
-                let on_verify_license = ctx.link().callback(|_| Message::PageMode(PageModeSignUp::SignUp));
+                let on_verify_license = self.link.callback(|_| Message::PageMode(PageModeSignUp::SignUp));
                 html! {
                     <div class="card bg-dark text-white h-100 w-100">
-                        <img src="/static/arte-4.png" class="card-img" alt="..." style="height: 100vh; width: 100vw; object-fit: cover;" />
+                        <img src="/static/new-arte.png" class="card-img" alt="..." style="height: 100vh; width: 100vw; object-fit: cover;" />
                         <div class="card-img-overlay d-flex justify-content-start justify-content-sm-center justify-content-md-end justify-content-lg-end">
                             <div class="col-sm-12 col-md-12 col-lg-6 col-xl-5 col-xxl-4 bg-section-login pd-sm-4 p-md-7 p-sm-6 p-4 d-flex flex-column justify-content-between h-85 h-sm-100">
                                 <div class="col-4">
@@ -799,7 +801,7 @@ impl Component for SignUp {
                                     <h1 class="text-white noir-bold is-size-48 lh-58">{lang::dict("Create Account")}</h1>
                                     <div class="d-flex flex-row mt-3">
                                         <span class="text-white noir-light is-size-18 lh-22">{lang::dict("Do you already have an account?")}</span>
-                                        <a onclick={&on_login_page_mode}>
+                                        <a onclick=&on_login_page_mode>
                                             <span class="text-cyan-sky noir-bold is-size-18 lh-22 mx-2">{lang::dict("Login")}</span>
                                         </a>
                                     </div>
@@ -810,11 +812,12 @@ impl Component for SignUp {
                                         <span class="input-group-text">
                                             <i class="far fa-credit-card"></i>
                                         </span>
-                                        <input type="text" class="form-control input-style-l" placeholder="AAAAAAAAAAAAAAA" oninput={&on_update_license} minlength="15" maxlength="15" required=true value={self.license.to_uppercase()} />
+                                        <input type="text" class="form-control input-style-l" placeholder="AAAAAAAAAAAAAAA" oninput=&on_update_license minlength="17" maxlength="17" required=true value={self.license.to_uppercase()} />
                                     </div>
                                 </div>
                                 {notifications}
-                                <button onclick={&on_verify_license} disabled={maybe_disabled_btn} class="btn button-login w-100 mb-5">
+                                <button onclick=&on_verify_license disabled={maybe_disabled_btn} class="btn button-login w-100 mb-5">
+                                // <button onclick=&on_verify_license disabled={maybe_disabled_btn} class={class_disabled_btn}>
                                     <span class="text-white">{lang::dict("Continue")}</span>
                                     <i class="fas fa-arrow-right mx-2"></i>
                                 </button>
@@ -824,9 +827,9 @@ impl Component for SignUp {
                 }
             }
             PageModeSignUp::SignUp => {
-                let on_show_icon = ctx.link().callback(move |_| Message::ChangeIconEye);
-                let on_show_icon_confirmation = ctx
-                    .link()
+                let on_show_icon = self.link.callback(move |_| Message::ChangeIconEye);
+                let on_show_icon_confirmation = self
+                    .link
                     .callback(move |_| Message::ChangeIconEyeConfirmation);
                 let section_signup_2 = html! {
                     <>
@@ -836,8 +839,8 @@ impl Component for SignUp {
                                 <span class="input-group-text">
                                     <i class="fas fa-lock"></i>
                                 </span>
-                                <input type={input_pasword_type} class="form-control input-style-l reset-radius-l" placeholder="*********" oninput={&on_update_password} required=true />
-                                <span class="input-group-text reset-box-icon-l" onclick={&on_show_icon}>
+                                <input type=input_pasword_type class="form-control input-style-l reset-radius-l" placeholder="*********" oninput=&on_update_password required=true />
+                                <span class="input-group-text reset-box-icon-l" onclick=&on_show_icon>
                                     <i class="far fa-eye-slash" id="show-icon-login"></i>
                                 </span>
                             </div>
@@ -848,15 +851,15 @@ impl Component for SignUp {
                                 <span class="input-group-text">
                                     <i class="fas fa-lock"></i>
                                 </span>
-                                <input type={input_confirmation_password_type} class="form-control input-style-l reset-radius-l" placeholder="*********" oninput={&on_update_confirmation_password} required=true />
-                                <span class="input-group-text reset-box-icon-l" onclick={&on_show_icon_confirmation}>
+                                <input type=input_confirmation_password_type class="form-control input-style-l reset-radius-l" placeholder="*********" oninput=&on_update_confirmation_password required=true />
+                                <span class="input-group-text reset-box-icon-l" onclick=&on_show_icon_confirmation>
                                     <i class="far fa-eye-slash" id="show-icon-login-confirmation"></i>
                                 </span>
                             </div>
                         </div>
                         {notifications}
-                        <button onclick={&on_select_institution} class="btn button-login w-100 mt-4 py-3"
-                            disabled={on_disabled_button}>
+                        <button onclick=&on_select_institution class="btn button-login w-100 mt-4 py-3"
+                            disabled=on_disabled_button>
                             <span>{lang::dict("Continue")}</span>
                             <i class="fas fa-arrow-right mx-2"></i>
                         </button>
@@ -864,7 +867,7 @@ impl Component for SignUp {
                 };
                 html! {
                     <div class="card bg-dark text-white h-100 w-100">
-                        <img src="/static/arte-4.png" class="card-img" alt="..." style="height: 100vh; width: 100vw; object-fit: cover;" />
+                        <img src="/static/new-arte.png" class="card-img" alt="..." style="height: 100vh; width: 100vw; object-fit: cover;" />
                         <div class="card-img-overlay d-flex justify-content-start justify-content-sm-center justify-content-md-end justify-content-lg-end">
                             <div class="col-sm-12 col-md-12 col-lg-6 col-xl-5 col-xxl-4 bg-section-login pd-sm-4 p-md-7 p-sm-6 p-4 d-flex flex-column justify-content-between h-85 h-sm-100 scroll-y">
                                 <div class="col-4">
@@ -874,7 +877,7 @@ impl Component for SignUp {
                                     <h1 class="text-white noir-bold is-size-48 lh-58">{lang::dict("Create Account")}</h1>
                                     <div class="d-flex flex-row mt-3">
                                         <span class="text-white noir-light is-size-18 lh-22">{lang::dict("Do you already have an account?")}</span>
-                                        <a onclick={&on_login_page_mode}>
+                                        <a onclick=&on_login_page_mode>
                                             <span class="text-cyan-sky noir-bold is-size-18 lh-22 mx-2">{lang::dict("Login")}</span>
                                         </a>
                                     </div>
@@ -886,7 +889,7 @@ impl Component for SignUp {
                                         <span class="input-group-text">
                                             <img src="./icons/id-card.svg" style="height: 18px;" />
                                         </span>
-                                        <input type="text" class="form-control input-style-l reset-radius-l form-control-disabled" minlength="15" value={self.license.clone()} maxlength="15" required=true disabled={true} />
+                                        <input type="text" class="form-control input-style-l reset-radius-l form-control-disabled" minlength="15" value=self.license.clone() maxlength="15" required=true disabled=self.verify_license />
                                         <span class="input-group-text reset-box-icon-l">
                                             <i class="fas fa-check"></i>
                                         </span>
@@ -902,7 +905,7 @@ impl Component for SignUp {
             PageModeSignUp::SelectInstitution => {
                 html! {
                     <div class="card bg-dark text-white h-100 w-100">
-                        <img src="/static/arte-4.png" class="card-img" alt="..." style="height: 100vh; width: 100vw; object-fit: cover;" />
+                        <img src="/static/new-arte.png" class="card-img" alt="..." style="height: 100vh; width: 100vw; object-fit: cover;" />
                         <div class="card-img-overlay d-flex justify-content-start justify-content-sm-center justify-content-md-end justify-content-lg-end">
                             <div class="col-sm-12 col-md-12 col-lg-6 col-xl-5 col-xxl-4 bg-section-login pd-sm-4 p-md-7 p-sm-6 p-4 d-flex flex-column justify-content-between h-85 h-sm-100">
                                 <div class="col-4">
@@ -912,7 +915,7 @@ impl Component for SignUp {
                                     <h1 class="text-white noir-bold is-size-48 lh-58">{lang::dict("Create Account")}</h1>
                                     <div class="d-flex flex-row mt-3">
                                         <span class="text-white noir-light is-size-18 lh-22">{lang::dict("Do you already have an account?")}</span>
-                                        <a onclick={&on_login_page_mode}>
+                                        <a onclick=&on_login_page_mode>
                                             <span class="text-cyan-sky noir-bold is-size-18 lh-22 mx-2">{lang::dict("Login")}</span>
                                         </a>
                                     </div>
@@ -924,7 +927,7 @@ impl Component for SignUp {
                                         <span class="input-group-text">
                                             <img src="./icons/school.svg" style="height: 23px;" />
                                         </span>
-                                        <input type="text" class="form-control input-style-l form-control-disabled" value={self.school_name.clone()} disabled=true />
+                                        <input type="text" class="form-control input-style-l form-control-disabled" value=self.school_name.clone() disabled=true />
                                     </div>
                                 </div>
                                 <div>
@@ -933,12 +936,12 @@ impl Component for SignUp {
                                         <span class="input-group-text">
                                             <img src="./icons/graduation.svg" style="height: 18px;" />
                                         </span>
-                                        <input type="text" class="form-control input-style-l form-control-disabled" value={self.grade.clone()} disabled=true />
+                                        <input type="text" class="form-control input-style-l form-control-disabled" value=self.grade.clone() disabled=true />
                                     </div>
                                 </div>
                                 {section}
                                 {notifications}
-                                <button onclick={&maybe_user_create} class="btn button-login w-100 mt-4 py-3">
+                                <button onclick=&maybe_user_create class="btn button-login w-100 mt-4 py-3">
                                     <span>{lang::dict("Continue")}</span>
                                     <i class="fas fa-arrow-right mx-2"></i>
                                 </button>

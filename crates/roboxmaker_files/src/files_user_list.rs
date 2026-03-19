@@ -42,7 +42,7 @@ impl Component for FilesUserList {
     type Message = FilesUserListMessage;
     type Properties = FilesUserListProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         FilesUserList {
             link,
             props,
@@ -51,15 +51,15 @@ impl Component for FilesUserList {
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let mut should_update = true;
         match msg {
             FilesUserListMessage::AddFiles(files_id) => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
-                    if let Some(classes_id) = ctx.props().classes_id {
+                    if let Some(classes_id) = self.props.classes_id {
                         let vars = files_model::files_group_add::Variables {
-                            group_id: ctx.props().group_id.0,
+                            group_id: self.props.group_id.0,
                             classes_id: classes_id.0,
                             files_id: files_id.0,
                         };
@@ -83,9 +83,9 @@ impl Component for FilesUserList {
             }
             FilesUserListMessage::RemoveFiles(files_id) => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
-                    if let Some(classes_id) = ctx.props().classes_id {
+                    if let Some(classes_id) = self.props.classes_id {
                         let vars = files_model::files_group_delete::Variables {
-                            group_id: ctx.props().group_id.0,
+                            group_id: self.props.group_id.0,
                             classes_id: classes_id.0,
                             files_id: files_id.0,
                         };
@@ -112,16 +112,16 @@ impl Component for FilesUserList {
                 }
             }
             FilesUserListMessage::CreateFiles => {
-                let group_id = ctx.props().group_id;
+                let group_id = self.props.group_id;
                 let local = chrono::Local::now().naive_local();
                 
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
-                    if let Some(classes_id) = ctx.props().classes_id {
+                    if let Some(classes_id) = self.props.classes_id {
                         let vars = files_model::files_group_create::Variables {
                             title: String::from("File"),
                             classes_id: classes_id.0,
                             group_id: group_id.0,
-                            inventory_group_id: ctx.props().inventory_group_id,
+                            inventory_group_id: self.props.inventory_group_id,
                             files_id: Uuid::new_v4(),
                             timestamp: local,
                         };
@@ -145,8 +145,8 @@ impl Component for FilesUserList {
             }
             FilesUserListMessage::FilesAdded(files_id) => {
                 if let Some(files_id) = files_id {
-                    ctx.props().files.push(ClassGroupFiles { files_id });
-                    if let Some(on_list_change) = &ctx.props().on_list_change {
+                    self.props.files.push(ClassGroupFiles { files_id });
+                    if let Some(on_list_change) = &self.props.on_list_change {
                         on_list_change.emit(());
                     }
                 } else {
@@ -155,8 +155,8 @@ impl Component for FilesUserList {
             }
             FilesUserListMessage::FilesRemoved(files_id) => {
                 if let Some(files_id) = files_id {
-                    ctx.props().files.retain(|u| u.files_id != files_id);
-                    if let Some(on_list_change) = &ctx.props().on_list_change {
+                    self.props.files.retain(|u| u.files_id != files_id);
+                    if let Some(on_list_change) = &self.props.on_list_change {
                         on_list_change.emit(());
                     }
                 } else {
@@ -167,8 +167,8 @@ impl Component for FilesUserList {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
 
         if self.props != props {
@@ -179,30 +179,30 @@ impl Component for FilesUserList {
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let auth_user = ctx.props().auth_user.clone();
+    fn view(&self) -> Html {
+        let auth_user = self.props.auth_user.clone();
         let maybe_files = |files_id: &ClassGroupFiles| {
             let on_files_delete = {
-                let callback = ctx.link().callback(|files_id| FilesUserListMessage::RemoveFiles(files_id));
+                let callback = self.link.callback(|files_id| FilesUserListMessage::RemoveFiles(files_id));
                 Some(callback)
             };
             html! {
                 <FilesUserCard auth_user=auth_user.clone() 
                     files=files_id.clone()
-                    on_app_route=ctx.props().on_app_route.clone()
+                    on_app_route=self.props.on_app_route.clone()
                     on_files_delete=on_files_delete
-                    on_list_change=ctx.props().on_list_change.clone()
-                    group_id=ctx.props().group_id />
+                    on_list_change=self.props.on_list_change.clone()
+                    group_id=self.props.group_id />
             }
         };
 
-        let maybe_files = if ctx.props().files.len() > 0 {
+        let maybe_files = if self.props.files.len() > 0 {
             html! {
                 <>
                     // { maybe_files_add }
                     // <div class="py-5 mt-2"><span class="text-primary-blue-dark noir-bold is-size-14 lh-18">{lang::dict("File List")}</span></div>
                     {                        
-                        ctx.props().files
+                        self.props.files
                         .iter()
                         .map(|files_id| {
                         maybe_files(files_id)

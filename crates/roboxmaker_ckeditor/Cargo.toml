@@ -10,34 +10,16 @@ roboxmaker_models = { path = "../roboxmaker_models" }
 roboxmaker_types = { path = "../roboxmaker_types" }
 
 log = "0.4"
-yew = "0.21"
-uuid = { version = "1.6.1", features = ["serde", "v4", "v5", "wasm-bindgen"] }
+yew = { version = "0.18", features = ["default", "toml"] }
+uuid = { version = "1.2.2", features = ["serde", "v4", "v5", "wasm-bindgen"] }
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"]  }
-js-sys = "0.3"
-getrandom = { version = "0.2", features = ["js"] }
+js-sys = "0.3.60"
 
 [dependencies.web-sys]
-version = "0.3"
+version = "0.3.60"
+optional = true
 features = [
-  "Document",
-  "Headers",
-  "Request",
-  "RequestInit",
-  "RequestMode",
-  "Response",
-  "Window",
-  "Element",
-  "DomTokenList",
-  "HtmlSelectElement",
-  "HtmlDocument",
-  "HtmlMediaElement",
-  "HtmlElement",
-  "Navigator",
-  "BinaryType",
-  "Blob",
-  "FileReader",
-  "ProgressEvent",
-  "FocusEvent",
-  "InputEvent",
-  "CssStyleDeclaration"
+  'Window',
+  'Element',
+  'HtmlSelectElement',
 ]

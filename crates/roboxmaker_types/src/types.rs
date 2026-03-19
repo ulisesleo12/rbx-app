@@ -1,10 +1,9 @@
 use uuid::Uuid;
-use yew_router::Routable;
+use yew_router::Switch;
 use std::{fmt, str::FromStr};
 use serde::{Deserialize, Serialize};
-use roboxmaker_models::{lesson_model::lesson_by_group_id, grade_model::get_class_group_by_group_id};
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, Default)]
 pub struct SchoolId(pub Uuid);
 
 impl FromStr for SchoolId {
@@ -21,7 +20,7 @@ impl fmt::Display for SchoolId {
     }
 }
 
-#[derive(Debug, Clone, Eq, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct FilesId(pub Uuid);
 
 impl FromStr for FilesId {
@@ -38,7 +37,7 @@ impl fmt::Display for FilesId {
     }
 }
 
-#[derive(Debug, Clone, Eq, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ActivityId(pub Uuid);
 
 impl FromStr for ActivityId {
@@ -57,7 +56,7 @@ impl fmt::Display for ActivityId {
 
 
 
-#[derive(Debug, Clone, Eq, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct GroupId(pub Uuid);
 
 impl FromStr for GroupId {
@@ -84,7 +83,7 @@ pub fn gen_private_group_id(name: &str, uuids: Vec<&Uuid>) -> GroupId {
     GroupId(Uuid::new_v5(&uuid_type, name_vec.as_bytes()))
 }
 
-#[derive(Debug, Clone, Eq, Copy, PartialEq, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ClassesId(pub Uuid);
 
 impl FromStr for ClassesId {
@@ -101,7 +100,7 @@ impl fmt::Display for ClassesId {
     }
 }
 
-#[derive(Debug, Clone, Eq, Copy, PartialEq, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct UserId(pub Uuid);
 
 impl FromStr for UserId {
@@ -118,7 +117,7 @@ impl fmt::Display for UserId {
     }
 }
 
-#[derive(Debug, Clone, Eq, Copy, PartialEq, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct RobotId(pub Uuid);
 
 impl FromStr for RobotId {
@@ -135,7 +134,7 @@ impl fmt::Display for RobotId {
     }
 }
 
-#[derive(Debug, Clone, Eq, Copy, PartialEq, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct LessonId(pub Uuid);
 
 impl FromStr for LessonId {
@@ -152,7 +151,24 @@ impl fmt::Display for LessonId {
     }
 }
 
-#[derive(Debug, Clone, Eq, Copy, PartialEq, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ResourceId(pub Uuid);
+
+impl FromStr for ResourceId {
+    type Err = uuid::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(ResourceId(Uuid::from_str(s)?))
+    }
+}
+
+impl fmt::Display for ResourceId {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PostId(pub Uuid);
 
 impl FromStr for PostId {
@@ -169,7 +185,7 @@ impl fmt::Display for PostId {
     }
 }
 
-#[derive(Debug, Clone, Eq, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MeetId(pub Uuid);
 
 impl FromStr for MeetId {
@@ -186,7 +202,7 @@ impl fmt::Display for MeetId {
     }
 }
 
-#[derive(Debug, Clone, Eq, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct WhiteboardId(pub Uuid);
 
 impl FromStr for WhiteboardId {
@@ -203,7 +219,7 @@ impl fmt::Display for WhiteboardId {
     }
 }
 
-#[derive(Debug, Clone, Eq, Copy, PartialEq, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MeetingsId(pub Uuid);
 
 impl FromStr for MeetingsId {
@@ -220,7 +236,7 @@ impl fmt::Display for MeetingsId {
     }
 }
 
-#[derive(Debug, Clone, Eq, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MessageId(pub Uuid);
 
 impl FromStr for MessageId {
@@ -237,13 +253,15 @@ impl fmt::Display for MessageId {
     }
 }
 
-#[derive(Debug, Clone, Eq, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ClassGroupCategory {
     Posts,
     Members,
     Robots,
     Lessons,
-    Classes,
+    // Classes,
+    TeacherResources,
+    Quizzes,
 }
 
 impl FromStr for ClassGroupCategory {
@@ -255,7 +273,9 @@ impl FromStr for ClassGroupCategory {
             "members" => Ok(ClassGroupCategory::Members),
             "robots" => Ok(ClassGroupCategory::Robots),
             "lessons" => Ok(ClassGroupCategory::Lessons),
-            "classes" => Ok(ClassGroupCategory::Classes),
+            // "classes" => Ok(ClassGroupCategory::Classes),
+            "resources" => Ok(ClassGroupCategory::TeacherResources),
+            "quizzes" => Ok(ClassGroupCategory::Quizzes),
             _ => Err(String::from("Parsing ClassGroupCategory")),
         }
     }
@@ -268,11 +288,42 @@ impl fmt::Display for ClassGroupCategory {
             ClassGroupCategory::Members => "members",
             ClassGroupCategory::Robots => "robots",
             ClassGroupCategory::Lessons => "lessons",
-            ClassGroupCategory::Classes => "classes",
+            // ClassGroupCategory::Classes => "classes",
+            ClassGroupCategory::TeacherResources => "resources",
+            ClassGroupCategory::Quizzes => "quizzes",
         };
         write!(f, "{}", category)
     }
 }
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum PageMode {
+    View,
+    Edit,
+}
+
+impl FromStr for PageMode {
+    type Err = String;
+
+    fn from_str(input: &str) -> Result<PageMode, Self::Err> {
+        match input {
+            "view" => Ok(PageMode::View),
+            "edit" => Ok(PageMode::Edit),
+            _ => Err(String::from("Parsing PageMode")),
+        }
+    }
+}
+
+impl fmt::Display for PageMode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let page_mode = match self {
+            PageMode::View => "view",
+            PageMode::Edit => "edit",
+        };
+        write!(f, "{}", page_mode)
+    }
+}
+
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ClassGroupPost {
@@ -347,6 +398,7 @@ pub struct DataSchool {
     pub name: String,
     pub inventory_id: Uuid,
     pub school_id: SchoolId,
+    pub display_list_meetings: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -458,95 +510,56 @@ pub enum LoadResponse {
     Load(LoadResponseFound),
 }
 
-// #[derive(Debug, Switch, Clone, PartialEq)]
-// pub enum AppRoute {
-//     #[to = "/school/{school_id}/group/{group_id}/{category}"]
-//     SchoolGroupSection(SchoolId, GroupId, ClassGroupCategory),
-//     #[to = "/degree/{school_id}/member/{user_id}/{category}"]
-//     GroupSectionStudent(SchoolId, UserId, ClassGroupCategory),
-//     #[to = "/user/{user_id}/"]
-//     MySpace(UserId),
-//     #[to = "/robot/{robot_id}/group/{group_id}/user/{user_id}"]
-//     Robot(RobotId, GroupId, UserId),
-//     #[to = "/lesson_edit/{SchoolId}/group/{group_id}/lesson/{lesson_id}"]
-//     Lesson(SchoolId, GroupId, LessonId),
-//     #[to = "/lesson_view/{SchoolId}/group/{group_id}/lesson/{lesson_id}"]
-//     LessonView(SchoolId, GroupId, LessonId),
-//     #[to = "/post_edit/{SchoolId}/group/{group_id}/post/{post_id}"]
-//     Post(SchoolId, GroupId, PostId),
-//     #[to = "/post_view/{SchoolId}/group/{group_id}/post/{post_id}"]
-//     PostView(SchoolId, GroupId, PostId),
-//     #[to = "/classes_view/{SchoolId}/group/{group_id}/classes/{classes_id}"]
-//     Classes(SchoolId, GroupId, ClassesId),
-//     #[to = "/group/{id}/meet/{meetings_id}"]
-//     Meet(GroupId, MeetingsId),
-//     #[to = "/group/meet_direct/{id}"]
-//     MeetDirect(GroupId),
-//     #[to = "/whiteboard/{id}"]
-//     Whiteboard(WhiteboardId),
-//     #[to = "/login"]
-//     Login,
-//     #[to = "/list/meetings/schools/view"]
-//     Meetings,
-//     #[to = "/school/view"]
-//     Schools,
-//     #[to = "/grades/user/school/{id}/view"]
-//     GradesByUserId(SchoolId),
-//     #[to = "/list/grades/school/{id}/view"]
-//     GradesBySchoolId(SchoolId),
-//     #[to = "/panel_add_users"]
-//     PanelAddUsers,
-//     #[to = "/"]
-//     Home,
-// }
-
-#[derive(Routable, PartialEq, Eq, Clone, Debug)]
+#[derive(Debug, Switch, Clone)]
 pub enum AppRoute {
-    #[at("/school/:school_id/group/:group_id/category/:category")]
-    SchoolGroupSection{school_id: SchoolId, group_id: GroupId, category: ClassGroupCategory},
-    #[at("/degree/:school_id/member/:user_id/category/:category")]
-    GroupSectionStudent{school_id: SchoolId, user_id: UserId, category: ClassGroupCategory},
-    #[at("/user/:user_id")]
-    MySpace{user_id: UserId},
-    #[at("/robot/:robot_id/group/:group_id/user/:user_id")]
-    Robot{robot_id: RobotId, group_id: GroupId, user_id: UserId},
-    #[at("/lesson_edit/:school_id/group/:group_id/lesson/:lesson_id")]
-    Lesson{school_id: SchoolId, group_id: GroupId, lesson_id:LessonId},
-    #[at("/lesson_view/:school_id/group/:group_id/lesson/:lesson_id")]
-    LessonView{school_id: SchoolId, group_id: GroupId, lesson_id:LessonId},
-    #[at("/post_edit/:school_id/group/:group_id/post/:post_id")]
-    Post{school_id: SchoolId, group_id: GroupId, post_id:PostId},
-    #[at("/post_view/:school_id/group/:group_id/post/:post_id")]
-    PostView{school_id: SchoolId, group_id: GroupId, post_id:PostId},
-    #[at("/classes_view/:school_id/group/:group_id/classes/:classes_id")]
-    Classes{school_id: SchoolId, group_id: GroupId, classes_id: ClassesId},
-    #[at("/group/:group_id/meet/:meetings_id")]
-    Meet{group_id: GroupId, meetings_id: MeetingsId},
-    #[at("/group/meet_direct/:group_id")]
-    MeetDirect{group_id: GroupId},
-    #[at("/whiteboard/:whiteboard_id")]
-    Whiteboard{whiteboard_id: WhiteboardId},
-    // #[at("/")]
-    // Login,
-    #[at("/list/meetings/schools/view")]
+    #[to = "/school/{school_id}/group/{group_id}/{category}"]
+    SchoolGroupSection(SchoolId, GroupId, ClassGroupCategory),
+    #[to = "/degree/{school_id}/member/{user_id}/{category}"]
+    GroupSectionStudent(SchoolId, UserId, ClassGroupCategory),
+    #[to = "/user/{user_id}/"]
+    MySpace(UserId),
+    #[to = "/robot/{robot_id}/group/{group_id}/user/{user_id}"]
+    Robot(RobotId, GroupId, UserId),
+    #[to = "/lesson_edit/{SchoolId}/group/{group_id}/lesson/{lesson_id}"]
+    Lesson(SchoolId, GroupId, LessonId),
+    #[to = "/lesson_view/{SchoolId}/group/{group_id}/lesson/{lesson_id}"]
+    LessonView(SchoolId, GroupId, LessonId),
+    #[to = "/post/{SchoolId}/group/{group_id}/post/{post_id}/{mode}"]
+    Post(SchoolId, GroupId, PostId, PageMode),
+    // #[to = "/classes_view/{SchoolId}/group/{group_id}/classes/{classes_id}"]
+    // Classes(SchoolId, GroupId, ClassesId),
+    #[to = "/resource_view/{SchoolId}/group/{group_id}/resource/{resource_id}"]
+    Resource(SchoolId, GroupId, ResourceId),
+    #[to = "/quizzes_view/{SchoolId}/group/{group_id}/quiz/{quiz_id}"]
+    Quizzes(SchoolId, GroupId, Uuid),
+    #[to = "/group/{id}/meet/{meetings_id}"]
+    Meet(GroupId, MeetingsId),
+    #[to = "/group/meet_direct/{id}"]
+    MeetDirect(GroupId),
+    #[to = "/whiteboard/{id}"]
+    Whiteboard(WhiteboardId),
+    #[to = "/login"]
+    Login,
+    #[to = "/list/meetings/schools/view"]
     Meetings,
-    #[at("/school/view")]
+    #[to = "/school/view"]
     Schools,
-    #[at("/grades/user/school/:school_id/view")]
-    GradesByUserId{school_id: SchoolId},
-    #[at("/list/grades/school/:school_id/view")]
-    GradesBySchoolId{school_id: SchoolId},
-    #[at("/panel_add_users")]
+    #[to = "/grades/user/school/{id}/view"]
+    GradesByUserId(SchoolId),
+    #[to = "/list/grades/school/{id}/view"]
+    GradesBySchoolId(SchoolId),
+    #[to = "/panel_add_users"]
     PanelAddUsers,
-    #[at("/")]
+    #[to = "/quiz-panel"]
+    QuizzesPanel,
+    #[to = "/home"]
     Home,
-    #[not_found]
-    #[at("/404")]
-    NotFound,
+    #[to = "/"]
+    Landing,
 }
 
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct MyUserProfile {
     pub email: String,
     pub full_name: String,
@@ -560,69 +573,50 @@ pub struct MyUserProfile {
     pub group_member_id: GroupId,
 }
 
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct PostPageContent {
+    pub title: String,
+    pub content: String,
+    pub timestamp: String,
+    pub author_user_id: Uuid,
+    pub author_full_name: String,
+    pub author_pic_path: String,
+    pub published: bool,
+    pub archived: bool,
+    pub class_name: String,
+}
+
+// #[derive(Debug, Clone, PartialEq)]
+// pub struct PostPageContent {
+//     pub title: String,
+//     pub content: String,
+//     pub timestamp: String,
+//     pub author_user_id: Uuid,
+//     pub author_full_name: String,
+//     pub author_pic_path: String,
+//     pub published: bool,
+//     pub archived: bool,
+//     pub class_name: String,
+// }
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum QuizResponderPage {
+    None,
+    Edit,
+}
+
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct DataSchoolProfile {
+pub struct Groups {
+    pub class_name: String,
+    pub group_id: GroupId,
+    pub school_id: Uuid,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Schools {
     pub name: String,
-    pub logo: String,
+    pub inventory_group: Uuid,
     pub school_id: SchoolId,
-    pub group_member_id: GroupId,
-}
-
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
-pub struct PostProfile {
-    pub topic: String,
-    pub timestamp: String,
-    pub maybe_timestamp: String,
-    pub post_id: PostId,
-    pub full_name: String,
-    pub pic_path: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
-pub struct ClassesProfile {
-    pub topic: String,
-    pub timestamp: String,
-    pub classes_id: ClassesId,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
-pub struct LessonProfile {
-    pub title: String,
-    pub timestamp: String,
-    pub lesson_id: LessonId,
-    pub full_name: String,
-    pub author_id: Uuid,
-    pub pic_path: String,
-    pub lesson_type: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
-pub struct RobotProfile {
-    pub name: String,
-    pub timestamp: String,
-    pub path: String,
-    pub robot_id: RobotId,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
-pub struct MeetingsProfile {
-    pub title: String,
-    pub schedule_time: String,
-    pub start_of_meeting: String,
-    pub end_of_meeting: String,
-    pub meeting_id: MeetingsId,
-    pub author_name: String,
-    pub user_staff: bool,
-    pub user_teacher: bool,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
-pub struct MemberProfile {
-    pub full_name: String,
-    pub pic_path: String,
-    pub user_id: UserId,
-    pub user_staff: bool,
-    pub user_teacher: bool,
-    pub user_student: bool,
 }

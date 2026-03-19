@@ -77,24 +77,24 @@ impl Component for MessageList {
     type Message = MessageListMessage;
     type Properties = MessageListProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         match props.group_category {
             MessageGroupCategory::Lessons(group_id, lesson_id) => {
-                link().send_message(MessageListMessage::FetchMessagesByLessonGroup(
+                link.send_message(MessageListMessage::FetchMessagesByLessonGroup(
                     lesson_id, group_id,
                 ));
             }
-            MessageGroupCategory::Posts(group_id, post_id) => link().send_message(
+            MessageGroupCategory::Posts(group_id, post_id) => link.send_message(
                 MessageListMessage::FetchMessagesByPostGroup(post_id, group_id),
             ),
-            MessageGroupCategory::Robots(group_id, robot_id) => link().send_message(
+            MessageGroupCategory::Robots(group_id, robot_id) => link.send_message(
                 MessageListMessage::FetchMessagesByRobotGroup(robot_id, group_id),
             ),
-            MessageGroupCategory::DirectMessages(group_id) => link().send_message(
+            MessageGroupCategory::DirectMessages(group_id) => link.send_message(
                 MessageListMessage::FetchMessagesByDirectMessageGroup(group_id),
             ),
             MessageGroupCategory::FilesUser => {
-                link().send_message(MessageListMessage::FetchMessagesWithFilesUser)
+                link.send_message(MessageListMessage::FetchMessagesWithFilesUser)
             }
         }
         MessageList {
@@ -112,7 +112,7 @@ impl Component for MessageList {
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
@@ -187,8 +187,8 @@ impl Component for MessageList {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let mut should_render = false;
 
         if self.props != props {
@@ -199,11 +199,11 @@ impl Component for MessageList {
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_message_delete = ctx.link().callback(|message_id| MessageListMessage::DeleteMessage(message_id));
+    fn view(&self) -> Html {
+        let on_message_delete = self.link.callback(|message_id| MessageListMessage::DeleteMessage(message_id));
 
-        let auth_user = ctx.props().auth_user.clone();
-        let group_category = ctx.props().group_category;
+        let auth_user = self.props.auth_user.clone();
+        let group_category = self.props.group_category;
 
         let stats = self.messages.iter().fold(
             HashMap::new(),
@@ -230,7 +230,7 @@ impl Component for MessageList {
             .map(|message_profile| {
                 info!("{:?} {}", message_profile.reply_id, message_profile.message_id);
                 html!{
-                    <MessageCard on_app_route=ctx.props().on_app_route.clone() 
+                    <MessageCard on_app_route=self.props.on_app_route.clone() 
                         auth_user=auth_user.clone() 
                         group_category=group_category.clone() 
                         message_profile=message_profile.clone() 
@@ -250,7 +250,7 @@ impl Component for MessageList {
             .filter(|message_profile| message_profile.reply_id.is_none())
             .map(|message_profile| {
                 html! {
-                    <MessageCard on_app_route=ctx.props().on_app_route.clone() 
+                    <MessageCard on_app_route=self.props.on_app_route.clone() 
                         auth_user=auth_user.clone() 
                         group_category=group_category.clone() 
                         message_profile=message_profile.clone()
@@ -265,7 +265,7 @@ impl Component for MessageList {
             .collect::<Html>()
         };
         let maybe_add_message = html! {
-            <MessageCard on_app_route=ctx.props().on_app_route.clone() 
+            <MessageCard on_app_route=self.props.on_app_route.clone() 
                 auth_user=auth_user.clone() 
                 group_category=group_category.clone()
                 message_profile=None 
@@ -277,7 +277,7 @@ impl Component for MessageList {
                 stats_messages_reply=stats.clone() />
         };
         let maybe_exit_thread = if self.replying_to.is_some() {
-            let on_exit_thread = ctx.link().callback(move |_| MessageListMessage::ExitThread);
+            let on_exit_thread = self.link.callback(move |_| MessageListMessage::ExitThread);
             html! {
                 <a class="btn bg-purple-on ms-5" onclick=&on_exit_thread>
                     <span class="text-white">
@@ -297,7 +297,7 @@ impl Component for MessageList {
             .filter(|message_profile| message_profile.reply_id.is_none())
             .map(|message_profile| {
                 html! {
-                    <MessageCard on_app_route=ctx.props().on_app_route.clone() 
+                    <MessageCard on_app_route=self.props.on_app_route.clone() 
                         auth_user=auth_user.clone() 
                         group_category=group_category.clone() 
                         message_profile=message_profile.clone()
@@ -339,7 +339,7 @@ impl Component for MessageList {
             </div>
         };
         let maybe_add = html! {
-            <MessageCard on_app_route=ctx.props().on_app_route.clone() 
+            <MessageCard on_app_route=self.props.on_app_route.clone() 
                 auth_user=auth_user.clone() 
                 group_category=group_category.clone() 
                 message_profile=None

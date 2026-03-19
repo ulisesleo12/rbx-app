@@ -31,8 +31,8 @@ impl Component for FilesListClasses {
     type Message = FilesListClassesMessage;
     type Properties = FilesListClassesProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        link().send_message(FilesListClassesMessage::FetchFilesNames);
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(FilesListClassesMessage::FetchFilesNames);
         FilesListClasses {
             link,
             props,
@@ -42,14 +42,14 @@ impl Component for FilesListClasses {
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
             FilesListClassesMessage::FetchFilesNames => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let vars = files_model::files_title_by_classes_id::Variables {
-                        classes_id: ctx.props().classes_id.0, 
+                        classes_id: self.props.classes_id.0, 
                     };
 
                     let task = files_model::FilesTitleByClassesId::request(
@@ -70,8 +70,8 @@ impl Component for FilesListClasses {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
         let should_render = false;
         if self.props != props {
             self.props = props;
@@ -82,7 +82,7 @@ impl Component for FilesListClasses {
         should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self) -> Html {
         let list_files = self.files_list.iter().map(|files| {
             let title = files.title.clone();
             html! {

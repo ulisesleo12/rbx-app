@@ -7,7 +7,7 @@ use roboxmaker_graphql::{Subscribe, Request};
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "schema.graphql",
-    query_path = "test.graphql",
+    query_path = "query.graphql",
     response_derives = "Clone, Debug, PartialEq",
     normalization = "rust"
 )]

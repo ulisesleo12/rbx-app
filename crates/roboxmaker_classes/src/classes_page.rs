@@ -1,17 +1,17 @@
 use log::*;
 use uuid::Uuid;
+use yew::web_sys::Node;
+use yew::web_sys::window;
+use yew::{prelude::*, web_sys};
 use code_location::code_location;
 use roboxmaker_types::types::UserId;
-use web_sys::{Node, window, InputEvent};
-use yew_router::scope_ext::RouterScopeExt;
-use yew::{html, Component, Html, Properties, Callback, Context};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_main::lang;
-use roboxmaker_models::classes_model;
 use roboxmaker_activity::ActivityStyle;
 // use roboxmaker_files::files_list::FilesList;
+use roboxmaker_models::{school_model, classes_model};
 use roboxmaker_activity::{activity_list::ActivityList};
-use roboxmaker_utils::functions::{get_value_from_input_event};
 use roboxmaker_searches::search_classes_group::SearchClassesGroup;
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
 use roboxmaker_types::types::{ClassesId, GroupId, SchoolId, AppRoute, ClassGroupFiles, ClassGroupCategory, MyUserProfile};
@@ -23,6 +23,8 @@ pub enum ClassesMode {
 }
 
 pub struct ClassesPage {
+    link: ComponentLink<Self>,
+    props: ClassesPageProperties,
     graphql_task: Option<GraphQLTask>,
     update_classes_task: Option<RequestTask>,
     // files_by_classes_sub: Option<SubscriptionTask>,
@@ -42,7 +44,9 @@ pub struct ClassesPage {
 
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct ClassesPageProperties {
+    pub on_app_route: Callback<AppRoute>,
     pub user_profile: Option<MyUserProfile>,
+    pub auth_school: Option<school_model::school_by_id::SchoolByIdSchoolByPk>,
     pub classes_id: ClassesId,
     pub group_id: GroupId,
     pub school_id: SchoolId,
@@ -50,7 +54,7 @@ pub struct ClassesPageProperties {
 
 #[derive(Debug)]
 pub enum ClassesPageMessage {
-    // AppRoute(AppRoute),
+    AppRoute(AppRoute),
     FetchClassesById(ClassesId),
     Classes(Option<classes_model::classes_by_id::ResponseData>),
     SaveClasses,
@@ -70,14 +74,13 @@ impl Component for ClassesPage {
     type Message = ClassesPageMessage;
     type Properties = ClassesPageProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        // link().send_message(ClassesPageMessage::FetchFilesByClassesId);
-        ctx.link().send_message(ClassesPageMessage::FetchClassesById(ctx.props().classes_id));
-        ctx.link().send_message(ClassesPageMessage::FetchClassesClassName(ctx.props().group_id, ctx.props().classes_id));
-
-        roboxmaker_utils::functions::school_state();
-
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        // link.send_message(ClassesPageMessage::FetchFilesByClassesId);
+        link.send_message(ClassesPageMessage::FetchClassesById(props.classes_id));
+        link.send_message(ClassesPageMessage::FetchClassesClassName(props.group_id, props.classes_id));
         ClassesPage {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             update_classes_task: None,
             // files_by_classes_sub: None,
@@ -96,13 +99,13 @@ impl Component for ClassesPage {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let mut should_update = true;
         match msg {
-            // ClassesPageMessage::AppRoute(route) => {
-            //     ctx.props().on_app_route.emit(route);
-            // }
+            ClassesPageMessage::AppRoute(route) => {
+                self.props.on_app_route.emit(route);
+            }
             ClassesPageMessage::FetchClassesById(classes_id) => {
                 should_update = true;
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
@@ -113,7 +116,7 @@ impl Component for ClassesPage {
 
                     let task = classes_model::ClassesById::request(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             |response| {
                                 ClassesPageMessage::Classes(response)
@@ -150,14 +153,14 @@ impl Component for ClassesPage {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
 
                     let vars = classes_model::classes_by_id_update::Variables {
-                        classes_id: ctx.props().classes_id.0,
+                        classes_id: self.props.classes_id.0,
                         classes_topic: self.topic.clone(),
                         classes_content: self.content.clone(),
                     };
 
                     let task = classes_model::ClassesByIdUpdate::request(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             |response| {
                                 ClassesPageMessage::Saved(response)
@@ -165,8 +168,8 @@ impl Component for ClassesPage {
                     );
                     self.task_save = Some(task);
                 }
-                let classes_id = ctx.props().classes_id;
-                ctx.link().send_message(ClassesPageMessage::ClassesUpdate(classes_id));
+                let classes_id = self.props.classes_id;
+                self.link.send_message(ClassesPageMessage::ClassesUpdate(classes_id));
                 should_update = true;
             }
             ClassesPageMessage::Saved(profile) => {
@@ -189,7 +192,7 @@ impl Component for ClassesPage {
 
                     let task = classes_model::ClassNameClasses::request(
                             graphql_task,
-                            &ctx,
+                            &self.link,
                             vars,
                             |response| {
                                 ClassesPageMessage::ClassName(response)
@@ -204,8 +207,8 @@ impl Component for ClassesPage {
             // ClassesPageMessage::FetchFilesByClassesId => {
             //     if let Some(graphql_task) = self.graphql_task.as_mut() {
             //         let vars = files_model::files_by_classes_id::Variables {
-            //             group_id: ctx.props().group_id.0,
-            //             classes_id: ctx.props().classes_id.0,
+            //             group_id: self.props.group_id.0,
+            //             classes_id: self.props.classes_id.0,
             //         };
 
             //         let task = files_model::FilesByClassesId::subscribe(
@@ -238,14 +241,14 @@ impl Component for ClassesPage {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
                     let vars = classes_model::update_classes_group_options::Variables { 
                         classes_id: classes_id.0,
-                        group_id: ctx.props().group_id.0,
+                        group_id: self.props.group_id.0,
                         published: true,
                         archived: false,
                     };
 
                     let task = classes_model::UpdateClassesGroupOptions::request(
                         graphql_task,
-                        &ctx,
+                        &self.link,
                         vars,
                         |response| {
                             ClassesPageMessage::PublisheClasses(response)
@@ -258,14 +261,23 @@ impl Component for ClassesPage {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
-                
-        true
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        let mut should_render = false;
+        
+        // if self.props.classes_id != props.classes_id {
+        //     self.link.send_message(ClassesPageMessage::FetchFilesByClassesId);
+        // }
+        if self.props != props {
+            self.props = props;
+            self.link.send_message(ClassesPageMessage::FetchClassesById(self.props.classes_id));
+            should_render = true;
+        }
+        should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let group_id = ctx.props().group_id;
+    fn view(&self) -> Html {
+        let group_id = self.props.group_id;
         let class_name_by_classes = self
             .class_name_classes.clone().and_then(|data| Some(data.group).clone())
             .iter()
@@ -282,42 +294,35 @@ impl Component for ClassesPage {
 
         if let Some(classes) = &self.classes {
             let maybe_classes_title = {
-                let on_data = ctx
-                    .link()
-                    .callback(|data: InputEvent| ClassesPageMessage::Topic(get_value_from_input_event(data)));
+                let on_data = self
+                    .link
+                    .callback(|data: InputData| ClassesPageMessage::Topic(data.value));
                 html! {
-                    <input class="input input-style-universal px-3 mb-lg-4 mb-md-0 mb-lg-0 mb-xl-0 col-sm-12 col-md-12 col-lg-6" type="text" placeholder={lang::dict("Module Title")} value={self.topic.clone()} oninput={on_data} />
+                    <input class="input input-style-universal px-3 mb-lg-4 mb-md-0 mb-lg-0 mb-xl-0 col-sm-12 col-md-12 col-lg-6" type="text" placeholder={lang::dict("Module Title")} value=self.topic.clone() oninput=on_data />
                 }
             };
+            let school_id = self.props.school_id;
+            let user_id = self.props.user_profile.clone().and_then(|user_by_pk| Some(user_by_pk.user_id)).unwrap_or(UserId(Uuid::default()));
 
-            let school_id = ctx.props().school_id;
-            let user_id = ctx.props().user_profile.clone().and_then(|d| Some(d.user_id)).unwrap_or(UserId(Uuid::default()));
-
-            let category = ClassGroupCategory::Classes;
-
-            let navigator = ctx.link().navigator().unwrap();
-            let on_class_group_classes = Callback::from(move |_| {
-                navigator.push(&AppRoute::SchoolGroupSection{
-                    school_id,
-                    group_id,
-                    category,
-                })
+            let on_class_group_classes = self.link.callback(move |_| {
+                ClassesPageMessage::AppRoute(AppRoute::SchoolGroupSection(
+                    school_id.clone(),
+                    group_id.clone(),
+                    ClassGroupCategory::Classes,
+                ))
             });
-
-            let navigator = ctx.link().navigator().unwrap();
-            let on_class_group_classes_st = Callback::from(move |_| {
-                navigator.push(&AppRoute::GroupSectionStudent{
-                    school_id,
-                    user_id,
-                    category,
-                })
+            let on_class_group_classes_st = self.link.callback(move |_| {
+                ClassesPageMessage::AppRoute(AppRoute::GroupSectionStudent(
+                    school_id.clone(),
+                    user_id.clone(),
+                    ClassGroupCategory::Classes,
+                ))
             });
-
-            let go_back_grade = ctx.props().user_profile.clone()
+            let go_back_grade = self.props.user_profile.clone()
                 .and_then(|user| {
                     if user.user_teacher.is_some() || user.user_staff.is_some() {
                         Some(html! {
-                            <a onclick={on_class_group_classes}>
+                            <a onclick=on_class_group_classes>
                                 <span class="icon-text text-gray-blue noir-bold is-size-16 lh-20 d-flex align-items-center pb-5">
                                     <i class="fas fa-arrow-left"></i>
                                     <span class="mx-2">{lang::dict("To Classes")}</span>
@@ -327,7 +332,7 @@ impl Component for ClassesPage {
                         })
                     } else {
                         Some(html! {
-                            <a onclick={on_class_group_classes_st}>
+                            <a onclick=on_class_group_classes_st>
                                 <span class="icon-text text-gray-blue noir-bold is-size-16 lh-20 d-flex align-items-center pb-5">
                                     <i class="fas fa-arrow-left"></i>
                                     <span class="mx-2">{lang::dict("To Classes")}</span>
@@ -337,8 +342,8 @@ impl Component for ClassesPage {
                         })
                     }
                 }).unwrap_or(html! {});
-            let on_edit = ctx.link().callback(|_| ClassesPageMessage::TabPageMode(ClassesMode::Edit));
-            let on_preview = ctx.link().callback(|_| ClassesPageMessage::TabPageMode(ClassesMode::Preview));
+            let on_edit = self.link.callback(|_| ClassesPageMessage::TabPageMode(ClassesMode::Edit));
+            let on_preview = self.link.callback(|_| ClassesPageMessage::TabPageMode(ClassesMode::Preview));
             let tab_class = |flag: bool | match flag {
                 true => "nav-link active is-active-tab",
                 false => "nav-link is-no-active-tab",
@@ -346,22 +351,22 @@ impl Component for ClassesPage {
             let _maybe_tabs = html! {
                 <ul class="nav nav-tabs mb-5">
                     <li class="nav-item">
-                        <a class={tab_class(self.tab_page_mode==ClassesMode::Edit)} onclick={on_edit.clone()}>{lang::dict("Resources")}</a>
+                        <a class={tab_class(self.tab_page_mode==ClassesMode::Edit)} onclick=on_edit.clone()>{lang::dict("Resources")}</a>
                     </li>
                     <li class="nav-item">
-                        <a class={tab_class(self.tab_page_mode==ClassesMode::Preview)} onclick={on_preview.clone()}>{lang::dict("Activities")}</a>
+                        <a class={tab_class(self.tab_page_mode==ClassesMode::Preview)} onclick=on_preview.clone()>{lang::dict("Activities")}</a>
                     </li>
                 </ul>
             };
 
-            let maybe_user_profile_pic = ctx
-                .props()
+            let maybe_user_profile_pic = self
+                .props
                 .user_profile
                 .as_ref()
                 .and_then(|user_profile| Some(user_profile.pic_path.clone()))
                 .and_then(|pic_path| {
                     Some(html! {
-                        <img class="img-card-72 ms-5" src={pic_path.clone()} alt="photo of user" />
+                        <img class="img-card-72 ms-5" src=pic_path.clone() alt="photo of user" />
                     })
                 })
                 .unwrap_or(html! {<img class="img-card-72" src="/static/avatar.png"/>
@@ -370,12 +375,12 @@ impl Component for ClassesPage {
             let _files = self.files_profile.iter().cloned().collect::<Vec<ClassGroupFiles>>();
             // let files_list = html! {
             //     <FilesList files=files.clone()
-            //         on_app_route=ctx.props().on_app_route.clone()
-            //         auth_user=ctx.props().auth_user.clone()
-            //         auth_school=ctx.props().auth_school.clone()
-            //         group_id=ctx.props().group_id.clone()
-            //         classes_id=ctx.props().classes_id.clone()
-            //         school_id=ctx.props().school_id />
+            //         on_app_route=self.props.on_app_route.clone()
+            //         auth_user=self.props.auth_user.clone()
+            //         auth_school=self.props.auth_school.clone()
+            //         group_id=self.props.group_id.clone()
+            //         classes_id=self.props.classes_id.clone()
+            //         school_id=self.props.school_id />
             // };
             
             // let page_mode = match self.tab_page_mode {
@@ -386,27 +391,27 @@ impl Component for ClassesPage {
             //     }
             //     ClassesMode::Preview => {
             //         html! {
-            //             <ActivityList on_app_route=ctx.props().on_app_route.clone()
-            //                 auth_user=ctx.props().auth_user.clone()
+            //             <ActivityList on_app_route=self.props.on_app_route.clone()
+            //                 auth_user=self.props.auth_user.clone()
             //                 user_id=None
-            //                 group_id=ctx.props().group_id
-            //                 classes_id=ctx.props().classes_id
+            //                 group_id=self.props.group_id
+            //                 classes_id=self.props.classes_id
             //                 maybe_style=ActivityStyle::ClassesPage />
             //         }
             //     }
             // };
 
-            let maybe_publish = ctx
-                .props()
+            let maybe_publish = self
+                .props
                 .user_profile
                 .as_ref()
                 .zip(self.classes.as_ref().and_then(|classes| classes.classes_profile.as_ref()))
                 .and_then(|(auth_user, classes_profile)| {
-                    let on_save = ctx.link().callback(move |_| ClassesPageMessage::SaveClasses);
+                    let on_save = self.link.callback(move |_| ClassesPageMessage::SaveClasses);
                     if auth_user.user_staff.is_some() || auth_user.user_teacher.is_some() || auth_user.user_id.0 == classes_profile.author_id {
                         Some(html! {
                             <>
-                                <a class="btn button-saved-classes bg-primary-blue-dark d-flex align-items-center justify-content-center" onclick={on_save}>
+                                <a class="btn button-saved-classes bg-primary-blue-dark d-flex align-items-center justify-content-center" onclick=on_save>
                                     <span class="text-white noir-bold is-size-16 lh-20">{lang::dict("To Post")}</span>
                                 </a>
                             </>
@@ -416,9 +421,8 @@ impl Component for ClassesPage {
                     }
                 })
                 .unwrap_or(html! {});
-
             let topic = classes.classes_profile.clone().and_then(|data| Some(data.topic)).unwrap_or("".to_string());
-            let maybe_header_classes = ctx.props().user_profile.as_ref()
+            let maybe_header_classes = self.props.user_profile.as_ref()
                 .and_then(|user| {
                     if user.user_staff.is_some() || user.user_teacher.is_some() {
                         Some(html! {
@@ -446,9 +450,9 @@ impl Component for ClassesPage {
                         <div class="d-flex flex-wrap align-items-center justify-content-between">
                             {go_back_grade}
                             <div class="d-flex flex-row align-items-center">
-                                <SearchClassesGroup
-                                    group_id={ctx.props().group_id}
-                                    school_id={ctx.props().school_id} />
+                                <SearchClassesGroup on_app_route=self.props.on_app_route.clone()
+                                    group_id=self.props.group_id
+                                    school_id=self.props.school_id />
                                 {maybe_user_profile_pic}
                             </div>
                         </div>
@@ -458,12 +462,12 @@ impl Component for ClassesPage {
                         <br/>
                         // {maybe_tabs}
                         // {page_mode}
-                        <ActivityList
-                            user_profile={ctx.props().user_profile.clone()}
-                            user_id={None}
-                            group_id={ctx.props().group_id}
-                            classes_id={ctx.props().classes_id}
-                            maybe_style={ActivityStyle::ClassesPage} />
+                        <ActivityList on_app_route=self.props.on_app_route.clone()
+                            user_profile=self.props.user_profile.clone()
+                            user_id=None
+                            group_id=self.props.group_id
+                            classes_id=self.props.classes_id
+                            maybe_style=ActivityStyle::ClassesPage />
                     </div>
                 </>
             }

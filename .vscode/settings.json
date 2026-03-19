@@ -10,5 +10,6 @@
         "onfocus",
         "oninput",
         "onmousedown"
-    ]
+    ],
+    "commentTranslate.hover.enabled": true
 }

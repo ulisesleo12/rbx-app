@@ -1,19 +1,21 @@
 use log::*;
 // use uuid::Uuid;
 use gloo_storage::Storage;
+use yew::{prelude::*, web_sys};
 use code_location::code_location;
-use yew::{html, Component, Html, Properties, NodeRef, Context};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 use roboxmaker_main::{config, lang};
 // use roboxmaker_files::user_files::UserFiles;
-use roboxmaker_utils::functions::school_profile_data;
-use roboxmaker_models::{group_model, message_model};
+use roboxmaker_models::{school_model, group_model, message_model};
 use roboxmaker_user::{user_robots::UserRobots, last_robots_card::UserStyle};
 use roboxmaker_graphql::{GraphQLService, GraphQLTask, Request, RequestTask};
-use roboxmaker_types::types::{SchoolId, UserId, GroupId, gen_private_group_id, MyUserProfile};
+use roboxmaker_types::types::{SchoolId, UserId, GroupId, gen_private_group_id, AppRoute, MyUserProfile};
 use roboxmaker_message::{MessageGroupCategory, message_list::MessageList, user_messages::MessagesByUserId};
 
 pub struct MySpaceView {
+    link: ComponentLink<Self>,
+    props: MySpaceProperties,
     graphql_task: Option<GraphQLTask>,
     direct_message_task: Option<RequestTask>,
     meet_private_group_id: Option<GroupId>,
@@ -22,14 +24,16 @@ pub struct MySpaceView {
     udpload_files: bool,
     search_node: NodeRef,
     maybe_section_search: bool,
-    saved_sidebar_state: bool,
-    school_id: Option<SchoolId>,
 }
 
 #[derive(Debug, Properties, Clone, PartialEq)]
 pub struct MySpaceProperties {
     pub user_id: UserId,
-    pub user_profile: Option<MyUserProfile>
+    pub user_profile: Option<MyUserProfile>,
+    pub auth_school: Option<school_model::school_by_id::SchoolByIdSchoolByPk>,
+    pub on_app_route: Callback<AppRoute>,
+    pub school_id: Option<SchoolId>,
+    pub saved_sidebar_state: bool,
 }
 
 #[derive(Debug)]
@@ -50,23 +54,18 @@ impl Component for MySpaceView {
     type Message = MySpaceMessage;
     type Properties = MySpaceProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(MySpaceMessage::FetchUserById);
+    fn create(mut props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        link.send_message(MySpaceMessage::FetchUserById);
 
-        let saved_sidebar_state = if let Ok(value) = gloo_storage::LocalStorage::get("saved_sidebar_state") {
+        props.saved_sidebar_state = if let Ok(value) = gloo_storage::LocalStorage::get("saved_sidebar_state") {
             value 
         } else {
             true
         };
 
-        let school_profile = school_profile_data();
-
-        let school_id = school_profile.clone().and_then(|data| Some(data.school_id));
-
-        roboxmaker_utils::functions::myspace_state();
-
-
         MySpaceView {
+            link,
+            props,
             graphql_task: Some(GraphQLService::connect(&code_location!())),
             direct_message_task: None,
             meet_private_group_id: None,
@@ -75,18 +74,16 @@ impl Component for MySpaceView {
             udpload_files: false,
             search_node: NodeRef::default(),
             maybe_section_search: false,
-            saved_sidebar_state,
-            school_id,
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
         info!("{:?}", msg);
         let should_update = true;
         match msg {
             MySpaceMessage::FetchUserById => {
-                self.meet_private_group_id = Some(ctx.props().user_id)
-                .zip(ctx.props().user_profile.as_ref())
+                self.meet_private_group_id = Some(self.props.user_id)
+                .zip(self.props.user_profile.as_ref())
                 .and_then(|(user_id, item)| {
 
                     let mut uuids= vec![ &item.user_id.0, &user_id.0];
@@ -99,8 +96,8 @@ impl Component for MySpaceView {
                         Some(gen_private_group_id(config::MEET_MD5, uuids))
                     }
                 });
-                self.direct_message_private_group_id = Some(ctx.props().user_id)
-                .zip(ctx.props().user_profile.as_ref())
+                self.direct_message_private_group_id = Some(self.props.user_id)
+                .zip(self.props.user_profile.as_ref())
                 .and_then(|(user_id, item)| {
 
                     let mut uuids= vec![ &item.user_id.0, &user_id.0];
@@ -108,7 +105,7 @@ impl Component for MySpaceView {
 
                     Some(gen_private_group_id(config::DM_MD5, uuids))
                 });
-                ctx.link().send_message(MySpaceMessage::User);
+                self.link.send_message(MySpaceMessage::User);
             }
             MySpaceMessage::User => {
                 if let Some(graphql_task) = self.graphql_task.as_mut() {
@@ -118,7 +115,7 @@ impl Component for MySpaceView {
                         };
                         let task = message_model::DirectMessageGroupByGroupId::request(
                             graphql_task, 
-                            &ctx, 
+                            &self.link, 
                             vars, 
                             |response| {
                                 MySpaceMessage::DirectMessageGroup(response)
@@ -131,10 +128,10 @@ impl Component for MySpaceView {
             MySpaceMessage::DirectMessageGroup(response) =>{
                 if response.clone().and_then(|data| data.group_by_pk).is_none() {
 
-                    let user_id = ctx.props().user_id.0;
-                    let user_auth_id = ctx.props().user_profile.as_ref().and_then(|data| Some(data.user_id)).unwrap().0;
+                    let user_id = self.props.user_id.0;
+                    let user_auth_id = self.props.user_profile.as_ref().and_then(|data| Some(data.user_id)).unwrap().0;
                     let group_id = self.direct_message_private_group_id.unwrap().0;
-                    let school_id = self.school_id.unwrap().0;
+                    let school_id = self.props.school_id.unwrap().0;
 
                     let mut members: Vec<group_model::group_create_with_members::CreateGroupWithMembersGroupMemberInsertInput> = Vec::new();
 
@@ -152,7 +149,7 @@ impl Component for MySpaceView {
                         };
                         let task = group_model::GroupCreateWithMembers::request(
                             graphql_task, 
-                            &ctx, 
+                            &self.link, 
                             vars, 
                             |response| {
                                 MySpaceMessage::MessageGroupCreate(response)
@@ -185,13 +182,13 @@ impl Component for MySpaceView {
             }
             MySpaceMessage::ChangeSidebarState => {
                 if let Some(element) = gloo_utils::document().get_element_by_id("show-sidebar-right") {
-                    if self.saved_sidebar_state {
+                    if self.props.saved_sidebar_state {
                         let _ = gloo_storage::LocalStorage::set("saved_sidebar_state", false);
-                        self.saved_sidebar_state = false;
+                        self.props.saved_sidebar_state = false;
                         let _ = element.set_attribute("class", "fa-angle-double-left fa-w-14 fa-2x");
                     } else {
                         let _ = gloo_storage::LocalStorage::set("saved_sidebar_state", true);
-                        self.saved_sidebar_state = true;
+                        self.props.saved_sidebar_state = true;
                         let _ = element.set_attribute("class", "fa fa-angle-double-right fa-w-14 fa-2x");
                     }
                 }
@@ -200,19 +197,24 @@ impl Component for MySpaceView {
         should_update
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        info!("{:?} => {:?}", ctx.props(), old_props);
-        
-        true
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        info!("{:?} => {:?}", self.props, props);
+        let mut should_render = false;
+
+        if self.props != props {
+            self.props = props;
+            should_render = true;
+        }
+        should_render
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        // let on_focus = ctx.link().callback(move |_| MySpaceMessage::OnFocus);
-        // let on_blur = ctx.link().callback(move |_| MySpaceMessage::OnBlur);
-        // let on_hidden_modal = ctx.link().callback(move |_| MySpaceMessage::HiddenModal);
-        // let _on_more_files = ctx.link().callback(|_| MySpaceMessage::ShowMoreFiles);
-        // let _on_show_upload_files = ctx.link().callback(|_| MySpaceMessage::UploadFiles);
-        // let on_search = ctx.link().callback(|search: InputData| {
+    fn view(&self) -> Html {
+        // let on_focus = self.link.callback(move |_| MySpaceMessage::OnFocus);
+        // let on_blur = self.link.callback(move |_| MySpaceMessage::OnBlur);
+        // let on_hidden_modal = self.link.callback(move |_| MySpaceMessage::HiddenModal);
+        // let _on_more_files = self.link.callback(|_| MySpaceMessage::ShowMoreFiles);
+        // let _on_show_upload_files = self.link.callback(|_| MySpaceMessage::UploadFiles);
+        // let on_search = self.link.callback(|search: InputData| {
         //     info!("search: {:?}", search);
         //     let search = if search.value.len() > 0 {
         //         format!("%{}%", search.value)
@@ -221,16 +223,16 @@ impl Component for MySpaceView {
         //     };
         //     MySpaceMessage::FetchUsersByUserName(search)
         // });
-        let on_show_sidebar = ctx.link().callback(move |_| MySpaceMessage::ChangeSidebarState);
-        let btn_sidebar_show = if self.saved_sidebar_state {
+        let on_show_sidebar = self.link.callback(move |_| MySpaceMessage::ChangeSidebarState);
+        let btn_sidebar_show = if self.props.saved_sidebar_state {
             html! {
-                <button type="button" class="btn btn-outline-primary-blue-dark rounded-start rounded-0" onclick={&on_show_sidebar}>
+                <button type="button" class="btn btn-outline-primary-blue-dark rounded-start rounded-0" onclick=&on_show_sidebar>
                     <i class="fas fa-angle-double-right fas fa-2x" id="show-sidebar-right"></i>
                 </button>
             }
         } else {
             html! {
-                <button type="button" class="btn btn-outline-primary-blue-dark rounded-start rounded-0" onclick={&on_show_sidebar}>
+                <button type="button" class="btn btn-outline-primary-blue-dark rounded-start rounded-0" onclick=&on_show_sidebar>
                     <i class="fas fa-angle-double-left fas fa-2x" id="show-sidebar-right"></i>
                 </button>
             }
@@ -253,25 +255,28 @@ impl Component for MySpaceView {
 
         let maybe_messages = if self.direct_message_private_group_id.is_some(){
             html! {
-                <MessageList user_profile={ctx.props().user_profile.clone()} 
-                    user_id={Some(ctx.props().user_id)}
-                    group_category={MessageGroupCategory::DirectMessages(self.direct_message_private_group_id.unwrap())} />
+                <MessageList on_app_route=self.props.on_app_route.clone() 
+                    user_profile=self.props.user_profile.clone() 
+                    user_id=Some(self.props.user_id)
+                    group_category=MessageGroupCategory::DirectMessages(self.direct_message_private_group_id.unwrap()) />
             }
         } else {
             html!{}
         };
 
-        let maybe_user_robots = ctx
-            .props()
+        let maybe_user_robots = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|item|{
-                if item.user_teacher.is_some() || item.user_staff.is_some() || (ctx.props().user_id.0 == item.user_id.0){
+                if item.user_teacher.is_some() || item.user_staff.is_some() || (self.props.user_id.0 == item.user_id.0){
                     let robots_list = {
                             html! {
-                                <UserRobots user_id={ctx.props().user_id.clone()} 
-                                    user_profile={ctx.props().user_profile.clone()}
-                                    maybe_style={UserStyle::MySpace} />
+                                <UserRobots user_id=self.props.user_id.clone() 
+                                    user_profile=self.props.user_profile.clone()
+                                    on_app_route=self.props.on_app_route.clone() 
+                                    on_list_change=None
+                                    maybe_style=UserStyle::MySpace />
                             }
                         };
                     Some(
@@ -287,21 +292,21 @@ impl Component for MySpaceView {
             })
             .unwrap_or_default();
 
-        let maybe_user_profile_pic = ctx
-            .props()
+        let maybe_user_profile_pic = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|user_profile| Some(user_profile.pic_path.clone()))
             .and_then(|pic_path| {
                 Some(html! {
-                    <img class="img-card-72" src={pic_path.clone()} alt="photo of user" />
+                    <img class="img-card-72" src=pic_path.clone() alt="photo of user" />
                 })
             })
             .unwrap_or(html! {<img class="img-card-72" src="/static/avatar.png"/>
             });
 
-        let maybe_user_profile_name = ctx
-            .props()
+        let maybe_user_profile_name = self
+            .props
             .user_profile
             .as_ref()
             .and_then(|item| {
@@ -311,7 +316,7 @@ impl Component for MySpaceView {
             })
             .unwrap_or(html! {});
         // let private_group_id =  self.direct_message_private_group_id.clone().and_then(|data| Some(data.0)).unwrap_or(Uuid::default()).to_string();
-        // let user_id_str = ctx.props().user_id.to_string();
+        // let user_id_str = self.props.user_id.to_string();
         let welcome_user = html! {
             <div class="d-flex flex-wrap align-items-center justify-content-between">
                 <div class="d-flex flex-column">
@@ -324,7 +329,7 @@ impl Component for MySpaceView {
                     // <h1 class="is-size-18 text-gray">
                     //     {user_id_str}
                     // </h1>
-                    <span class="text-gray-purple-two noir-bold is-size-18 lh-22  pt-2">{"¡Puedes hacer lo que te apetezca en tu espacio!"}</span>
+                    // <span class="text-gray-purple-two noir-bold is-size-18 lh-22  pt-2">{"¡Puedes hacer lo que te apetezca en tu espacio!"}</span>
                 </div>
                 {btn_sidebar_show}
             </div>
@@ -350,22 +355,22 @@ impl Component for MySpaceView {
         } else {
             "modal"
         };
-        let class_right_sidebar = if self.saved_sidebar_state {
+        let class_right_sidebar = if self.props.saved_sidebar_state {
             "bg-silver col col-sm-3 col-md-3 col-lg-5 col-xl-4 col-xxl-3 d-none d-sm-none d-md-none d-lg-block p-5"
         } else {
             "d-none"
         };
-        let class_sidebar_mobile = if self.saved_sidebar_state {
+        let class_sidebar_mobile = if self.props.saved_sidebar_state {
             "offcanvas offcanvas-end show bg-silver d-block d-sm-block d-md-block d-lg-none d-xl-none d-xxl-none"
         } else {
             "offcanvas offcanvas-end"
         };
-        let style_sidebar_mobile = if self.saved_sidebar_state {
+        let style_sidebar_mobile = if self.props.saved_sidebar_state {
             "visibility: visible;"
         } else {
             "display: none;"
         };
-        // let on_list_change = ctx.link().callback(move |_| MySpaceMessage::FetchUserById);
+        // let on_list_change = self.link.callback(move |_| MySpaceMessage::FetchUserById);
         html! {
             <>
                 <div class="w-100 h-100 d-flex flex-row justify-content-between scroll-y scroll-x-hidden">
@@ -373,9 +378,9 @@ impl Component for MySpaceView {
                         {welcome_user}
                         // {your_files}
                         // <div class=files_class>
-                        //     <UserFiles on_app_route=ctx.props().on_app_route.clone() auth_user=ctx.props().auth_user.clone()
-                        //         auth_school=ctx.props().auth_school.clone() group_id=GroupId(group_id)
-                        //         on_list_change=on_list_change school_id=ctx.props().school_id />
+                        //     <UserFiles on_app_route=self.props.on_app_route.clone() auth_user=self.props.auth_user.clone()
+                        //         auth_school=self.props.auth_school.clone() group_id=GroupId(group_id)
+                        //         on_list_change=on_list_change school_id=self.props.school_id />
                         // </div>
                         // <div class="text-center">
                         //     <a onclick=on_more_files class="btn btn-white text-cyan-sky is-size-18 noir-bold lh-22">{lang::dict("See All Files")}</a>
@@ -387,16 +392,17 @@ impl Component for MySpaceView {
                         <div>{maybe_user_robots}</div>
                         <h1 class="text-primary-blue-dark noir-bold is-size-20 lh-24 mb-5">{lang::dict("Discussions and Comments")}</h1>
                         <div class="pb-5">
-                            <MessagesByUserId user_id={ctx.props().user_id.clone()}
-                                user_profile={ctx.props().user_profile.clone()} />
+                            <MessagesByUserId user_id=self.props.user_id.clone()
+                                on_app_route=self.props.on_app_route.clone() user_profile=self.props.user_profile.clone()
+                                auth_school=self.props.auth_school.clone() />
                         </div>
                         // {maybe_modal}
                     </div>
-                    <div class={class_search_modal}>
+                    <div class=class_search_modal>
                         {"hello"}
                     </div>
                 </div>
-                <div class={class_right_sidebar}>
+                <div class=class_right_sidebar>
                     <div class="d-flex align-items-center justify-content-between mb-5">
                         <a class="button-search-univeral mt-3 me-5">
                             <span class="icon-text-search-universal">
@@ -413,9 +419,9 @@ impl Component for MySpaceView {
                     </div>
                     <div class="section-right-post scroll-messages-y mh-80">{maybe_messages.clone()}</div>
                 </div>
-                <div class={class_sidebar_mobile} data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel" aria-modal="true" role="dialog" style={style_sidebar_mobile}>
+                <div class=class_sidebar_mobile data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel" aria-modal="true" role="dialog" style=style_sidebar_mobile>
                     <div class="offcanvas-header d-flex justify-content-end">
-                        <button type="button" class="btn btn-outline-danger" data-bs-dismiss="offcanvas" onclick={&on_show_sidebar}>
+                        <button type="button" class="btn btn-outline-danger" data-bs-dismiss="offcanvas" onclick=&on_show_sidebar>
                             <i class="fas fa-times"></i>
                         </button>
                     </div>

@@ -8,4 +8,4 @@ edition = "2021"
 [dependencies]
 roboxmaker_main = { path = "../roboxmaker_main" }
 
-yew = "0.21"
+yew = { version = "0.18", features = ["default", "toml"] }
