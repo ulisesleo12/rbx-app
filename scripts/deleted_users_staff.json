@@ -1,0 +1,173 @@
+[
+  {
+    "id": "58610fe5-c7da-4982-8580-8db06aef1990",
+    "username": "aiglesiasc",
+    "fullName": "Arquimides Iglesias Castro",
+    "email": "aiglesias@grupoaker.com",
+    "role": "staff",
+    "user_id": "ef7451c8-2e7e-4438-99f1-701e3353b768",
+    "shool_id": "77c03b6e-d901-4b83-a3b0-0ca8f20fa727"
+  },
+  {
+    "id": "8cf25ccb-fb29-4c9b-a6a1-5d70dfa6c943",
+    "username": "akercbm",
+    "fullName": "GRUPO AKER",
+    "email": "akercbm@grupoaker.com",
+    "role": "staff",
+    "user_id": "84ff7084-f220-4322-9068-69788a39e3fe",
+    "shool_id": "ff04c23e-1a51-4be1-bc63-e986129b1143"
+  },
+  {
+    "id": "bf858300-720e-48c5-abec-31208352cc0b",
+    "username": "akerccc",
+    "fullName": "GRUPO Aker",
+    "email": "akerccc@grupoaker.com",
+    "role": "staff",
+    "user_id": "5fe872ce-f9fd-474b-9c02-442bc3553b94",
+    "shool_id": "f5c3c010-b381-4835-adbe-890ddb60995f"
+  },
+  {
+    "id": "3fc48307-9f93-4ce2-a6d0-76a836518974",
+    "username": "akercep",
+    "fullName": "GRUPO AKER",
+    "email": "akercep@grupoaker.com",
+    "role": "staff",
+    "user_id": "4288ffed-8350-46a7-9b04-fd7f574135c9",
+    "shool_id": "840a1b44-3eb7-4941-8eb2-046c20269450"
+  },
+  {
+    "id": "ce0857d7-d1ba-41ba-a604-5ff428c2036c",
+    "username": "akercio",
+    "fullName": "GRUPO AKER",
+    "email": "akercio@grupoaker.com",
+    "role": "staff",
+    "user_id": "658683df-863e-4ba0-9f9c-0d6dbf1c64da",
+    "shool_id": "59ddc028-79c9-4be2-86c9-b1d430995786"
+  },
+  {
+    "id": "47c2c32c-334a-4318-bf5d-844ae5d2b005",
+    "username": "akercsf",
+    "fullName": "GRUPO AKER",
+    "email": "akercsf@grupoaker.com",
+    "role": "staff",
+    "user_id": "f0fa3de4-1452-46c8-b4e7-83e454094403",
+    "shool_id": "09fcc879-6760-42df-975b-d1bebe6a7fbf"
+  },
+  {
+    "id": "db1c5fd4-289f-4fbe-be33-cbc5dbac7f9f",
+    "username": "akerfat",
+    "fullName": "GRUPO AKER",
+    "email": "akerfat@grupoaker.com",
+    "role": "staff",
+    "user_id": "63cf7777-ab32-4d54-9ab8-562e632af093",
+    "shool_id": "09ac5158-6e7e-4743-9e75-9713d2047e46"
+  },
+  {
+    "id": "7a2fc9db-cdf7-4e39-8152-f6fe94598335",
+    "username": "akergsm",
+    "fullName": "GRUPO AKER",
+    "email": "akergsm@grupoaker.com",
+    "role": "staff",
+    "user_id": "8f3621ee-8a8e-4800-92ea-7acab13d9da9",
+    "shool_id": "fbad49bf-1f7c-4c1b-a9c9-aee4987e5fa9"
+  },
+  {
+    "id": "a81d8ab2-7406-46a6-9927-3a1a7d1cd548",
+    "username": "akeribe",
+    "fullName": "GRUPO AKER",
+    "email": "akeribe@grupoaker.com",
+    "role": "staff",
+    "user_id": "3510f4f5-c4cd-4471-bf8d-c47aa8cd79d1",
+    "shool_id": "5201b5a5-0dca-4f19-a56b-5356d39d0477"
+  },
+  {
+    "id": "21d7b760-199d-4cfd-845b-33a2b4ebfca8",
+    "username": "akerico",
+    "fullName": "GRUPO AKER",
+    "email": "akerico@grupoaker.com",
+    "role": "staff",
+    "user_id": "20085ef9-a1fb-4276-9f2a-50a05519ba67",
+    "shool_id": "94df7d74-ce0a-45ba-9cad-05a1cc636bfb"
+  },
+  {
+    "id": "4ccdb82f-d6c1-4a94-8c85-7f53a39ebb4d",
+    "username": "akerlbi",
+    "fullName": "GRUPO AKER",
+    "email": "akerlbi@grupoaker.com",
+    "role": "staff",
+    "user_id": "d6334ec0-4878-40ad-a020-3b368ba26bff",
+    "shool_id": "d15d3e13-388e-40af-8182-ffd7187a5cba"
+  },
+  {
+    "id": "7c868748-787d-4ada-a69e-e2fc5dfd6f9d",
+    "username": "akernsp",
+    "fullName": "GRUPO AKER",
+    "email": "akernsp@grupoaker.com",
+    "role": "staff",
+    "user_id": "157509ce-e447-4246-b43d-ea81c4b4c78a",
+    "shool_id": "001862ff-8cd1-4867-a3b0-e4290ae5236c"
+  },
+  {
+    "id": "6b632149-cf1c-4059-bc78-066da750ec8b",
+    "username": "antonio garcía",
+    "fullName": "Antonio García",
+    "email": "antonio@vertexstudio.co",
+    "role": "staff",
+    "user_id": "e8b941c8-772c-4603-b67f-fc9b995a2315",
+    "shool_id": "77c03b6e-d901-4b83-a3b0-0ca8f20fa727"
+  },
+  {
+    "id": "9f8530e1-a8dc-4231-872e-8627d34fa498",
+    "username": "carlromero",
+    "fullName": "Carlos Romero",
+    "email": "cromero@grupoaker.com",
+    "role": "staff",
+    "user_id": "43aad7a5-5ff7-42bf-a0c2-5a2616ed1df6",
+    "shool_id": "f7a0cc38-d35a-496a-a442-6f40fdfe36a5"
+  },
+  {
+    "id": "15386bb9-eb9f-4f95-affc-d0892e172143",
+    "username": "celiaaguilar",
+    "fullName": "Celina Celina Aguilar",
+    "email": "info@roboxmaker.com",
+    "role": "staff",
+    "user_id": "73bae1f1-e39f-4687-b0b2-978ccbdcf019",
+    "shool_id": "f7a0cc38-d35a-496a-a442-6f40fdfe36a5"
+  },
+  {
+    "id": "5d7ae788-8877-4f53-8d86-2158fb05ae44",
+    "username": "jonathan j flores",
+    "fullName": "Jonathan Flores",
+    "email": "jonathan@vertexstudio.co",
+    "role": "staff",
+    "user_id": "37339f6b-3d0d-4236-a9da-75bda299261a",
+    "shool_id": "f7a0cc38-d35a-496a-a442-6f40fdfe36a5"
+  },
+  {
+    "id": "7b84fa31-b804-4541-9931-02c7350addae",
+    "username": "rozgo",
+    "fullName": "Alex Rozgo",
+    "email": "alex.rozgo@vertexstudio.co",
+    "role": "staff",
+    "user_id": "6c7c845c-1b3b-4fdf-9c56-a5436beb98d2",
+    "shool_id": "77c03b6e-d901-4b83-a3b0-0ca8f20fa727"
+  },
+  {
+    "id": "32d4f6a7-2bcd-4c76-8593-ce163334d719",
+    "username": "ulises",
+    "fullName": "Ulises Dueñas",
+    "email": "ulises@roboxmaker.com",
+    "role": "staff",
+    "user_id": "f38c028c-b6b3-4719-88fe-39fa8f0ea37d",
+    "shool_id": "77c03b6e-d901-4b83-a3b0-0ca8f20fa727"
+  },
+  {
+    "id": "0794d000-5559-4ce0-95d5-130b5dfb31cd",
+    "username": "user01",
+    "fullName": "Josue Mejia Flores",
+    "email": "josuespania@gmail.com",
+    "role": "staff",
+    "user_id": "106535cc-7389-4a6b-9cf0-307b502727da",
+    "shool_id": "77c03b6e-d901-4b83-a3b0-0ca8f20fa727"
+  }
+]

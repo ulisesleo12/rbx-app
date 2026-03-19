@@ -1,0 +1,10 @@
+schema: "schema.graphql"
+documents:
+  - query.graphql
+extensions:
+  endpoints:
+    dev:
+      # url: https://api.roboxmaker.com/v1/graphql
+      url: https://api.roboxmaker.com/v1/graphql
+      headers:
+        x-hasura-access-key: a1k8e3r4

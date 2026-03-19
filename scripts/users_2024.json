@@ -1,0 +1,572 @@
+[
+    {
+        "id": "4caf349e-2208-4d1f-9d87-b5461c689052",
+        "createdTimestamp": 1729632514943,
+        "username": "adrianmtz",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "Adrián",
+        "lastName": "Martínez",
+        "email": "amartinez@roboxmaker.com",
+        "attributes": {
+            "x-hasura-default-role": [
+                "teacher"
+            ],
+            "x-hasura-user-id": [
+                "b3b440ae-ab59-49eb-ba76-40a68d040862"
+            ],
+            "x-hasura-school-id": [
+                "f7a0cc38-d35a-496a-a442-6f40fdfe36a5"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "58610fe5-c7da-4982-8580-8db06aef1990",
+        "createdTimestamp": 1605886171949,
+        "username": "aiglesiasc",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": true,
+        "firstName": "Arquimides",
+        "lastName": "Iglesias Castro",
+        "email": "aiglesias@grupoaker.com",
+        "attributes": {
+            "x-hasura-default-role": [
+                "staff"
+            ],
+            "x-hasura-user-id": [
+                "ef7451c8-2e7e-4438-99f1-701e3353b768"
+            ],
+            "x-hasura-school-id": [
+                "77c03b6e-d901-4b83-a3b0-0ca8f20fa727"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "ad9256be-7f63-4180-8a75-f5db9c529524",
+        "createdTimestamp": 1726760711267,
+        "username": "anasosa",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "Ana",
+        "lastName": "Sosa",
+        "email": "ana@vertexstudio.co",
+        "attributes": {
+            "x-hasura-default-role": [
+                "teacher"
+            ],
+            "x-hasura-user-id": [
+                "37cc753d-8fca-4088-a894-4849e0f82a92"
+            ],
+            "x-hasura-school-id": [
+                "77c03b6e-d901-4b83-a3b0-0ca8f20fa727"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "9f8530e1-a8dc-4231-872e-8627d34fa498",
+        "createdTimestamp": 1708717484138,
+        "username": "carlromero",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": true,
+        "firstName": "Carlos",
+        "lastName": "Romero",
+        "email": "cromero@grupoaker.com",
+        "attributes": {
+            "x-hasura-default-role": [
+                "staff"
+            ],
+            "x-hasura-user-id": [
+                "43aad7a5-5ff7-42bf-a0c2-5a2616ed1df6"
+            ],
+            "x-hasura-school-id": [
+                "f7a0cc38-d35a-496a-a442-6f40fdfe36a5"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "6f474ee8-004e-449f-ae28-6a4736334a46",
+        "createdTimestamp": 1671659809861,
+        "username": "clopezccc209",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "Cristina",
+        "lastName": "López",
+        "email": "cristinalopez@colegiocristobalcolon.edu.sv",
+        "attributes": {
+            "x-hasura-default-role": [
+                "teacher"
+            ],
+            "x-hasura-user-id": [
+                "1ef19cdb-7dad-4c3f-90ea-f92de8ba5987"
+            ],
+            "x-hasura-school-id": [
+                "f5c3c010-b381-4835-adbe-890ddb60995f"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "ddd62e4c-117c-4cac-8afa-a645149399b1",
+        "createdTimestamp": 1704488702175,
+        "username": "darwinarias",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "Darwin",
+        "lastName": "Arias",
+        "email": "darwin.arias@montecarmelo.edu.sv",
+        "attributes": {
+            "x-hasura-default-role": [
+                "teacher"
+            ],
+            "x-hasura-user-id": [
+                "a53301f3-37e6-441d-a923-21ef1fb4072e"
+            ],
+            "x-hasura-school-id": [
+                "658a4461-192a-4dd1-ae0d-1caa9800ed55"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "6f9b9578-4525-4e5e-94ea-3453f0882056",
+        "createdTimestamp": 1671658953931,
+        "username": "davidcativo",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "David Alberto",
+        "lastName": "Cativo Servando",
+        "email": "david.cativo@istitutobethania.edu.sv",
+        "attributes": {
+            "x-hasura-default-role": [
+                "teacher"
+            ],
+            "x-hasura-user-id": [
+                "dbf32374-e381-4a52-bb91-520417106516"
+            ],
+            "x-hasura-school-id": [
+                "5201b5a5-0dca-4f19-a56b-5356d39d0477"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "c63bb0bf-08c8-45f1-b0d7-4438dadb9e76",
+        "createdTimestamp": 1671659688465,
+        "username": "ddescobar511b",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "Dinora",
+        "lastName": "De Escobar",
+        "email": "dinoradeescobar@colegiocristobalcolon.edu.sv",
+        "attributes": {
+            "x-hasura-default-role": [
+                "teacher"
+            ],
+            "x-hasura-user-id": [
+                "5cbb73ec-448b-4c07-b860-97b3079df35c"
+            ],
+            "x-hasura-school-id": [
+                "f5c3c010-b381-4835-adbe-890ddb60995f"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "5694e06b-7e46-4ea9-9264-f037a704c7a0",
+        "createdTimestamp": 1729800623548,
+        "username": "dhernandez",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "Dimas",
+        "lastName": "Hernandez",
+        "email": "dhernandez@hmsintelligence.com",
+        "attributes": {
+            "x-hasura-default-role": [
+                "teacher"
+            ],
+            "x-hasura-user-id": [
+                "95c31585-5eeb-41c3-a82a-c6fc97a33247"
+            ],
+            "x-hasura-school-id": [
+                "f7a0cc38-d35a-496a-a442-6f40fdfe36a5"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "fcbbf4a7-6bc2-42bb-b121-87ec5319b0ef",
+        "createdTimestamp": 1706459878822,
+        "username": "gerardogomez",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "Irvin Gerardo",
+        "lastName": "Gómez Recinos",
+        "email": "soporte@colegiocristobalcolon.edu.sv",
+        "attributes": {
+            "x-hasura-default-role": [
+                "teacher"
+            ],
+            "x-hasura-user-id": [
+                "9af22b6e-f40c-4915-97a1-45fa60d7ff73"
+            ],
+            "x-hasura-school-id": [
+                "f5c3c010-b381-4835-adbe-890ddb60995f"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "5d7ae788-8877-4f53-8d86-2158fb05ae44",
+        "createdTimestamp": 1603320096029,
+        "username": "jonathan j flores",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "Jonathan",
+        "lastName": "Flores",
+        "email": "jonathan@vertexstudio.co",
+        "attributes": {
+            "x-hasura-default-role": [
+                "staff"
+            ],
+            "x-hasura-user-id": [
+                "37339f6b-3d0d-4236-a9da-75bda299261a"
+            ],
+            "x-hasura-school-id": [
+                "f7a0cc38-d35a-496a-a442-6f40fdfe36a5"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 1611000588,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "4da5312d-414d-4aad-abf9-cae4b6089133",
+        "createdTimestamp": 1671658464939,
+        "username": "maricarmenguzman",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": true,
+        "firstName": "María del Carmen",
+        "lastName": "De Guzmán",
+        "email": "maricarmen.guzman@institutobethania.edu.sv",
+        "attributes": {
+            "x-hasura-default-role": [
+                "teacher"
+            ],
+            "x-hasura-user-id": [
+                "4b717763-8a2d-4e69-b9c3-564bea488276"
+            ],
+            "x-hasura-school-id": [
+                "5201b5a5-0dca-4f19-a56b-5356d39d0477"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "45e0f85a-2be1-406e-a8b1-94e59832602b",
+        "createdTimestamp": 1718325582732,
+        "username": "mfunes",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "Misael",
+        "lastName": "Funes",
+        "email": "mfunes@roboxmaker.com",
+        "attributes": {
+            "x-hasura-default-role": [
+                "teacher"
+            ],
+            "x-hasura-user-id": [
+                "89cff2d3-f9f6-4a63-a27d-b74f2dd39aa1"
+            ],
+            "x-hasura-school-id": [
+                "f7a0cc38-d35a-496a-a442-6f40fdfe36a5"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "61e7299a-4bd2-4a4d-98f5-b30f604f5665",
+        "createdTimestamp": 1718825656196,
+        "username": "roboxmakerdemo",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": true,
+        "firstName": "Roboxmaker",
+        "lastName": "Demo",
+        "email": "demo@roboxmaker.com",
+        "attributes": {
+            "x-hasura-default-role": [
+                "teacher"
+            ],
+            "x-hasura-user-id": [
+                "453bd559-d3e0-4c0f-bd2d-3db47a5e1540"
+            ],
+            "x-hasura-school-id": [
+                "f7a0cc38-d35a-496a-a442-6f40fdfe36a5"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "7b84fa31-b804-4541-9931-02c7350addae",
+        "createdTimestamp": 1603318402346,
+        "username": "rozgo",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "Alex",
+        "lastName": "Rozgo",
+        "email": "alex.rozgo@vertexstudio.co",
+        "attributes": {
+            "x-hasura-default-role": [
+                "staff"
+            ],
+            "x-hasura-user-id": [
+                "6c7c845c-1b3b-4fdf-9c56-a5436beb98d2"
+            ],
+            "x-hasura-school-id": [
+                "77c03b6e-d901-4b83-a3b0-0ca8f20fa727"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "ee99fa5d-f22d-4c89-bae0-0b81a47f7650",
+        "createdTimestamp": 1641488937020,
+        "username": "soporteaker",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": true,
+        "firstName": "Soporte",
+        "lastName": "Usuarios",
+        "email": "soporte@grupoaker.com",
+        "attributes": {
+            "x-hasura-default-role": [
+                "support"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "32d4f6a7-2bcd-4c76-8593-ce163334d719",
+        "createdTimestamp": 1671741425496,
+        "username": "ulises",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "Ulises",
+        "lastName": "Dueñas",
+        "email": "ulises@roboxmaker.com",
+        "attributes": {
+            "x-hasura-default-role": [
+                "staff"
+            ],
+            "x-hasura-user-id": [
+                "f38c028c-b6b3-4719-88fe-39fa8f0ea37d"
+            ],
+            "x-hasura-school-id": [
+                "77c03b6e-d901-4b83-a3b0-0ca8f20fa727"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    },
+    {
+        "id": "0794d000-5559-4ce0-95d5-130b5dfb31cd",
+        "createdTimestamp": 1648504326939,
+        "username": "user01",
+        "enabled": true,
+        "totp": false,
+        "emailVerified": false,
+        "firstName": "Josue",
+        "lastName": "Mejia Flores",
+        "email": "josuespania@gmail.com",
+        "attributes": {
+            "x-hasura-default-role": [
+                "staff"
+            ],
+            "x-hasura-user-id": [
+                "106535cc-7389-4a6b-9cf0-307b502727da"
+            ],
+            "x-hasura-school-id": [
+                "77c03b6e-d901-4b83-a3b0-0ca8f20fa727"
+            ]
+        },
+        "disableableCredentialTypes": [],
+        "requiredActions": [],
+        "notBefore": 0,
+        "access": {
+            "manageGroupMembership": true,
+            "view": true,
+            "mapRoles": true,
+            "impersonate": true,
+            "manage": true
+        }
+    }
+]

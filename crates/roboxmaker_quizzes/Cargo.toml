@@ -1,0 +1,24 @@
+[package]
+name = "roboxmaker_quizzes"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+roboxmaker_types = { path = "../roboxmaker_types" }
+roboxmaker_utils = { path = "../roboxmaker_utils" }
+roboxmaker_models = { path = "../roboxmaker_models" }
+roboxmaker-graphql = { path = "../roboxmaker-graphql" }
+roboxmaker_main = { path = "../roboxmaker_main" }
+roboxmaker_loaders = {path = "../roboxmaker_loaders"}
+
+# roboxmaker_ckeditor = { path = "crates/roboxmaker_ckeditor" }
+
+yew = { version = "0.18", features = ["default", "toml"] }
+uuid = { version = "1.2.2", features = ["serde", "v4", "v5", "wasm-bindgen"] }
+getrandom = { version = "0.2", features = ["js"] }
+wasm-logger = "0.2.0"
+log = "0.4"
+code_location = "1.1"
+serde = { version = "1.0.143", features = ["derive"] }
+serde_json = "1.0.91"
+chrono = { version = "0.4.23", features = ["serde"] }

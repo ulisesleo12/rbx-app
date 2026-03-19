@@ -1,0 +1,36 @@
+[package]
+name = "roboxmaker_schools"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+roboxmaker_main = { path = "../roboxmaker_main" }
+roboxmaker_models = { path = "../roboxmaker_models" }
+roboxmaker_types = { path = "../roboxmaker_types" }
+roboxmaker_degree = { path = "../roboxmaker_degree" }
+roboxmaker_loaders = { path = "../roboxmaker_loaders" }
+roboxmaker_searches = { path = "../roboxmaker_searches" }
+roboxmaker-graphql = { path = "../roboxmaker-graphql" }
+
+log = "0.4"
+anyhow = "1.0.56"
+yew = { version = "0.18", features = ["default", "toml"] }
+uuid = { version = "1.2.2", features = ["serde", "v4", "v5", "wasm-bindgen"] }
+serde_derive = "1.0.152"
+wasm-bindgen = { version = "0.2", features = ["serde-serialize"]  }
+serde = { version = "1.0.152", features = ["derive"] }
+
+js-sys = "0.3.60"
+regex = "1.7.1"
+gloo-utils = "0.1.6"
+gloo-storage = "0.2.2"
+code_location = "1.1"
+
+[dependencies.web-sys]
+version = "0.3.60"
+optional = true
+features = [
+  'HtmlSelectElement',
+]

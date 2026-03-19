@@ -1,0 +1,17 @@
+pub mod card_home_post_placeholder;
+pub mod card_post_placeholder;
+pub mod card_classes_placeholder;
+pub mod card_robots_placeholder;
+pub mod last_robots_placeholder;
+pub mod card_user_robots_placeholder;
+pub mod card_members_home;
+pub mod card_meetings_home;
+pub mod card_degree_placeholder;
+pub mod card_post_list;
+pub mod card_member_list;
+pub mod card_robot_list;
+pub mod card_lesson_list;
+pub mod card_classes_list;
+pub mod card_files_list;
+pub mod card_robot_my_space;
+pub mod card_comments;

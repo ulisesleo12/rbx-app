@@ -1,0 +1,74 @@
+.card-lesson-list {
+    width: 274px;
+    height: 96px;
+    background: var(--color-transparent);
+    border-radius: 0px;
+    border: 1px solid var(--color-gray);
+    box-shadow: none;
+    border-radius: 16px;
+
+    .content-lesson-list {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .content-lesson-list-header {
+        width: 100%;
+        margin-bottom: 9px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+}
+
+.card-lesson-list.is-loading-lesson-list {
+
+    .menu-lesson-list,
+    .image-lesson-list,
+    .image-lesson-list-2,
+    h2,
+    p {
+        background: #eee;
+        background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+        border-radius: 0px;
+        background-size: 200% 100%;
+        animation: 1.5s shine linear infinite;
+    }
+
+    .image-lesson-list {
+        min-width: 32px;
+        height: 32px;
+        border-radius: 150px;
+    }
+
+    .image-lesson-list-2 {
+        width: 47px;
+        height: 23px;
+    }
+
+    .menu-lesson-list {
+        width: 22px;
+        height: 20px;
+        margin-left: 20px;
+    }
+
+    h2 {
+        height: 17px;
+        font-size: 0;
+        width: 30%;
+        margin-left: 10px;
+    }
+
+    p {
+        height: 17px;
+        width: 30%;
+        margin-left: 10px;
+    }
+}
+
+@keyframes shine {
+    to {
+        background-position-x: -200%;
+    }
+}

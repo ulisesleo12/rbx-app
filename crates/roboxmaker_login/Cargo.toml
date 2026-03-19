@@ -1,0 +1,25 @@
+[package]
+name = "roboxmaker_login"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+roboxmaker_main = { path = "../roboxmaker_main" }
+roboxmaker_types = { path = "../roboxmaker_types" }
+roboxmaker_models = { path = "../roboxmaker_models" }
+roboxmaker-graphql = { path = "../roboxmaker-graphql" }
+
+regex = "1.7.1"
+log = "0.4"
+uuid = { version = "1.2.2", features = ["serde", "v4", "v5", "wasm-bindgen"] }
+yew = { version = "0.18", features = ["default", "toml"] }
+dyn-fmt = "0.3.0"
+serde_json = "1.0.91"
+# yew-router = { version = "0.17", features = ["service", "web_sys"], default-features = false }
+yew-router = { version = "0.17" }
+
+gloo-utils = "0.1.6"
+code_location = "1.1"
+wasm-bindgen-futures = "0.4.33"

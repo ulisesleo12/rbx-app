@@ -1,0 +1,31 @@
+[package]
+name = "roboxmaker_user"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+roboxmaker_main = { path = "../roboxmaker_main" }
+roboxmaker_types = { path = "../roboxmaker_types" }
+roboxmaker_models = {path = "../roboxmaker_models"}
+roboxmaker_message = {path = "../roboxmaker_message"}
+roboxmaker_loaders = {path = "../roboxmaker_loaders"}
+roboxmaker_searches = {path = "../roboxmaker_searches"}
+roboxmaker-graphql = { path = "../roboxmaker-graphql" }
+
+uuid = { version = "1.2.2", features = ["serde", "v4", "v5", "wasm-bindgen"] }
+anyhow = "1.0.68"
+chrono = { version = "0.4.23", features = ["serde"] }
+yew = { version = "0.18", features = ["default", "toml"] }
+log = "0.4"
+serde_derive = "1.0.152"
+serde = { version = "1.0.152", features = ["derive"] }
+
+js-sys = "0.3.60"
+regex = "1.7.1"
+code_location = "1.1"
+gloo-utils = "0.1.6"
+gloo-storage = "0.2.2"
+wasm-bindgen-futures = "0.4.33"
+http = "0.2.8"

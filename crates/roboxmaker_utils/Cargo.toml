@@ -1,0 +1,20 @@
+[package]
+name = "roboxmaker_utils"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+roboxmaker_types = {path = "../roboxmaker_types"}
+
+
+log = "0.4"
+yew = { version = "0.18", features = ["default", "toml"] }
+# yew-router = { version = "0.17", features = ["service", "web_sys"], default-features = false }
+yew-router = { version = "0.17" }
+
+uuid = { version = "1.2.2", features = ["serde", "v4", "v5", "wasm-bindgen"] }
+serde = { version = "1.0.152", features = ["derive"] }
+wasm-bindgen = { version = "0.2", features = ["serde-serialize"]  }
+chrono = { version = "0.4.23", features = ["serde"] }

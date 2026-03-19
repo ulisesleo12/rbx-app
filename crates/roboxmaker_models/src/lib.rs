@@ -1,0 +1,17 @@
+pub mod general_model;
+pub mod activity_model;
+pub mod classes_model;
+pub mod files_model;
+pub mod grade_model;
+pub mod group_model;
+pub mod lesson_model;
+pub mod meetings_model;
+pub mod message_model;
+pub mod post_model;
+pub mod robot_model;
+pub mod school_model;
+pub mod user_model;
+pub mod auth;
+pub mod registration;
+pub mod teacher_resource;
+pub mod quiz_model;
